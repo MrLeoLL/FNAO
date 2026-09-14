@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Five Nights At Orelha's</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #000;
+    font-family: Arial, Helvetica, sans-serif;
+    color: white;
+}
+
+/* =========================
+   MENU PRINCIPAL
+========================= */
+
+#main-menu {
+    position: fixed;
+    inset: 0;
+    background:
+        linear-gradient(
+            90deg,
+            rgba(0,0,0,.88) 0%,
+            rgba(0,0,0,.62) 42%,
+            rgba(0,0,0,.15) 100%
+        ),
+        url("images/menu-bg.jpg") center/cover no-repeat;
+
+    overflow: hidden;
+}
+
+/* Escurecimento */
+#main-menu::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+
+    background:
+        radial-gradient(
+            circle at center,
+            transparent 15%,
+            rgba(0,0,0,.3) 60%,
+            rgba(0,0,0,.9) 120%
+        );
+
+    pointer-events: none;
+}
+
+/* Scanlines */
+#main-menu::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(255,255,255,.025),
+        rgba(255,255,255,.025) 1px,
+        rgba(0,0,0,.09) 2px,
+        rgba(0,0,0,.09) 4px
+    );
+
+    opacity: .8;
+    pointer-events: none;
+    animation: scanMove 8s linear infinite;
+}
+
+@keyframes scanMove {
+    from {
+        transform: translateY(0);
+    }
+    to {
+        transform: translateY(8px);
+    }
+}
+
+/* =========================
+   RUÍDO / INTERFERÊNCIA
+========================= */
+
+.noise {
+    position: absolute;
+    inset: -20px;
+    pointer-events: none;
+    opacity: .05;
+
+    background-image:
+        repeating-radial-gradient(
+            circle at 30% 30%,
+            #fff 0,
+            transparent 1px,
+            transparent 3px
+        );
+
+    background-size: 7px 7px;
+
+    animation: noiseMove .15s steps(2) infinite;
+}
+
+@keyframes noiseMove {
+    0%   { transform: translate(0,0); }
+    25%  { transform: translate(-5px,3px); }
+    50%  { transform: translate(4px,-4px); }
+    75%  { transform: translate(3px,5px); }
+    100% { transform: translate(0,0); }
+}
+
+/* =========================
+   CONTEÚDO
+========================= */
+
+.menu-content {
+    position: absolute;
+
+    left: 7vw;
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    z-index: 5;
+}
+
+/* =========================
+   TÍTULO
+========================= */
+
+.title {
+    margin-bottom: 55px;
+    text-transform: uppercase;
+    line-height: .88;
+
+    filter: drop-shadow(4px 4px 0 #000);
+}
+
+.title-small {
+    display: block;
+
+    font-size: clamp(28px, 3vw, 55px);
+    font-weight: 300;
+
+    letter-spacing: 8px;
+}
+
+.title-big {
+    display: block;
+
+    font-size: clamp(60px, 8vw, 145px);
+    font-weight: 900;
+
+    letter-spacing: -5px;
+
+    animation: titleFlicker 7s infinite;
+}
+
+@keyframes titleFlicker {
+
+    0%, 93%, 95%, 97%, 100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    94% {
+        opacity: .4;
+        transform: translateX(-4px);
+    }
+
+    96% {
+        opacity: .8;
+        transform: translateX(5px);
+    }
+}
+
+/* =========================
+   BOTÕES
+========================= */
+
+.menu-options {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 7px;
+}
+
+.menu-button {
+    position: relative;
+
+    border: 0;
+    background: transparent;
+
+    color: #ddd;
+
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: clamp(22px, 2vw, 34px);
+    font-weight: 500;
+
+    letter-spacing: 2px;
+
+    padding: 8px 15px 8px 35px;
+
+    cursor: pointer;
+
+    transition:
+        color .08s,
+        transform .08s,
+        text-shadow .08s;
+}
+
+.menu-button::before {
+    content: ">>";
+
+    position: absolute;
+
+    left: 0;
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    opacity: 0;
+
+    font-weight: bold;
+}
+
+.menu-button:hover {
+    color: white;
+
+    transform: translateX(8px);
+
+    text-shadow:
+        0 0 5px white,
+        0 0 12px rgba(255,255,255,.5);
+}
+
+.menu-button:hover::before {
+    opacity: 1;
+}
+
+/* =========================
+   INFORMAÇÕES
+========================= */
+
+.version {
+    position: absolute;
+
+    bottom: 25px;
+    left: 30px;
+
+    z-index: 5;
+
+    color: #777;
+
+    font-size: 13px;
+    letter-spacing: 2px;
+}
+
+.copyright {
+    position: absolute;
+
+    right: 30px;
+    bottom: 25px;
+
+    z-index: 5;
+
+    color: #666;
+
+    font-size: 12px;
+}
+
+/* =========================
+   FLASH DE INTERFERÊNCIA
+========================= */
+
+#glitch {
+    position: fixed;
+    inset: 0;
+
+    z-index: 100;
+
+    pointer-events: none;
+
+    opacity: 0;
+
+    background:
+        repeating-linear-gradient(
+            0deg,
+            rgba(255,255,255,.25) 0px,
+            rgba(255,255,255,.25) 1px,
+            transparent 1px,
+            transparent 5px
+        );
+}
+
+/* =========================
+   TELA TEMPORÁRIA
+========================= */
+
+#game-screen {
+    position: fixed;
+    inset: 0;
+
+    display: none;
+
+    align-items: center;
+    justify-content: center;
+
+    background: black;
+
+    color: white;
+
+    font-size: 30px;
+    letter-spacing: 4px;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- =========================
+     MENU
+========================= -->
+
+<div id="main-menu">
+
+    <div class="noise"></div>
+
+    <div class="menu-content">
+
+        <div class="title">
+            <span class="title-small">Five Nights At</span>
+            <span class="title-big">ORELHA'S</span>
+        </div>
+
+        <div class="menu-options">
+
+            <button class="menu-button" onclick="newGame()">
+                NEW GAME
+            </button>
+
+            <button class="menu-button" id="continue-button" onclick="continueGame()">
+                CONTINUE
+            </button>
+
+            <button class="menu-button" onclick="extras()">
+                EXTRAS
+            </button>
+
+        </div>
+
+    </div>
+
+    <div class="version">
+        v0.1 ALPHA
+    </div>
+
+    <div class="copyright">
+        FIVE NIGHTS AT ORELHA'S
+    </div>
+
+</div>
+
+
+<!-- =========================
+     TELA DO JOGO
+========================= -->
+
+<div id="game-screen">
+    NIGHT 1
+</div>
+
+
+<!-- Efeito de interferência -->
+
+<div id="glitch"></div>
+
+
+<script>
+
+/* =========================
+   ELEMENTOS
+========================= */
+
+const menu = document.getElementById("main-menu");
+const gameScreen = document.getElementById("game-screen");
+const glitch = document.getElementById("glitch");
+const continueButton = document.getElementById("continue-button");
+
+
+/* =========================
+   SAVE
+========================= */
+
+let save = JSON.parse(
+    localStorage.getItem("fnao-save")
+);
+
+if (!save) {
+
+    continueButton.style.opacity = ".25";
+    continueButton.style.pointerEvents = "none";
+
+}
+
+
+/* =========================
+   NOVO JOGO
+========================= */
+
+function newGame() {
+
+    save = {
+        night: 1,
+        completed: false
+    };
+
+    localStorage.setItem(
+        "fnao-save",
+        JSON.stringify(save)
+    );
+
+    startNight(1);
+}
+
+
+/* =========================
+   CONTINUAR
+========================= */
+
+function continueGame() {
+
+    if (!save) return;
+
+    startNight(save.night);
+}
+
+
+/* =========================
+   COMEÇAR NOITE
+========================= */
+
+function startNight(night) {
+
+    staticFlash();
+
+    setTimeout(() => {
+
+        menu.style.display = "none";
+
+        gameScreen.style.display = "flex";
+
+        gameScreen.textContent =
+            "NIGHT " + night;
+
+    }, 200);
+
+}
+
+
+/* =========================
+   EXTRAS
+========================= */
+
+function extras() {
+
+    staticFlash();
+
+    console.log("Extras ainda não implementados.");
+
+}
+
+
+/* =========================
+   INTERFERÊNCIA
+========================= */
+
+function staticFlash() {
+
+    glitch.style.opacity = ".8";
+
+    setTimeout(() => {
+        glitch.style.opacity = "0";
+    }, 90);
+
+    setTimeout(() => {
+        glitch.style.opacity = ".5";
+    }, 140);
+
+    setTimeout(() => {
+        glitch.style.opacity = "0";
+    }, 210);
+
+}
+
+
+/* =========================
+   GLITCH ALEATÓRIO DO MENU
+========================= */
+
+function randomGlitch() {
+
+    if (menu.style.display === "none") return;
+
+    if (Math.random() < .35) {
+
+        glitch.style.opacity =
+            Math.random() * .12;
+
+        setTimeout(() => {
+
+            glitch.style.opacity = "0";
+
+        }, 40 + Math.random() * 70);
+
+    }
+
+}
+
+setInterval(randomGlitch, 700);
+
+
+/* =========================
+   MOVIMENTO LEVE DO FUNDO
+========================= */
+
+document.addEventListener("mousemove", (event) => {
+
+    if (menu.style.display === "none") return;
+
+    const x =
+        (event.clientX / window.innerWidth - .5) * 8;
+
+    const y =
+        (event.clientY / window.innerHeight - .5) * 5;
+
+    menu.style.backgroundPosition =
+        `calc(50% + ${x}px) calc(50% + ${y}px)`;
+
+});
+
+</script>
+
+</body>
+</html>
