@@ -9,10 +9,6 @@
 
 <style>
 
-/* =========================================================
-   RESET
-========================================================= */
-
 * {
     margin: 0;
     padding: 0;
@@ -25,19 +21,23 @@ body {
     width: 100%;
     height: 100%;
     overflow: hidden;
+
     background: #000;
+
     font-family: Arial, Helvetica, sans-serif;
+
     color: white;
 }
 
 
 /* =========================================================
-   MENU PRINCIPAL
+   MENU
 ========================================================= */
 
 #main-menu {
     position: fixed;
     inset: 0;
+
     overflow: hidden;
 
     background:
@@ -48,6 +48,7 @@ body {
             rgba(0,0,0,.2) 75%,
             rgba(0,0,0,.25) 100%
         ),
+
         url("images/menu-bg.jpg")
         center center /
         cover
@@ -55,12 +56,12 @@ body {
 }
 
 
-/* ESCURECIMENTO */
-
 #main-menu::before {
     content: "";
+
     position: absolute;
     inset: 0;
+
     pointer-events: none;
 
     background:
@@ -73,35 +74,47 @@ body {
 }
 
 
-/* SCANLINES */
-
 #main-menu::after {
     content: "";
+
     position: absolute;
     inset: 0;
+
     pointer-events: none;
+
     opacity: .65;
 
     background:
         repeating-linear-gradient(
             0deg,
+
             rgba(255,255,255,.025),
             rgba(255,255,255,.025) 1px,
+
             rgba(0,0,0,.12) 2px,
             rgba(0,0,0,.12) 4px
         );
 
-    animation: scanMove 6s linear infinite;
+    animation:
+        scanMove
+        6s
+        linear
+        infinite;
 }
 
+
 @keyframes scanMove {
+
     from {
-        transform: translateY(0);
+        transform:
+            translateY(0);
     }
 
     to {
-        transform: translateY(10px);
+        transform:
+            translateY(10px);
     }
+
 }
 
 
@@ -111,20 +124,26 @@ body {
 
 .noise {
     position: absolute;
+
     inset: -50px;
+
     opacity: .045;
+
     pointer-events: none;
+
     z-index: 2;
 
     background-image:
         repeating-radial-gradient(
             circle at 30% 30%,
+
             white 0px,
             transparent 1px,
             transparent 4px
         );
 
-    background-size: 8px 8px;
+    background-size:
+        8px 8px;
 
     animation:
         noiseMove
@@ -133,26 +152,34 @@ body {
         infinite;
 }
 
+
 @keyframes noiseMove {
+
     0% {
-        transform: translate(0,0);
+        transform:
+            translate(0,0);
     }
 
     25% {
-        transform: translate(-8px,4px);
+        transform:
+            translate(-8px,4px);
     }
 
     50% {
-        transform: translate(6px,-5px);
+        transform:
+            translate(6px,-5px);
     }
 
     75% {
-        transform: translate(4px,8px);
+        transform:
+            translate(4px,8px);
     }
 
     100% {
-        transform: translate(0,0);
+        transform:
+            translate(0,0);
     }
+
 }
 
 
@@ -162,10 +189,14 @@ body {
 
 .menu-content {
     position: absolute;
+
     z-index: 10;
+
     left: 7vw;
     top: 50%;
-    transform: translateY(-50%);
+
+    transform:
+        translateY(-50%);
 }
 
 
@@ -174,9 +205,14 @@ body {
 ========================================================= */
 
 .title {
-    margin-bottom: 60px;
-    text-transform: uppercase;
-    line-height: .87;
+    margin-bottom:
+        60px;
+
+    text-transform:
+        uppercase;
+
+    line-height:
+        .87;
 
     filter:
         drop-shadow(
@@ -186,6 +222,7 @@ body {
             black
         );
 }
+
 
 .title-small {
     display: block;
@@ -197,9 +234,13 @@ body {
             55px
         );
 
-    font-weight: 300;
-    letter-spacing: 9px;
+    font-weight:
+        300;
+
+    letter-spacing:
+        9px;
 }
+
 
 .title-big {
     display: block;
@@ -211,8 +252,11 @@ body {
             150px
         );
 
-    font-weight: 900;
-    letter-spacing: -5px;
+    font-weight:
+        900;
+
+    letter-spacing:
+        -5px;
 
     animation:
         titleFlicker
@@ -220,7 +264,9 @@ body {
         infinite;
 }
 
+
 @keyframes titleFlicker {
+
     0%,
     91%,
     93%,
@@ -228,23 +274,32 @@ body {
     98%,
     100% {
         opacity: 1;
-        transform: translateX(0);
+
+        transform:
+            translateX(0);
     }
 
     92% {
         opacity: .15;
-        transform: translateX(-5px);
+
+        transform:
+            translateX(-5px);
     }
 
     94% {
         opacity: .65;
-        transform: translateX(6px);
+
+        transform:
+            translateX(6px);
     }
 
     97% {
         opacity: .3;
-        transform: translateX(-3px);
+
+        transform:
+            translateX(-3px);
     }
+
 }
 
 
@@ -254,19 +309,30 @@ body {
 
 .menu-options {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
+
+    flex-direction:
+        column;
+
+    align-items:
+        flex-start;
+
+    gap:
+        6px;
 }
+
 
 .menu-button {
     position: relative;
 
     border: none;
-    outline: none;
-    background: transparent;
 
-    color: #d4d4d4;
+    outline: none;
+
+    background:
+        transparent;
+
+    color:
+        #d4d4d4;
 
     font-family:
         Arial,
@@ -280,8 +346,11 @@ body {
             35px
         );
 
-    font-weight: 500;
-    letter-spacing: 2px;
+    font-weight:
+        500;
+
+    letter-spacing:
+        2px;
 
     padding:
         9px
@@ -289,7 +358,8 @@ body {
         9px
         38px;
 
-    cursor: pointer;
+    cursor:
+        pointer;
 
     transition:
         color .08s,
@@ -297,32 +367,47 @@ body {
         text-shadow .08s;
 }
 
+
 .menu-button::before {
-    content: ">>";
+    content:
+        ">>";
 
-    position: absolute;
+    position:
+        absolute;
 
-    left: 0;
-    top: 50%;
+    left:
+        0;
 
-    transform: translateY(-50%);
+    top:
+        50%;
 
-    opacity: 0;
-    font-weight: bold;
+    transform:
+        translateY(-50%);
+
+    opacity:
+        0;
+
+    font-weight:
+        bold;
 }
 
-.menu-button:hover {
-    color: white;
 
-    transform: translateX(10px);
+.menu-button:hover {
+    color:
+        white;
+
+    transform:
+        translateX(10px);
 
     text-shadow:
         0 0 5px white,
         0 0 13px rgba(255,255,255,.7);
 }
 
+
 .menu-button:hover::before {
-    opacity: 1;
+    opacity:
+        1;
 }
 
 
@@ -331,29 +416,50 @@ body {
 ========================================================= */
 
 .version {
-    position: absolute;
-    z-index: 10;
+    position:
+        absolute;
 
-    bottom: 25px;
-    left: 30px;
+    z-index:
+        10;
 
-    color: #707070;
+    bottom:
+        25px;
 
-    font-size: 13px;
-    letter-spacing: 2px;
+    left:
+        30px;
+
+    color:
+        #707070;
+
+    font-size:
+        13px;
+
+    letter-spacing:
+        2px;
 }
 
+
 .copyright {
-    position: absolute;
-    z-index: 10;
+    position:
+        absolute;
 
-    right: 30px;
-    bottom: 25px;
+    z-index:
+        10;
 
-    color: #595959;
+    right:
+        30px;
 
-    font-size: 12px;
-    letter-spacing: 1px;
+    bottom:
+        25px;
+
+    color:
+        #595959;
+
+    font-size:
+        12px;
+
+    letter-spacing:
+        1px;
 }
 
 
@@ -363,21 +469,33 @@ body {
 
 #glitch {
     position: fixed;
+
     inset: 0;
 
-    z-index: 50000;
+    z-index:
+        50000;
 
-    pointer-events: none;
+    pointer-events:
+        none;
 
-    opacity: 0;
+    opacity:
+        0;
 
     background:
         repeating-linear-gradient(
             0deg,
-            rgba(255,255,255,.32) 0px,
-            rgba(255,255,255,.32) 1px,
-            transparent 1px,
-            transparent 5px
+
+            rgba(255,255,255,.32)
+            0px,
+
+            rgba(255,255,255,.32)
+            1px,
+
+            transparent
+            1px,
+
+            transparent
+            5px
         );
 }
 
@@ -388,41 +506,37 @@ body {
 
 #night-screen {
     position: fixed;
+
     inset: 0;
 
     display: none;
 
-    align-items: center;
-    justify-content: center;
+    align-items:
+        center;
 
-    background: black;
+    justify-content:
+        center;
 
-    z-index: 100;
+    background:
+        black;
+
+    z-index:
+        100;
 }
+
 
 .night-title {
-    text-align: center;
+    text-align:
+        center;
 
-    font-size: 42px;
-    letter-spacing: 10px;
-    font-weight: 400;
+    font-size:
+        42px;
 
-    animation:
-        nightBlink
-        2s
-        infinite;
-}
+    letter-spacing:
+        10px;
 
-@keyframes nightBlink {
-    0%,
-    94%,
-    100% {
-        opacity: 1;
-    }
-
-    95% {
-        opacity: .2;
-    }
+    font-weight:
+        400;
 }
 
 
@@ -432,34 +546,59 @@ body {
 
 #extras-screen {
     position: fixed;
+
     inset: 0;
 
-    z-index: 150;
+    z-index:
+        150;
 
-    display: none;
+    display:
+        none;
 
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    flex-direction:
+        column;
 
-    background: black;
+    justify-content:
+        center;
+
+    align-items:
+        center;
+
+    background:
+        black;
 }
+
 
 #extras-screen h2 {
-    font-size: 50px;
-    letter-spacing: 8px;
-    margin-bottom: 40px;
+    font-size:
+        50px;
+
+    letter-spacing:
+        8px;
+
+    margin-bottom:
+        40px;
 }
 
+
 .back-button {
-    border: none;
-    background: transparent;
-    color: white;
+    border:
+        none;
 
-    font-size: 25px;
-    letter-spacing: 3px;
+    background:
+        transparent;
 
-    cursor: pointer;
+    color:
+        white;
+
+    font-size:
+        25px;
+
+    letter-spacing:
+        3px;
+
+    cursor:
+        pointer;
 }
 
 
@@ -469,35 +608,55 @@ body {
 
 #jumpscare {
     position: fixed;
+
     inset: 0;
 
-    width: 100vw;
-    height: 100vh;
+    width:
+        100vw;
 
-    background: black;
+    height:
+        100vh;
 
-    z-index: 999999;
+    background:
+        black;
 
-    display: none;
+    z-index:
+        999999;
 
-    overflow: hidden;
+    display:
+        none;
+
+    overflow:
+        hidden;
 }
 
+
 #jumpscare-image {
-    position: absolute;
-    inset: 0;
+    position:
+        absolute;
 
-    width: 100%;
-    height: 100%;
+    inset:
+        0;
 
-    object-fit: cover;
+    width:
+        100%;
 
-    display: block;
+    height:
+        100%;
+
+    object-fit:
+        cover;
+
+    display:
+        block;
+
+    transform:
+        scale(1.03);
 }
 
 
 /* =========================================================
-   JUMPSCARE SHAKE
+   SHAKE
 ========================================================= */
 
 .jumpscare-shake {
@@ -507,73 +666,99 @@ body {
         infinite;
 }
 
+
 @keyframes jumpscareShake {
+
     0% {
-        transform: translate(0,0) scale(1.02);
+        transform:
+            translate(0,0);
     }
 
     20% {
-        transform: translate(-6px,3px) scale(1.025);
+        transform:
+            translate(-6px,3px);
     }
 
     40% {
-        transform: translate(7px,-4px) scale(1.02);
+        transform:
+            translate(7px,-4px);
     }
 
     60% {
-        transform: translate(-5px,-5px) scale(1.025);
+        transform:
+            translate(-5px,-5px);
     }
 
     80% {
-        transform: translate(6px,5px) scale(1.02);
+        transform:
+            translate(6px,5px);
     }
 
     100% {
-        transform: translate(0,0) scale(1.02);
+        transform:
+            translate(0,0);
     }
+
 }
 
 
 /* =========================================================
-   FLASH BRANCO
+   FLASH
 ========================================================= */
 
 #jumpscare-flash {
-    position: absolute;
-    inset: 0;
+    position:
+        absolute;
 
-    pointer-events: none;
+    inset:
+        0;
 
-    background: white;
+    z-index:
+        5;
 
-    opacity: 0;
+    background:
+        white;
 
-    z-index: 3;
+    opacity:
+        0;
+
+    pointer-events:
+        none;
 }
 
 
 /* =========================================================
-   TELA VERMELHA FINAL
+   VERMELHO
 ========================================================= */
 
 #jumpscare-red {
     position: fixed;
+
     inset: 0;
 
-    width: 100vw;
-    height: 100vh;
+    width:
+        100vw;
 
-    background: #c40000;
+    height:
+        100vh;
 
-    z-index: 1000000;
+    z-index:
+        1000000;
 
-    display: none;
+    display:
+        none;
 
-    pointer-events: none;
+    pointer-events:
+        none;
+
+    background:
+        #be0000;
 }
 
+
 #jumpscare-red.active {
-    display: block;
+    display:
+        block;
 
     animation:
         redPulse
@@ -581,23 +766,29 @@ body {
         infinite;
 }
 
+
 @keyframes redPulse {
+
     0% {
-        background: #9e0000;
+        background:
+            #930000;
     }
 
     50% {
-        background: #e00000;
+        background:
+            #e30000;
     }
 
     100% {
-        background: #b00000;
+        background:
+            #aa0000;
     }
+
 }
 
 
 /* =========================================================
-   RESPONSIVO
+   MOBILE
 ========================================================= */
 
 @media (max-width: 700px) {
@@ -608,21 +799,23 @@ body {
     }
 
     .title {
-        margin-bottom: 35px;
+        margin-bottom:
+            35px;
     }
 
     .title-small {
-        letter-spacing: 5px;
+        letter-spacing:
+            5px;
     }
 
     .copyright {
-        display: none;
+        display:
+            none;
     }
 
 }
 
 </style>
-
 </head>
 
 
@@ -697,7 +890,7 @@ body {
 
 
 <!-- ======================================================
-     NIGHT SCREEN
+     NIGHT
 ====================================================== -->
 
 <div id="night-screen">
@@ -754,7 +947,7 @@ body {
 
 
 <!-- ======================================================
-     TELA VERMELHA
+     VERMELHO FINAL
 ====================================================== -->
 
 <div id="jumpscare-red"></div>
@@ -868,15 +1061,12 @@ try {
 
 catch (error) {
 
-    saveData = null;
+    saveData =
+        null;
 
 }
 
 
-
-/* =========================================================
-   CONTINUE
-========================================================= */
 
 function updateContinueButton() {
 
@@ -934,7 +1124,7 @@ function newGame() {
 
 
 /* =========================================================
-   CONTINUE GAME
+   CONTINUE
 ========================================================= */
 
 function continueGame() {
@@ -953,7 +1143,7 @@ function continueGame() {
 
 
 /* =========================================================
-   START NIGHT
+   NIGHT
 ========================================================= */
 
 function startNight(night) {
@@ -1023,26 +1213,36 @@ function closeExtras() {
 
 
 /* =========================================================
-   STATIC FLASH
+   STATIC
 ========================================================= */
 
 function staticFlash() {
 
-    glitch.style.opacity = ".8";
+    glitch.style.opacity =
+        ".8";
 
 
     setTimeout(() => {
-        glitch.style.opacity = "0";
+
+        glitch.style.opacity =
+            "0";
+
     }, 60);
 
 
     setTimeout(() => {
-        glitch.style.opacity = ".45";
+
+        glitch.style.opacity =
+            ".45";
+
     }, 110);
 
 
     setTimeout(() => {
-        glitch.style.opacity = "0";
+
+        glitch.style.opacity =
+            "0";
+
     }, 170);
 
 }
@@ -1064,7 +1264,8 @@ function randomGlitch() {
 
 
     if (
-        Math.random() < .3
+        Math.random() <
+        .3
     ) {
 
         glitch.style.opacity =
@@ -1076,7 +1277,11 @@ function randomGlitch() {
             glitch.style.opacity =
                 "0";
 
-        }, 35 + Math.random() * 60);
+        },
+
+        35 +
+        Math.random() *
+        60);
 
     }
 
@@ -1096,7 +1301,8 @@ setInterval(
 
 document.addEventListener(
     "mousemove",
-    (event) => {
+
+    event => {
 
         if (
             menu.style.display ===
@@ -1132,29 +1338,62 @@ document.addEventListener(
 
 
 /* =========================================================
-   CONFIGURAÇÃO DO JUMPSCARE
+   JUMPSCARE CONFIG
 ========================================================= */
 
-const JP_TOTAL_FRAMES = 20;
+const JP_TOTAL_FRAMES =
+    20;
 
-const JP_FPS = 30;
+const JP_FPS =
+    30;
 
-const JP_TOTAL_DURATION = 2000;
+const JP_TOTAL_DURATION =
+    2000;
+
+
+const JP_FRAME_TIME =
+    1000 / JP_FPS;
+
 
 const JP_ANIMATION_DURATION =
-    (JP_TOTAL_FRAMES / JP_FPS) * 1000;
+    (
+        JP_TOTAL_FRAMES /
+        JP_FPS
+    ) * 1000;
+
 
 const JP_RED_DURATION =
     JP_TOTAL_DURATION -
     JP_ANIMATION_DURATION;
 
 
+/*
+
+IMPORTANTE:
+
+Esse atraso NÃO conta nos
+2 segundos do jumpscare.
+
+Ele serve somente para garantir que
+o PNG apareceu antes do áudio.
+
+*/
+
+const JP_AUDIO_START_DELAY =
+    50;
+
+
 
 /* =========================================================
-   PRÉ-CARREGAR FRAMES
+   PRELOAD + DECODE DAS IMAGENS
 ========================================================= */
 
-const jpFrames = [];
+const jpFrames =
+    [];
+
+
+const jpDecodePromises =
+    [];
 
 
 for (
@@ -1163,14 +1402,46 @@ for (
     i++
 ) {
 
-    const img = new Image();
+    const img =
+        new Image();
+
 
     img.src =
         `images/ojp${i}.png`;
 
-    jpFrames.push(img);
+
+    jpFrames.push(
+        img
+    );
+
+
+    /*
+       decode() faz o navegador realmente
+       preparar o bitmap da imagem.
+    */
+
+    if (img.decode) {
+
+        const decodePromise =
+            img.decode()
+            .catch(() => {});
+
+
+        jpDecodePromises.push(
+            decodePromise
+        );
+
+    }
 
 }
+
+
+
+/* =========================================================
+   PRELOAD DO ÁUDIO
+========================================================= */
+
+jumpscareAudio.load();
 
 
 
@@ -1178,19 +1449,22 @@ for (
    ESTADO
 ========================================================= */
 
-let jpPlaying = false;
+let jpPlaying =
+    false;
 
-let jpKeyboardBuffer = "";
+let jpKeyboardBuffer =
+    "";
 
 
 
 /* =========================================================
-   ATALHO "JP"
+   JP
 ========================================================= */
 
 document.addEventListener(
     "keydown",
-    (event) => {
+
+    event => {
 
         if (jpPlaying) {
             return;
@@ -1198,7 +1472,8 @@ document.addEventListener(
 
 
         if (
-            event.key.length !== 1
+            event.key.length !==
+            1
         ) {
             return;
         }
@@ -1213,10 +1488,12 @@ document.addEventListener(
 
 
         if (
-            jpKeyboardBuffer === "jp"
+            jpKeyboardBuffer ===
+            "jp"
         ) {
 
-            jpKeyboardBuffer = "";
+            jpKeyboardBuffer =
+                "";
 
             playJumpscare();
 
@@ -1228,20 +1505,43 @@ document.addEventListener(
 
 
 /* =========================================================
-   PLAY JUMPSCARE
+   JUMPSCARE
 ========================================================= */
 
-function playJumpscare() {
+async function playJumpscare() {
 
     if (jpPlaying) {
         return;
     }
 
 
-    jpPlaying = true;
+    jpPlaying =
+        true;
 
 
-    /* ESCONDE AS OUTRAS TELAS */
+    /* =====================================================
+       GARANTE QUE O PRIMEIRO FRAME FOI DECODIFICADO
+    ===================================================== */
+
+    try {
+
+        if (
+            jpFrames[0].decode
+        ) {
+
+            await jpFrames[0].decode();
+
+        }
+
+    }
+
+    catch (error) {}
+
+
+
+    /* =====================================================
+       ESCONDE O RESTO
+    ===================================================== */
 
     menu.style.display =
         "none";
@@ -1253,8 +1553,6 @@ function playJumpscare() {
         "none";
 
 
-    /* LIMPA O ESTADO DO VERMELHO */
-
     jumpscareRed.classList.remove(
         "active"
     );
@@ -1263,65 +1561,60 @@ function playJumpscare() {
         "none";
 
 
-    /* PREPARA O JUMPSCARE */
+
+    /* =====================================================
+       COLOCA FRAME 1 PRIMEIRO
+    ===================================================== */
+
+    jumpscareImage.src =
+        jpFrames[0].src;
+
+
+    jumpscareImage.style.display =
+        "block";
+
 
     jumpscare.style.display =
         "block";
+
 
     jumpscare.classList.add(
         "jumpscare-shake"
     );
 
 
-    jumpscareImage.style.display =
-        "block";
-
-    jumpscareImage.src =
-        "images/ojp1.png";
-
 
     /*
-        AQUI ESTÁ A CORREÇÃO:
-
-        primeiro o navegador recebe a ordem
-        para mostrar o frame 1.
-
-        depois esperamos dois redraws.
-
-        só então o áudio e a contagem
-        do jumpscare começam.
+       Espera PRIMEIRA renderização.
     */
-
 
     requestAnimationFrame(() => {
 
+
+        /*
+           Espera SEGUNDA renderização.
+
+           Nesse ponto o frame 1 já
+           deve estar fisicamente desenhado.
+        */
+
         requestAnimationFrame(() => {
 
-            /* SOM AGORA COMEÇA JUNTO COM O JUMPSCARE VISÍVEL */
 
-            jumpscareAudio.pause();
+            /*
+               Pequena margem extra.
 
-            jumpscareAudio.currentTime = 0;
+               O jogador já está vendo
+               o jumpscare.
 
+               Só depois o áudio começa.
+            */
 
-            const audioPromise =
-                jumpscareAudio.play();
+            setTimeout(() => {
 
+                startSyncedJumpscare();
 
-            if (
-                audioPromise !== undefined
-            ) {
-
-                audioPromise.catch(
-                    () => {}
-                );
-
-            }
-
-
-            /* COMEÇA A ANIMAÇÃO */
-
-            startJumpscareAnimation();
+            }, JP_AUDIO_START_DELAY);
 
         });
 
@@ -1332,70 +1625,112 @@ function playJumpscare() {
 
 
 /* =========================================================
-   ANIMAÇÃO DO JUMPSCARE
+   COMEÇA ÁUDIO + MOVIMENTO
 ========================================================= */
 
-function startJumpscareAnimation() {
+function startSyncedJumpscare() {
 
-    let startTime = null;
-
-    let lastFrame = -1;
-
-
-    const frameDuration =
-        1000 / JP_FPS;
+    /*
+       Agora o frame 1 JÁ ESTÁ NA TELA.
+    */
 
 
-    function animate(timestamp) {
+    /* ÁUDIO */
 
-        if (
-            startTime === null
-        ) {
+    jumpscareAudio.pause();
 
-            startTime =
-                timestamp;
+    jumpscareAudio.currentTime =
+        0;
 
-        }
+
+    const audioPromise =
+        jumpscareAudio.play();
+
+
+    if (
+        audioPromise !== undefined
+    ) {
+
+        audioPromise.catch(
+            () => {}
+        );
+
+    }
+
+
+
+    /* ANIMAÇÃO */
+
+    let startTime =
+        performance.now();
+
+
+    let lastFrame =
+        0;
+
+
+
+    function animate() {
+
+        const now =
+            performance.now();
 
 
         const elapsed =
-            timestamp -
+            now -
             startTime;
 
 
         const targetFrame =
             Math.floor(
                 elapsed /
-                frameDuration
+                JP_FRAME_TIME
             );
 
 
+
         /* =================================================
-           TROCA DE FRAME
+           FRAME
         ================================================= */
 
         if (
-            targetFrame !== lastFrame &&
-            targetFrame < JP_TOTAL_FRAMES
+            targetFrame >
+            lastFrame
+
+            &&
+
+            targetFrame <
+            JP_TOTAL_FRAMES
         ) {
 
             lastFrame =
                 targetFrame;
 
 
-            const frameNumber =
-                targetFrame + 1;
+            /*
+               Os arrays começam em 0.
 
+               frame visual 2 =
+               jpFrames[1]
+            */
 
             jumpscareImage.src =
-                `images/ojp${frameNumber}.png`;
+                jpFrames[
+                    targetFrame
+                ].src;
 
 
-            /* FLASHES NOS FRAMES FINAIS */
+
+            /* flashes finais */
+
+            const visibleFrame =
+                targetFrame +
+                1;
+
 
             if (
-                frameNumber === 16 ||
-                frameNumber === 18
+                visibleFrame === 16 ||
+                visibleFrame === 18
             ) {
 
                 flashJumpscare();
@@ -1405,8 +1740,9 @@ function startJumpscareAnimation() {
         }
 
 
+
         /* =================================================
-           CONTINUAR ANIMAÇÃO
+           CONTINUAR
         ================================================= */
 
         if (
@@ -1438,13 +1774,13 @@ function startJumpscareAnimation() {
 
 
 /* =========================================================
-   FLASH DO JUMPSCARE
+   FLASH
 ========================================================= */
 
 function flashJumpscare() {
 
     jumpscareFlash.style.opacity =
-        ".2";
+        ".22";
 
 
     setTimeout(() => {
@@ -1459,7 +1795,7 @@ function flashJumpscare() {
 
 
 /* =========================================================
-   TELA VERMELHA
+   VERMELHO
 ========================================================= */
 
 function showRedJumpscare() {
@@ -1476,53 +1812,42 @@ function showRedJumpscare() {
     jumpscareRed.style.display =
         "block";
 
+
     jumpscareRed.classList.add(
         "active"
     );
-
-
-    /*
-        20 frames a 30 FPS
-        ≈ 0,667 segundos
-
-        tela vermelha:
-        ≈ 1,333 segundos
-
-        total:
-        ≈ 2 segundos
-    */
 
 
     setTimeout(() => {
 
         endJumpscare();
 
-    }, JP_RED_DURATION);
+    },
+
+    JP_RED_DURATION);
 
 }
 
 
 
 /* =========================================================
-   FINALIZAR
+   FINAL
 ========================================================= */
 
 function endJumpscare() {
-
-    /* TELA VERMELHA */
 
     jumpscareRed.classList.remove(
         "active"
     );
 
+
     jumpscareRed.style.display =
         "none";
 
 
-    /* JUMPSCARE */
-
     jumpscare.style.display =
         "none";
+
 
     jumpscare.classList.remove(
         "jumpscare-shake"
@@ -1532,19 +1857,17 @@ function endJumpscare() {
     jumpscareImage.src =
         "";
 
-    jumpscareImage.style.display =
-        "block";
 
-
-    /* ÁUDIO */
+    /* SOM */
 
     jumpscareAudio.pause();
+
 
     jumpscareAudio.currentTime =
         0;
 
 
-    /* VOLTA AO MENU */
+    /* MENU */
 
     menu.style.display =
         "block";
@@ -1568,23 +1891,16 @@ console.log(
 
 
 console.log(
-    "Digite JP para testar o jumpscare."
+    "Digite JP para testar."
 );
 
 
 console.log(
-    "Jumpscare:",
-    JP_ANIMATION_DURATION,
-    "ms de animação +",
-    JP_RED_DURATION,
-    "ms vermelho =",
-    JP_TOTAL_DURATION,
-    "ms"
+    "Sincronização: FRAME 1 -> render -> 50ms -> áudio."
 );
 
 </script>
 
 
 </body>
-
 </html>
