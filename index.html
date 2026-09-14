@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 
 <head>
 <meta charset="UTF-8">
@@ -24,6 +24,7 @@ html,
 body {
     width: 100%;
     height: 100%;
+
     overflow: hidden;
 
     background: #000;
@@ -38,16 +39,18 @@ body {
 
 
 /* =========================================================
-   MENU
+   MAIN MENU
 ========================================================= */
 
 #main-menu {
     position: fixed;
+
     inset: 0;
 
     overflow: hidden;
 
     background:
+
         linear-gradient(
             90deg,
             rgba(0,0,0,.92) 0%,
@@ -55,6 +58,7 @@ body {
             rgba(0,0,0,.2) 75%,
             rgba(0,0,0,.25) 100%
         ),
+
         url("images/menu-bg.jpg")
         center center /
         cover
@@ -66,6 +70,7 @@ body {
     content: "";
 
     position: absolute;
+
     inset: 0;
 
     pointer-events: none;
@@ -84,6 +89,7 @@ body {
     content: "";
 
     position: absolute;
+
     inset: 0;
 
     pointer-events: none;
@@ -159,30 +165,35 @@ body {
 @keyframes noiseMove {
 
     0% {
-        transform: translate(0,0);
+        transform:
+            translate(0,0);
     }
 
     25% {
-        transform: translate(-8px,4px);
+        transform:
+            translate(-8px,4px);
     }
 
     50% {
-        transform: translate(6px,-5px);
+        transform:
+            translate(6px,-5px);
     }
 
     75% {
-        transform: translate(4px,8px);
+        transform:
+            translate(4px,8px);
     }
 
     100% {
-        transform: translate(0,0);
+        transform:
+            translate(0,0);
     }
 
 }
 
 
 /* =========================================================
-   CONTEÚDO MENU
+   MENU CONTENT
 ========================================================= */
 
 .menu-content {
@@ -191,6 +202,7 @@ body {
     z-index: 10;
 
     left: 7vw;
+
     top: 50%;
 
     transform:
@@ -199,15 +211,18 @@ body {
 
 
 /* =========================================================
-   TÍTULO
+   TITLE
 ========================================================= */
 
 .title {
-    margin-bottom: 60px;
+    margin-bottom:
+        60px;
 
-    text-transform: uppercase;
+    text-transform:
+        uppercase;
 
-    line-height: .87;
+    line-height:
+        .87;
 
     filter:
         drop-shadow(
@@ -229,9 +244,11 @@ body {
             55px
         );
 
-    font-weight: 300;
+    font-weight:
+        300;
 
-    letter-spacing: 9px;
+    letter-spacing:
+        9px;
 }
 
 
@@ -245,9 +262,11 @@ body {
             150px
         );
 
-    font-weight: 900;
+    font-weight:
+        900;
 
-    letter-spacing: -5px;
+    letter-spacing:
+        -5px;
 
     animation:
         titleFlicker
@@ -303,29 +322,37 @@ body {
 
 
 /* =========================================================
-   BOTÕES
+   MENU BUTTONS
 ========================================================= */
 
 .menu-options {
     display: flex;
 
-    flex-direction: column;
+    flex-direction:
+        column;
 
-    align-items: flex-start;
+    align-items:
+        flex-start;
 
-    gap: 6px;
+    gap:
+        6px;
 }
 
 
 .menu-button {
     position: relative;
 
-    border: none;
-    outline: none;
+    border:
+        none;
 
-    background: transparent;
+    outline:
+        none;
 
-    color: #d4d4d4;
+    background:
+        transparent;
+
+    color:
+        #d4d4d4;
 
     font-family:
         Arial,
@@ -339,9 +366,11 @@ body {
             35px
         );
 
-    font-weight: 500;
+    font-weight:
+        500;
 
-    letter-spacing: 2px;
+    letter-spacing:
+        2px;
 
     padding:
         9px
@@ -349,7 +378,8 @@ body {
         9px
         38px;
 
-    cursor: pointer;
+    cursor:
+        pointer;
 
     transition:
         color .08s,
@@ -359,24 +389,32 @@ body {
 
 
 .menu-button::before {
-    content: ">>";
+    content:
+        ">>";
 
-    position: absolute;
+    position:
+        absolute;
 
-    left: 0;
-    top: 50%;
+    left:
+        0;
+
+    top:
+        50%;
 
     transform:
         translateY(-50%);
 
-    opacity: 0;
+    opacity:
+        0;
 
-    font-weight: bold;
+    font-weight:
+        bold;
 }
 
 
 .menu-button:hover {
-    color: white;
+    color:
+        white;
 
     transform:
         translateX(10px);
@@ -388,43 +426,60 @@ body {
 
 
 .menu-button:hover::before {
-    opacity: 1;
+    opacity:
+        1;
 }
 
 
 /* =========================================================
-   RODAPÉ
+   FOOTER
 ========================================================= */
 
 .version {
-    position: absolute;
+    position:
+        absolute;
 
-    z-index: 10;
+    z-index:
+        10;
 
-    bottom: 25px;
-    left: 30px;
+    bottom:
+        25px;
 
-    color: #707070;
+    left:
+        30px;
 
-    font-size: 13px;
+    color:
+        #707070;
 
-    letter-spacing: 2px;
+    font-size:
+        13px;
+
+    letter-spacing:
+        2px;
 }
 
 
 .copyright {
-    position: absolute;
+    position:
+        absolute;
 
-    z-index: 10;
+    z-index:
+        10;
 
-    right: 30px;
-    bottom: 25px;
+    right:
+        30px;
 
-    color: #595959;
+    bottom:
+        25px;
 
-    font-size: 12px;
+    color:
+        #595959;
 
-    letter-spacing: 1px;
+    font-size:
+        12px;
+
+    letter-spacing:
+        1px;
 }
 
 
@@ -433,23 +488,36 @@ body {
 ========================================================= */
 
 #glitch {
-    position: fixed;
+    position:
+        fixed;
 
-    inset: 0;
+    inset:
+        0;
 
-    z-index: 50000;
+    z-index:
+        50000;
 
-    pointer-events: none;
+    pointer-events:
+        none;
 
-    opacity: 0;
+    opacity:
+        0;
 
     background:
         repeating-linear-gradient(
             0deg,
-            rgba(255,255,255,.32) 0px,
-            rgba(255,255,255,.32) 1px,
-            transparent 1px,
-            transparent 5px
+
+            rgba(255,255,255,.32)
+            0px,
+
+            rgba(255,255,255,.32)
+            1px,
+
+            transparent
+            1px,
+
+            transparent
+            5px
         );
 }
 
@@ -459,29 +527,41 @@ body {
 ========================================================= */
 
 #night-screen {
-    position: fixed;
+    position:
+        fixed;
 
-    inset: 0;
+    inset:
+        0;
 
-    display: none;
+    display:
+        none;
 
-    align-items: center;
-    justify-content: center;
+    align-items:
+        center;
 
-    background: black;
+    justify-content:
+        center;
 
-    z-index: 100;
+    background:
+        black;
+
+    z-index:
+        100;
 }
 
 
 .night-title {
-    font-size: 42px;
+    font-size:
+        42px;
 
-    letter-spacing: 10px;
+    letter-spacing:
+        10px;
 
-    font-weight: 400;
+    font-weight:
+        400;
 
-    text-align: center;
+    text-align:
+        center;
 }
 
 
@@ -490,44 +570,62 @@ body {
 ========================================================= */
 
 #extras-screen {
-    position: fixed;
+    position:
+        fixed;
 
-    inset: 0;
+    inset:
+        0;
 
-    z-index: 150;
+    z-index:
+        150;
 
-    display: none;
+    display:
+        none;
 
-    flex-direction: column;
+    flex-direction:
+        column;
 
-    justify-content: center;
-    align-items: center;
+    justify-content:
+        center;
 
-    background: black;
+    align-items:
+        center;
+
+    background:
+        black;
 }
 
 
 #extras-screen h2 {
-    font-size: 50px;
+    font-size:
+        50px;
 
-    letter-spacing: 8px;
+    letter-spacing:
+        8px;
 
-    margin-bottom: 40px;
+    margin-bottom:
+        40px;
 }
 
 
 .back-button {
-    border: none;
+    border:
+        none;
 
-    background: transparent;
+    background:
+        transparent;
 
-    color: white;
+    color:
+        white;
 
-    font-size: 25px;
+    font-size:
+        25px;
 
-    letter-spacing: 3px;
+    letter-spacing:
+        3px;
 
-    cursor: pointer;
+    cursor:
+        pointer;
 }
 
 
@@ -536,34 +634,50 @@ body {
 ========================================================= */
 
 #jumpscare {
-    position: fixed;
+    position:
+        fixed;
 
-    inset: 0;
+    inset:
+        0;
 
-    width: 100vw;
-    height: 100vh;
+    width:
+        100vw;
 
-    background: black;
+    height:
+        100vh;
 
-    z-index: 999999;
+    background:
+        black;
 
-    display: none;
+    z-index:
+        999999;
 
-    overflow: hidden;
+    display:
+        none;
+
+    overflow:
+        hidden;
 }
 
 
 #jumpscare-image {
-    position: absolute;
+    position:
+        absolute;
 
-    inset: 0;
+    inset:
+        0;
 
-    width: 100%;
-    height: 100%;
+    width:
+        100%;
 
-    object-fit: cover;
+    height:
+        100%;
 
-    display: block;
+    object-fit:
+        cover;
+
+    display:
+        block;
 }
 
 
@@ -582,72 +696,97 @@ body {
 @keyframes jumpscareShake {
 
     0% {
-        transform: translate(0px,0px) scale(1.02);
+        transform:
+            translate(0px,0px)
+            scale(1.02);
     }
 
     20% {
-        transform: translate(-5px,3px) scale(1.025);
+        transform:
+            translate(-5px,3px)
+            scale(1.025);
     }
 
     40% {
-        transform: translate(7px,-4px) scale(1.02);
+        transform:
+            translate(7px,-4px)
+            scale(1.02);
     }
 
     60% {
-        transform: translate(-6px,-5px) scale(1.025);
+        transform:
+            translate(-6px,-5px)
+            scale(1.025);
     }
 
     80% {
-        transform: translate(5px,4px) scale(1.02);
+        transform:
+            translate(5px,4px)
+            scale(1.02);
     }
 
     100% {
-        transform: translate(0px,0px) scale(1.02);
+        transform:
+            translate(0px,0px)
+            scale(1.02);
     }
 
 }
 
 
 /* =========================================================
-   FLASH
+   JUMPSCARE FLASH
 ========================================================= */
 
 #jumpscare-flash {
-    position: absolute;
+    position:
+        absolute;
 
-    inset: 0;
+    inset:
+        0;
 
-    z-index: 5;
+    z-index:
+        5;
 
-    background: white;
+    background:
+        white;
 
-    opacity: 0;
+    opacity:
+        0;
 
-    pointer-events: none;
+    pointer-events:
+        none;
 }
 
 
 /* =========================================================
-   VERMELHO FINAL
+   RED SCREEN
 ========================================================= */
 
 #jumpscare-red {
-    position: fixed;
+    position:
+        fixed;
 
-    inset: 0;
+    inset:
+        0;
 
-    z-index: 1000000;
+    z-index:
+        1000000;
 
-    display: none;
+    display:
+        none;
 
-    background: #b00000;
+    background:
+        #b00000;
 
-    pointer-events: none;
+    pointer-events:
+        none;
 }
 
 
 #jumpscare-red.active {
-    display: block;
+    display:
+        block;
 
     animation:
         redPulse
@@ -677,26 +816,349 @@ body {
 
 
 /* =========================================================
+   GAME OVER SCREEN
+========================================================= */
+
+#gameover-screen {
+    position:
+        fixed;
+
+    inset:
+        0;
+
+    width:
+        100vw;
+
+    height:
+        100vh;
+
+    display:
+        none;
+
+    z-index:
+        2000000;
+
+    overflow:
+        hidden;
+
+    background:
+        #000;
+}
+
+
+/* Actual gameover image */
+
+#gameover-background {
+    position:
+        absolute;
+
+    inset:
+        0;
+
+    width:
+        100%;
+
+    height:
+        100%;
+
+    object-fit:
+        cover;
+
+    pointer-events:
+        none;
+}
+
+
+/* dark overlay to make buttons readable */
+
+#gameover-screen::before {
+    content:
+        "";
+
+    position:
+        absolute;
+
+    inset:
+        0;
+
+    z-index:
+        2;
+
+    pointer-events:
+        none;
+
+    background:
+        radial-gradient(
+            circle at 75% 70%,
+            rgba(0,0,0,.05),
+            rgba(0,0,0,.18) 40%,
+            rgba(0,0,0,.3)
+        );
+}
+
+
+/* VHS scanlines */
+
+#gameover-screen::after {
+    content:
+        "";
+
+    position:
+        absolute;
+
+    inset:
+        0;
+
+    z-index:
+        3;
+
+    pointer-events:
+        none;
+
+    opacity:
+        .3;
+
+    background:
+        repeating-linear-gradient(
+            0deg,
+
+            transparent 0px,
+
+            transparent 2px,
+
+            rgba(0,0,0,.45) 3px,
+
+            rgba(0,0,0,.45) 4px
+        );
+}
+
+
+/* =========================================================
+   GAME OVER BUTTON AREA
+========================================================= */
+
+.gameover-options {
+    position:
+        absolute;
+
+    z-index:
+        10;
+
+    /*
+       Positioned on right side,
+       under GAME OVER text.
+    */
+
+    left:
+        68%;
+
+    top:
+        71%;
+
+    transform:
+        translate(-50%, -50%);
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    align-items:
+        flex-start;
+
+    gap:
+        10px;
+}
+
+
+.gameover-button {
+    position:
+        relative;
+
+    border:
+        none;
+
+    outline:
+        none;
+
+    background:
+        transparent;
+
+    color:
+        rgba(255,255,255,.65);
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size:
+        clamp(
+            17px,
+            1.6vw,
+            28px
+        );
+
+    font-weight:
+        bold;
+
+    letter-spacing:
+        2px;
+
+    padding:
+        6px
+        10px
+        6px
+        35px;
+
+    cursor:
+        pointer;
+
+    text-shadow:
+        0 0 5px
+        rgba(255,255,255,.2);
+
+    transition:
+        color .08s,
+        transform .08s,
+        text-shadow .08s;
+}
+
+
+.gameover-button::before {
+    content:
+        ">";
+
+    position:
+        absolute;
+
+    left:
+        8px;
+
+    top:
+        50%;
+
+    transform:
+        translateY(-50%);
+
+    opacity:
+        0;
+}
+
+
+.gameover-button:hover {
+    color:
+        white;
+
+    transform:
+        translateX(8px);
+
+    text-shadow:
+        0 0 5px white,
+        0 0 15px rgba(255,255,255,.8);
+}
+
+
+.gameover-button:hover::before {
+    opacity:
+        1;
+}
+
+
+/* =========================================================
+   GAMEOVER GLITCH
+========================================================= */
+
+.gameover-glitch {
+    animation:
+        gameoverGlitch
+        4s
+        infinite;
+}
+
+
+@keyframes gameoverGlitch {
+
+    0%,
+    94%,
+    100% {
+
+        transform:
+            translate(0,0);
+
+        filter:
+            none;
+    }
+
+    95% {
+
+        transform:
+            translate(-3px,1px);
+
+        filter:
+            contrast(1.4)
+            brightness(1.1);
+    }
+
+    96% {
+
+        transform:
+            translate(5px,-2px);
+
+        filter:
+            contrast(1.7);
+    }
+
+    97% {
+
+        transform:
+            translate(-2px,2px);
+    }
+
+}
+
+
+/* =========================================================
    MOBILE
 ========================================================= */
 
-@media (max-width:700px) {
+@media (max-width: 700px) {
 
     .menu-content {
-        left: 7vw;
-        top: 55%;
+        left:
+            7vw;
+
+        top:
+            55%;
     }
+
 
     .title {
-        margin-bottom: 35px;
+        margin-bottom:
+            35px;
     }
+
 
     .title-small {
-        letter-spacing: 5px;
+        letter-spacing:
+            5px;
     }
 
+
     .copyright {
-        display: none;
+        display:
+            none;
+    }
+
+
+    .gameover-options {
+
+        left:
+            70%;
+
+        top:
+            75%;
+
     }
 
 }
@@ -710,7 +1172,7 @@ body {
 
 
 <!-- ======================================================
-     MENU
+     MAIN MENU
 ====================================================== -->
 
 <div id="main-menu">
@@ -778,7 +1240,7 @@ body {
 
 
 <!-- ======================================================
-     NIGHT
+     NIGHT SCREEN
 ====================================================== -->
 
 <div id="night-screen">
@@ -835,7 +1297,7 @@ body {
 
 
 <!-- ======================================================
-     VERMELHO
+     RED SCREEN
 ====================================================== -->
 
 <div id="jumpscare-red"></div>
@@ -843,7 +1305,45 @@ body {
 
 
 <!-- ======================================================
-     ÁUDIO
+     GAME OVER
+====================================================== -->
+
+<div id="gameover-screen">
+
+    <img
+        id="gameover-background"
+        class="gameover-glitch"
+        src="images/gameover.png"
+        alt=""
+        draggable="false"
+    >
+
+
+    <div class="gameover-options">
+
+        <button
+            class="gameover-button"
+            onclick="tryAgain()"
+        >
+            TRY AGAIN
+        </button>
+
+
+        <button
+            class="gameover-button"
+            onclick="backToMenu()"
+        >
+            BACK TO MENU
+        </button>
+
+    </div>
+
+</div>
+
+
+
+<!-- ======================================================
+     AUDIO
 ====================================================== -->
 
 <audio
@@ -865,46 +1365,73 @@ body {
 <script>
 
 /* =========================================================
-   ELEMENTOS
+   ELEMENTS
 ========================================================= */
 
 const menu =
-    document.getElementById("main-menu");
+    document.getElementById(
+        "main-menu"
+    );
 
 const nightScreen =
-    document.getElementById("night-screen");
+    document.getElementById(
+        "night-screen"
+    );
 
 const nightTitle =
-    document.getElementById("night-title");
+    document.getElementById(
+        "night-title"
+    );
 
 const extrasScreen =
-    document.getElementById("extras-screen");
+    document.getElementById(
+        "extras-screen"
+    );
 
 const continueButton =
-    document.getElementById("continue-button");
+    document.getElementById(
+        "continue-button"
+    );
 
 const glitch =
-    document.getElementById("glitch");
+    document.getElementById(
+        "glitch"
+    );
 
 const jumpscare =
-    document.getElementById("jumpscare");
+    document.getElementById(
+        "jumpscare"
+    );
 
 const jumpscareImage =
-    document.getElementById("jumpscare-image");
+    document.getElementById(
+        "jumpscare-image"
+    );
 
 const jumpscareFlash =
-    document.getElementById("jumpscare-flash");
+    document.getElementById(
+        "jumpscare-flash"
+    );
 
 const jumpscareRed =
-    document.getElementById("jumpscare-red");
+    document.getElementById(
+        "jumpscare-red"
+    );
 
 const jumpscareAudio =
-    document.getElementById("jumpscare-audio");
+    document.getElementById(
+        "jumpscare-audio"
+    );
+
+const gameoverScreen =
+    document.getElementById(
+        "gameover-screen"
+    );
 
 
 
 /* =========================================================
-   SAVE
+   SAVE DATA
 ========================================================= */
 
 let saveData = null;
@@ -923,7 +1450,8 @@ try {
 
 catch (error) {
 
-    saveData = null;
+    saveData =
+        null;
 
 }
 
@@ -965,20 +1493,33 @@ updateContinueButton();
 function newGame() {
 
     saveData = {
-        night: 1,
-        completed: false
+
+        night:
+            1,
+
+        completed:
+            false
+
     };
 
 
     localStorage.setItem(
+
         "fnao-save",
-        JSON.stringify(saveData)
+
+        JSON.stringify(
+            saveData
+        )
+
     );
 
 
     updateContinueButton();
 
-    startNight(1);
+
+    startNight(
+        1
+    );
 
 }
 
@@ -991,12 +1532,16 @@ function newGame() {
 function continueGame() {
 
     if (!saveData) {
+
         return;
+
     }
 
 
     startNight(
+
         saveData.night || 1
+
     );
 
 }
@@ -1004,10 +1549,12 @@ function continueGame() {
 
 
 /* =========================================================
-   NIGHT
+   START NIGHT
 ========================================================= */
 
-function startNight(night) {
+function startNight(
+    night
+) {
 
     staticFlash();
 
@@ -1018,6 +1565,9 @@ function startNight(night) {
             "none";
 
         extrasScreen.style.display =
+            "none";
+
+        gameoverScreen.style.display =
             "none";
 
         nightScreen.style.display =
@@ -1052,6 +1602,7 @@ function openExtras() {
     }, 120);
 
 }
+
 
 
 function closeExtras() {
@@ -1111,20 +1662,24 @@ function staticFlash() {
 
 
 /* =========================================================
-   GLITCH ALEATÓRIO
+   RANDOM MENU GLITCH
 ========================================================= */
 
 setInterval(() => {
 
     if (
-        menu.style.display === "none"
+        menu.style.display ===
+        "none"
     ) {
+
         return;
+
     }
 
 
     if (
-        Math.random() < .3
+        Math.random() <
+        .3
     ) {
 
         glitch.style.opacity =
@@ -1145,68 +1700,79 @@ setInterval(() => {
 
 
 /* =========================================================
-   PARALLAX
+   MENU PARALLAX
 ========================================================= */
 
 document.addEventListener(
+
     "mousemove",
+
     event => {
 
         if (
             menu.style.display ===
             "none"
         ) {
+
             return;
+
         }
 
 
         const x =
+
             (
                 event.clientX /
                 window.innerWidth -
                 .5
-            ) * 10;
+            )
+            *
+            10;
 
 
         const y =
+
             (
                 event.clientY /
                 window.innerHeight -
                 .5
-            ) * 6;
+            )
+            *
+            6;
 
 
         menu.style.backgroundPosition =
+
             `calc(50% + ${x}px)
              calc(50% + ${y}px)`;
 
     }
+
 );
 
 
 
 /* =========================================================
-   JUMPSCARE CONFIG
+   JUMPSCARE SETTINGS
 ========================================================= */
 
 const JP_TOTAL_FRAMES =
     20;
 
+
 const JP_FPS =
     30;
 
+
 const JP_FRAME_DURATION =
-    1000 / JP_FPS;
+    1000 /
+    JP_FPS;
 
 
 /*
 
-Imagem aparece primeiro.
-
-80ms depois:
-
-som começa do 0:00
-e animação começa a avançar.
+The first frame appears,
+then audio begins after 80ms.
 
 */
 
@@ -1216,34 +1782,48 @@ const JP_SOUND_DELAY =
 
 /*
 
-A partir do começo REAL do som:
-
-20 frames / 30fps
-= 0.6667 segundos
-
-Depois vermelho até 2s.
+20 frames / 30 FPS
+≈ 0.667 seconds.
 
 */
 
 const JP_ANIMATION_TIME =
+
     (
         JP_TOTAL_FRAMES /
         JP_FPS
-    ) * 1000;
+    )
+    *
+    1000;
 
+
+/*
+
+Total jumpscare sound:
+2 seconds.
+
+*/
 
 const JP_TOTAL_TIME =
     2000;
 
 
+/*
+
+Red screen fills the
+remaining time.
+
+*/
+
 const JP_RED_TIME =
+
     JP_TOTAL_TIME -
     JP_ANIMATION_TIME;
 
 
 
 /* =========================================================
-   PRELOAD DOS PNG
+   PRELOAD JUMPSCARE FRAMES
 ========================================================= */
 
 const jpFrames =
@@ -1273,11 +1853,25 @@ for (
 
 
 /* =========================================================
-   ESTADO
+   PRELOAD GAME OVER IMAGE
+========================================================= */
+
+const gameoverPreload =
+    new Image();
+
+
+gameoverPreload.src =
+    "images/gameover.png";
+
+
+
+/* =========================================================
+   JUMPSCARE STATE
 ========================================================= */
 
 let jpPlaying =
     false;
+
 
 let keyboardBuffer =
     "";
@@ -1285,67 +1879,76 @@ let keyboardBuffer =
 
 
 /* =========================================================
-   ATALHO JP
+   JP TEST SHORTCUT
 ========================================================= */
 
 document.addEventListener(
+
     "keydown",
+
     event => {
 
-        if (jpPlaying) {
+        if (
+            jpPlaying
+        ) {
+
             return;
+
         }
 
 
         if (
-            event.key.length !== 1
+            event.key.length !==
+            1
         ) {
+
             return;
+
         }
 
 
         keyboardBuffer +=
-            event.key.toLowerCase();
+
+            event.key
+            .toLowerCase();
 
 
         keyboardBuffer =
-            keyboardBuffer.slice(-2);
+
+            keyboardBuffer
+            .slice(-2);
 
 
         if (
-            keyboardBuffer === "jp"
+            keyboardBuffer ===
+            "jp"
         ) {
 
-            keyboardBuffer = "";
-
-
-            /*
-                IMPORTANTE:
-
-                playJumpscare() é chamado
-                DIRETAMENTE pela tecla.
-
-                Isso permite desbloquear
-                o áudio.
-            */
+            keyboardBuffer =
+                "";
 
             playJumpscare();
 
         }
 
     }
+
 );
 
 
 
 /* =========================================================
-   PLAY
+   PLAY JUMPSCARE
 ========================================================= */
 
 function playJumpscare() {
 
-    if (jpPlaying) {
+    if (
+        jpPlaying
+    ) {
+
         return;
+
     }
 
 
@@ -1353,16 +1956,17 @@ function playJumpscare() {
         true;
 
 
-    /* =====================================================
-       DESBLOQUEIA O ÁUDIO IMEDIATAMENTE
 
-       volume 0 = ninguém escuta ainda
+    /* =====================================================
+       AUDIO UNLOCK
     ===================================================== */
 
     jumpscareAudio.pause();
 
+
     jumpscareAudio.currentTime =
         0;
+
 
     jumpscareAudio.volume =
         0;
@@ -1373,14 +1977,15 @@ function playJumpscare() {
 
 
     if (
-        audioPromise !== undefined
+        audioPromise !==
+        undefined
     ) {
 
         audioPromise.catch(
             error => {
 
                 console.log(
-                    "Erro áudio:",
+                    "Audio error:",
                     error
                 );
 
@@ -1392,22 +1997,28 @@ function playJumpscare() {
 
 
     /* =====================================================
-       ESCONDE MENU
+       HIDE EVERYTHING
     ===================================================== */
 
     menu.style.display =
         "none";
 
+
     nightScreen.style.display =
         "none";
+
 
     extrasScreen.style.display =
         "none";
 
 
+    gameoverScreen.style.display =
+        "none";
+
+
 
     /* =====================================================
-       FRAME 1
+       FIRST FRAME
     ===================================================== */
 
     jumpscareImage.src =
@@ -1425,19 +2036,10 @@ function playJumpscare() {
 
 
     /* =====================================================
-       ESPERA PARA O FRAME 1 APARECER
+       DELAY BEFORE SOUND
     ===================================================== */
 
     setTimeout(() => {
-
-        /*
-
-        áudio já está autorizado
-        e tocando silenciosamente.
-
-        agora voltamos ele ao começo
-
-        */
 
         jumpscareAudio.currentTime =
             0;
@@ -1447,14 +2049,7 @@ function playJumpscare() {
             1;
 
 
-        /*
-            Som começa AGORA.
-
-            A animação também começa AGORA.
-        */
-
         startJumpscareFrames();
-
 
     }, JP_SOUND_DELAY);
 
@@ -1463,7 +2058,7 @@ function playJumpscare() {
 
 
 /* =========================================================
-   FRAMES
+   FRAME ANIMATION
 ========================================================= */
 
 function startJumpscareFrames() {
@@ -1477,22 +2072,35 @@ function startJumpscareFrames() {
 
 
 
-    function animate(now) {
+    function animate(
+        now
+    ) {
 
         const elapsed =
-            now - start;
+
+            now -
+            start;
 
 
         const frameIndex =
+
             Math.floor(
                 elapsed /
                 JP_FRAME_DURATION
             );
 
 
+
         if (
-            frameIndex !== lastFrame &&
-            frameIndex < JP_TOTAL_FRAMES
+
+            frameIndex !==
+            lastFrame
+
+            &&
+
+            frameIndex <
+            JP_TOTAL_FRAMES
+
         ) {
 
             lastFrame =
@@ -1500,11 +2108,14 @@ function startJumpscareFrames() {
 
 
             jumpscareImage.src =
+
                 `images/ojp${frameIndex + 1}.png`;
 
 
             const visibleFrame =
-                frameIndex + 1;
+
+                frameIndex +
+                1;
 
 
             if (
@@ -1549,7 +2160,7 @@ function startJumpscareFrames() {
 
 
 /* =========================================================
-   FLASH
+   JUMPSCARE FLASH
 ========================================================= */
 
 function flashJumpscare() {
@@ -1570,7 +2181,7 @@ function flashJumpscare() {
 
 
 /* =========================================================
-   VERMELHO
+   RED SCREEN
 ========================================================= */
 
 function showRedScreen() {
@@ -1604,7 +2215,7 @@ function showRedScreen() {
 
 
 /* =========================================================
-   END
+   END JUMPSCARE
 ========================================================= */
 
 function endJumpscare() {
@@ -1633,12 +2244,104 @@ function endJumpscare() {
         1;
 
 
-    menu.style.display =
-        "block";
+    jumpscareImage.src =
+        "";
 
 
     jpPlaying =
         false;
+
+
+    /*
+       Instead of returning to menu,
+       show Game Over.
+    */
+
+    showGameOver();
+
+}
+
+
+
+/* =========================================================
+   GAME OVER
+========================================================= */
+
+function showGameOver() {
+
+    menu.style.display =
+        "none";
+
+
+    nightScreen.style.display =
+        "none";
+
+
+    extrasScreen.style.display =
+        "none";
+
+
+    gameoverScreen.style.display =
+        "block";
+
+}
+
+
+
+/* =========================================================
+   TRY AGAIN
+========================================================= */
+
+function tryAgain() {
+
+    gameoverScreen.style.display =
+        "none";
+
+
+    staticFlash();
+
+
+    const currentNight =
+
+        saveData?.night ||
+        1;
+
+
+    setTimeout(() => {
+
+        startNight(
+            currentNight
+        );
+
+    }, 150);
+
+}
+
+
+
+/* =========================================================
+   BACK TO MENU
+========================================================= */
+
+function backToMenu() {
+
+    gameoverScreen.style.display =
+        "none";
+
+
+    nightScreen.style.display =
+        "none";
+
+
+    extrasScreen.style.display =
+        "none";
+
+
+    menu.style.display =
+        "block";
+
+
+    staticFlash();
 
 }
 
@@ -1649,12 +2352,12 @@ function endJumpscare() {
 ========================================================= */
 
 console.log(
-    "Five Nights At Orelha's carregado."
+    "Five Nights At Orelha's loaded."
 );
 
 
 console.log(
-    "Digite JP para testar o jumpscare."
+    "Type JP to test the jumpscare."
 );
 
 </script>
