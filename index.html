@@ -1,12 +1,23 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
 <title>Five Nights At Orelha's</title>
 
+
 <style>
+
+/* =========================================================
+   RESET
+========================================================= */
+
 * {
     margin: 0;
     padding: 0;
@@ -14,346 +25,1031 @@
     user-select: none;
 }
 
-html, body {
+html,
+body {
+
     width: 100%;
     height: 100%;
-    overflow: hidden;
-    background: #000;
-    font-family: Arial, Helvetica, sans-serif;
-    color: white;
-}
-
-/* =========================
-   MENU PRINCIPAL
-========================= */
-
-#main-menu {
-    position: fixed;
-    inset: 0;
-    background:
-        linear-gradient(
-            90deg,
-            rgba(0,0,0,.88) 0%,
-            rgba(0,0,0,.62) 42%,
-            rgba(0,0,0,.15) 100%
-        ),
-        url("images/menu-bg.jpg") center/cover no-repeat;
 
     overflow: hidden;
-}
-
-/* Escurecimento */
-#main-menu::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-
-    background:
-        radial-gradient(
-            circle at center,
-            transparent 15%,
-            rgba(0,0,0,.3) 60%,
-            rgba(0,0,0,.9) 120%
-        );
-
-    pointer-events: none;
-}
-
-/* Scanlines */
-#main-menu::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-
-    background: repeating-linear-gradient(
-        0deg,
-        rgba(255,255,255,.025),
-        rgba(255,255,255,.025) 1px,
-        rgba(0,0,0,.09) 2px,
-        rgba(0,0,0,.09) 4px
-    );
-
-    opacity: .8;
-    pointer-events: none;
-    animation: scanMove 8s linear infinite;
-}
-
-@keyframes scanMove {
-    from {
-        transform: translateY(0);
-    }
-    to {
-        transform: translateY(8px);
-    }
-}
-
-/* =========================
-   RUÍDO / INTERFERÊNCIA
-========================= */
-
-.noise {
-    position: absolute;
-    inset: -20px;
-    pointer-events: none;
-    opacity: .05;
-
-    background-image:
-        repeating-radial-gradient(
-            circle at 30% 30%,
-            #fff 0,
-            transparent 1px,
-            transparent 3px
-        );
-
-    background-size: 7px 7px;
-
-    animation: noiseMove .15s steps(2) infinite;
-}
-
-@keyframes noiseMove {
-    0%   { transform: translate(0,0); }
-    25%  { transform: translate(-5px,3px); }
-    50%  { transform: translate(4px,-4px); }
-    75%  { transform: translate(3px,5px); }
-    100% { transform: translate(0,0); }
-}
-
-/* =========================
-   CONTEÚDO
-========================= */
-
-.menu-content {
-    position: absolute;
-
-    left: 7vw;
-    top: 50%;
-
-    transform: translateY(-50%);
-
-    z-index: 5;
-}
-
-/* =========================
-   TÍTULO
-========================= */
-
-.title {
-    margin-bottom: 55px;
-    text-transform: uppercase;
-    line-height: .88;
-
-    filter: drop-shadow(4px 4px 0 #000);
-}
-
-.title-small {
-    display: block;
-
-    font-size: clamp(28px, 3vw, 55px);
-    font-weight: 300;
-
-    letter-spacing: 8px;
-}
-
-.title-big {
-    display: block;
-
-    font-size: clamp(60px, 8vw, 145px);
-    font-weight: 900;
-
-    letter-spacing: -5px;
-
-    animation: titleFlicker 7s infinite;
-}
-
-@keyframes titleFlicker {
-
-    0%, 93%, 95%, 97%, 100% {
-        opacity: 1;
-        transform: translateX(0);
-    }
-
-    94% {
-        opacity: .4;
-        transform: translateX(-4px);
-    }
-
-    96% {
-        opacity: .8;
-        transform: translateX(5px);
-    }
-}
-
-/* =========================
-   BOTÕES
-========================= */
-
-.menu-options {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 7px;
-}
-
-.menu-button {
-    position: relative;
-
-    border: 0;
-    background: transparent;
-
-    color: #ddd;
-
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: clamp(22px, 2vw, 34px);
-    font-weight: 500;
-
-    letter-spacing: 2px;
-
-    padding: 8px 15px 8px 35px;
-
-    cursor: pointer;
-
-    transition:
-        color .08s,
-        transform .08s,
-        text-shadow .08s;
-}
-
-.menu-button::before {
-    content: ">>";
-
-    position: absolute;
-
-    left: 0;
-    top: 50%;
-
-    transform: translateY(-50%);
-
-    opacity: 0;
-
-    font-weight: bold;
-}
-
-.menu-button:hover {
-    color: white;
-
-    transform: translateX(8px);
-
-    text-shadow:
-        0 0 5px white,
-        0 0 12px rgba(255,255,255,.5);
-}
-
-.menu-button:hover::before {
-    opacity: 1;
-}
-
-/* =========================
-   INFORMAÇÕES
-========================= */
-
-.version {
-    position: absolute;
-
-    bottom: 25px;
-    left: 30px;
-
-    z-index: 5;
-
-    color: #777;
-
-    font-size: 13px;
-    letter-spacing: 2px;
-}
-
-.copyright {
-    position: absolute;
-
-    right: 30px;
-    bottom: 25px;
-
-    z-index: 5;
-
-    color: #666;
-
-    font-size: 12px;
-}
-
-/* =========================
-   FLASH DE INTERFERÊNCIA
-========================= */
-
-#glitch {
-    position: fixed;
-    inset: 0;
-
-    z-index: 100;
-
-    pointer-events: none;
-
-    opacity: 0;
-
-    background:
-        repeating-linear-gradient(
-            0deg,
-            rgba(255,255,255,.25) 0px,
-            rgba(255,255,255,.25) 1px,
-            transparent 1px,
-            transparent 5px
-        );
-}
-
-/* =========================
-   TELA TEMPORÁRIA
-========================= */
-
-#game-screen {
-    position: fixed;
-    inset: 0;
-
-    display: none;
-
-    align-items: center;
-    justify-content: center;
 
     background: black;
 
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
     color: white;
 
-    font-size: 30px;
-    letter-spacing: 4px;
+}
+
+
+/* =========================================================
+   MENU PRINCIPAL
+========================================================= */
+
+#main-menu {
+
+    position: fixed;
+
+    inset: 0;
+
+    overflow: hidden;
+
+    background:
+
+        linear-gradient(
+            90deg,
+            rgba(0,0,0,.92) 0%,
+            rgba(0,0,0,.72) 38%,
+            rgba(0,0,0,.2) 75%,
+            rgba(0,0,0,.25) 100%
+        ),
+
+        url("images/menu-bg.jpg")
+        center center /
+        cover
+        no-repeat;
+
+}
+
+
+/* ESCURECIMENTO */
+
+#main-menu::before {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    pointer-events: none;
+
+    background:
+
+        radial-gradient(
+            circle at center,
+            transparent 10%,
+            rgba(0,0,0,.25) 50%,
+            rgba(0,0,0,.88) 120%
+        );
+
+}
+
+
+/* SCANLINES */
+
+#main-menu::after {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    pointer-events: none;
+
+    opacity: .65;
+
+    background:
+
+        repeating-linear-gradient(
+            0deg,
+
+            rgba(
+                255,
+                255,
+                255,
+                .025
+            ),
+
+            rgba(
+                255,
+                255,
+                255,
+                .025
+            ) 1px,
+
+            rgba(
+                0,
+                0,
+                0,
+                .12
+            ) 2px,
+
+            rgba(
+                0,
+                0,
+                0,
+                .12
+            ) 4px
+        );
+
+    animation:
+        scanMove
+        6s
+        linear
+        infinite;
+
+}
+
+
+@keyframes scanMove {
+
+    from {
+        transform:
+            translateY(0);
+    }
+
+    to {
+        transform:
+            translateY(10px);
+    }
+
+}
+
+
+/* =========================================================
+   NOISE
+========================================================= */
+
+.noise {
+
+    position: absolute;
+
+    inset: -50px;
+
+    opacity: .045;
+
+    pointer-events: none;
+
+    z-index: 2;
+
+    background-image:
+
+        repeating-radial-gradient(
+            circle at 30% 30%,
+            white 0px,
+            transparent 1px,
+            transparent 4px
+        );
+
+    background-size:
+        8px 8px;
+
+    animation:
+        noiseMove
+        .12s
+        steps(2)
+        infinite;
+
+}
+
+
+@keyframes noiseMove {
+
+    0% {
+
+        transform:
+            translate(
+                0,
+                0
+            );
+
+    }
+
+    25% {
+
+        transform:
+            translate(
+                -8px,
+                4px
+            );
+
+    }
+
+    50% {
+
+        transform:
+            translate(
+                6px,
+                -5px
+            );
+
+    }
+
+    75% {
+
+        transform:
+            translate(
+                4px,
+                8px
+            );
+
+    }
+
+    100% {
+
+        transform:
+            translate(
+                0,
+                0
+            );
+
+    }
+
+}
+
+
+/* =========================================================
+   MENU CONTENT
+========================================================= */
+
+.menu-content {
+
+    position: absolute;
+
+    z-index: 10;
+
+    left: 7vw;
+
+    top: 50%;
+
+    transform:
+        translateY(-50%);
+
+}
+
+
+/* =========================================================
+   TÍTULO
+========================================================= */
+
+.title {
+
+    margin-bottom:
+        60px;
+
+    text-transform:
+        uppercase;
+
+    line-height:
+        .87;
+
+    filter:
+
+        drop-shadow(
+            5px
+            5px
+            0
+            black
+        );
+
+}
+
+
+.title-small {
+
+    display: block;
+
+    font-size:
+        clamp(
+            25px,
+            3vw,
+            55px
+        );
+
+    font-weight: 300;
+
+    letter-spacing:
+        9px;
+
+}
+
+
+.title-big {
+
+    display: block;
+
+    font-size:
+
+        clamp(
+            65px,
+            8vw,
+            150px
+        );
+
+    font-weight:
+        900;
+
+    letter-spacing:
+        -5px;
+
+    animation:
+        titleFlicker
+        7s
+        infinite;
+
+}
+
+
+@keyframes titleFlicker {
+
+    0%,
+    91%,
+    93%,
+    95%,
+    98%,
+    100% {
+
+        opacity: 1;
+
+        transform:
+            translateX(0);
+
+    }
+
+
+    92% {
+
+        opacity: .15;
+
+        transform:
+            translateX(-5px);
+
+    }
+
+
+    94% {
+
+        opacity: .65;
+
+        transform:
+            translateX(6px);
+
+    }
+
+
+    97% {
+
+        opacity: .3;
+
+        transform:
+            translateX(-3px);
+
+    }
+
+}
+
+
+/* =========================================================
+   BOTÕES
+========================================================= */
+
+.menu-options {
+
+    display: flex;
+
+    flex-direction:
+        column;
+
+    align-items:
+        flex-start;
+
+    gap:
+        6px;
+
+}
+
+
+.menu-button {
+
+    position: relative;
+
+    border:
+        none;
+
+    outline:
+        none;
+
+    background:
+        transparent;
+
+    color:
+        #d4d4d4;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    font-size:
+
+        clamp(
+            22px,
+            2vw,
+            35px
+        );
+
+    font-weight:
+        500;
+
+    letter-spacing:
+        2px;
+
+    padding:
+
+        9px
+        20px
+        9px
+        38px;
+
+    cursor:
+        pointer;
+
+    transition:
+
+        color .08s,
+        transform .08s,
+        text-shadow .08s;
+
+}
+
+
+.menu-button::before {
+
+    content:
+        ">>";
+
+    position:
+        absolute;
+
+    left:
+        0;
+
+    top:
+        50%;
+
+    transform:
+        translateY(-50%);
+
+    opacity:
+        0;
+
+    font-weight:
+        bold;
+
+}
+
+
+.menu-button:hover {
+
+    color:
+        white;
+
+    transform:
+        translateX(10px);
+
+    text-shadow:
+
+        0 0 5px white,
+
+        0 0 13px
+        rgba(
+            255,
+            255,
+            255,
+            .7
+        );
+
+}
+
+
+.menu-button:hover::before {
+
+    opacity:
+        1;
+
+}
+
+
+/* =========================================================
+   RODAPÉ
+========================================================= */
+
+.version {
+
+    position:
+        absolute;
+
+    z-index:
+        10;
+
+    bottom:
+        25px;
+
+    left:
+        30px;
+
+    color:
+        #707070;
+
+    font-size:
+        13px;
+
+    letter-spacing:
+        2px;
+
+}
+
+
+.copyright {
+
+    position:
+        absolute;
+
+    z-index:
+        10;
+
+    right:
+        30px;
+
+    bottom:
+        25px;
+
+    color:
+        #595959;
+
+    font-size:
+        12px;
+
+    letter-spacing:
+        1px;
+
+}
+
+
+/* =========================================================
+   GLITCH GLOBAL
+========================================================= */
+
+#glitch {
+
+    position:
+        fixed;
+
+    inset:
+        0;
+
+    z-index:
+        50000;
+
+    pointer-events:
+        none;
+
+    opacity:
+        0;
+
+    background:
+
+        repeating-linear-gradient(
+
+            0deg,
+
+            rgba(
+                255,
+                255,
+                255,
+                .32
+            )
+            0px,
+
+            rgba(
+                255,
+                255,
+                255,
+                .32
+            )
+            1px,
+
+            transparent
+            1px,
+
+            transparent
+            5px
+
+        );
+
+}
+
+
+/* =========================================================
+   NIGHT SCREEN
+========================================================= */
+
+#night-screen {
+
+    position:
+        fixed;
+
+    inset:
+        0;
+
+    display:
+        none;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    background:
+        black;
+
+    z-index:
+        100;
+
+}
+
+
+.night-title {
+
+    text-align:
+        center;
+
+    font-size:
+        42px;
+
+    letter-spacing:
+        10px;
+
+    font-weight:
+        400;
+
+    animation:
+        nightBlink
+        2s
+        infinite;
+
+}
+
+
+@keyframes nightBlink {
+
+    0%,
+    94%,
+    100% {
+
+        opacity:
+            1;
+
+    }
+
+    95% {
+
+        opacity:
+            .2;
+
+    }
+
+}
+
+
+/* =========================================================
+   EXTRAS TEMPORÁRIO
+========================================================= */
+
+#extras-screen {
+
+    position:
+        fixed;
+
+    inset:
+        0;
+
+    z-index:
+        150;
+
+    display:
+        none;
+
+    flex-direction:
+        column;
+
+    justify-content:
+        center;
+
+    align-items:
+        center;
+
+    background:
+        black;
+
+}
+
+
+#extras-screen h2 {
+
+    font-size:
+        50px;
+
+    letter-spacing:
+        8px;
+
+    margin-bottom:
+        40px;
+
+}
+
+
+.back-button {
+
+    border:
+        none;
+
+    background:
+        transparent;
+
+    color:
+        white;
+
+    font-size:
+        25px;
+
+    letter-spacing:
+        3px;
+
+    cursor:
+        pointer;
+
+}
+
+
+/* =========================================================
+   JUMPSCARE
+========================================================= */
+
+#jumpscare {
+
+    position:
+        fixed;
+
+    inset:
+        0;
+
+    width:
+        100vw;
+
+    height:
+        100vh;
+
+    background:
+        black;
+
+    z-index:
+        999999;
+
+    display:
+        none;
+
+    overflow:
+        hidden;
+
+}
+
+
+#jumpscare-image {
+
+    position:
+        absolute;
+
+    inset:
+        0;
+
+    width:
+        100%;
+
+    height:
+        100%;
+
+    object-fit:
+        cover;
+
+    display:
+        block;
+
+}
+
+
+/* =========================================================
+   SHAKE DO JUMPSCARE
+========================================================= */
+
+.jumpscare-shake {
+
+    animation:
+
+        jumpscareShake
+        .06s
+        infinite;
+
+}
+
+
+@keyframes jumpscareShake {
+
+    0% {
+
+        transform:
+            translate(
+                0,
+                0
+            );
+
+    }
+
+    20% {
+
+        transform:
+            translate(
+                -6px,
+                3px
+            );
+
+    }
+
+    40% {
+
+        transform:
+            translate(
+                6px,
+                -3px
+            );
+
+    }
+
+    60% {
+
+        transform:
+            translate(
+                -4px,
+                -5px
+            );
+
+    }
+
+    80% {
+
+        transform:
+            translate(
+                5px,
+                4px
+            );
+
+    }
+
+    100% {
+
+        transform:
+            translate(
+                0,
+                0
+            );
+
+    }
+
+}
+
+
+/* =========================================================
+   FLASH DO JUMPSCARE
+========================================================= */
+
+#jumpscare-flash {
+
+    position:
+        absolute;
+
+    inset:
+        0;
+
+    pointer-events:
+        none;
+
+    background:
+        white;
+
+    opacity:
+        0;
+
+    z-index:
+        3;
+
+}
+
+
+/* =========================================================
+   RESPONSIVO
+========================================================= */
+
+@media (
+    max-width: 700px
+) {
+
+    .menu-content {
+
+        left:
+            7vw;
+
+        top:
+            55%;
+
+    }
+
+
+    .title {
+
+        margin-bottom:
+            35px;
+
+    }
+
+
+    .title-small {
+
+        letter-spacing:
+            5px;
+
+    }
+
+
+    .copyright {
+
+        display:
+            none;
+
+    }
+
 }
 
 </style>
+
 </head>
+
 
 <body>
 
-<!-- =========================
-     MENU
-========================= -->
+
+<!-- ======================================================
+     MENU PRINCIPAL
+====================================================== -->
 
 <div id="main-menu">
 
     <div class="noise"></div>
 
+
     <div class="menu-content">
 
         <div class="title">
-            <span class="title-small">Five Nights At</span>
-            <span class="title-big">ORELHA'S</span>
+
+            <span class="title-small">
+                Five Nights At
+            </span>
+
+            <span class="title-big">
+                ORELHA'S
+            </span>
+
         </div>
+
 
         <div class="menu-options">
 
-            <button class="menu-button" onclick="newGame()">
+            <button
+                class="menu-button"
+                onclick="newGame()"
+            >
                 NEW GAME
             </button>
 
-            <button class="menu-button" id="continue-button" onclick="continueGame()">
+
+            <button
+                class="menu-button"
+                id="continue-button"
+                onclick="continueGame()"
+            >
                 CONTINUE
             </button>
 
-            <button class="menu-button" onclick="extras()">
+
+            <button
+                class="menu-button"
+                onclick="openExtras()"
+            >
                 EXTRAS
             </button>
 
@@ -361,9 +1057,11 @@ html, body {
 
     </div>
 
+
     <div class="version">
         v0.1 ALPHA
     </div>
+
 
     <div class="copyright">
         FIVE NIGHTS AT ORELHA'S
@@ -372,184 +1070,883 @@ html, body {
 </div>
 
 
-<!-- =========================
-     TELA DO JOGO
-========================= -->
 
-<div id="game-screen">
-    NIGHT 1
+<!-- ======================================================
+     NIGHT
+====================================================== -->
+
+<div id="night-screen">
+
+    <div
+        class="night-title"
+        id="night-title"
+    >
+        NIGHT 1
+    </div>
+
 </div>
 
 
-<!-- Efeito de interferência -->
+
+<!-- ======================================================
+     EXTRAS
+====================================================== -->
+
+<div id="extras-screen">
+
+    <h2>
+        EXTRAS
+    </h2>
+
+    <button
+        class="back-button"
+        onclick="closeExtras()"
+    >
+        &lt; BACK
+    </button>
+
+</div>
+
+
+
+<!-- ======================================================
+     JUMPSCARE
+====================================================== -->
+
+<div id="jumpscare">
+
+    <img
+        id="jumpscare-image"
+        src=""
+        draggable="false"
+    >
+
+    <div id="jumpscare-flash"></div>
+
+</div>
+
+
+
+<!-- ======================================================
+     GLITCH
+====================================================== -->
 
 <div id="glitch"></div>
 
 
+
 <script>
 
-/* =========================
+/* =========================================================
    ELEMENTOS
-========================= */
+========================================================= */
 
-const menu = document.getElementById("main-menu");
-const gameScreen = document.getElementById("game-screen");
-const glitch = document.getElementById("glitch");
-const continueButton = document.getElementById("continue-button");
-
-
-/* =========================
-   SAVE
-========================= */
-
-let save = JSON.parse(
-    localStorage.getItem("fnao-save")
-);
-
-if (!save) {
-
-    continueButton.style.opacity = ".25";
-    continueButton.style.pointerEvents = "none";
-
-}
-
-
-/* =========================
-   NOVO JOGO
-========================= */
-
-function newGame() {
-
-    save = {
-        night: 1,
-        completed: false
-    };
-
-    localStorage.setItem(
-        "fnao-save",
-        JSON.stringify(save)
+const menu =
+    document.getElementById(
+        "main-menu"
     );
 
-    startNight(1);
+const nightScreen =
+    document.getElementById(
+        "night-screen"
+    );
+
+const nightTitle =
+    document.getElementById(
+        "night-title"
+    );
+
+const extrasScreen =
+    document.getElementById(
+        "extras-screen"
+    );
+
+const continueButton =
+    document.getElementById(
+        "continue-button"
+    );
+
+const glitch =
+    document.getElementById(
+        "glitch"
+    );
+
+const jumpscare =
+    document.getElementById(
+        "jumpscare"
+    );
+
+const jumpscareImage =
+    document.getElementById(
+        "jumpscare-image"
+    );
+
+const jumpscareFlash =
+    document.getElementById(
+        "jumpscare-flash"
+    );
+
+
+
+/* =========================================================
+   SAVE
+========================================================= */
+
+let saveData = null;
+
+
+try {
+
+    saveData =
+        JSON.parse(
+            localStorage.getItem(
+                "fnao-save"
+            )
+        );
+
 }
 
+catch (
+    error
+) {
 
-/* =========================
-   CONTINUAR
-========================= */
-
-function continueGame() {
-
-    if (!save) return;
-
-    startNight(save.night);
-}
-
-
-/* =========================
-   COMEÇAR NOITE
-========================= */
-
-function startNight(night) {
-
-    staticFlash();
-
-    setTimeout(() => {
-
-        menu.style.display = "none";
-
-        gameScreen.style.display = "flex";
-
-        gameScreen.textContent =
-            "NIGHT " + night;
-
-    }, 200);
-
-}
-
-
-/* =========================
-   EXTRAS
-========================= */
-
-function extras() {
-
-    staticFlash();
-
-    console.log("Extras ainda não implementados.");
-
-}
-
-
-/* =========================
-   INTERFERÊNCIA
-========================= */
-
-function staticFlash() {
-
-    glitch.style.opacity = ".8";
-
-    setTimeout(() => {
-        glitch.style.opacity = "0";
-    }, 90);
-
-    setTimeout(() => {
-        glitch.style.opacity = ".5";
-    }, 140);
-
-    setTimeout(() => {
-        glitch.style.opacity = "0";
-    }, 210);
+    saveData =
+        null;
 
 }
 
 
-/* =========================
-   GLITCH ALEATÓRIO DO MENU
-========================= */
+/* CONTINUE DESATIVADO */
 
-function randomGlitch() {
+function updateContinueButton() {
 
-    if (menu.style.display === "none") return;
+    if (
+        !saveData
+    ) {
 
-    if (Math.random() < .35) {
+        continueButton.style.opacity =
+            ".25";
 
-        glitch.style.opacity =
-            Math.random() * .12;
+        continueButton.style.pointerEvents =
+            "none";
 
-        setTimeout(() => {
+    }
 
-            glitch.style.opacity = "0";
+    else {
 
-        }, 40 + Math.random() * 70);
+        continueButton.style.opacity =
+            "1";
+
+        continueButton.style.pointerEvents =
+            "auto";
 
     }
 
 }
 
-setInterval(randomGlitch, 700);
+
+updateContinueButton();
 
 
-/* =========================
-   MOVIMENTO LEVE DO FUNDO
-========================= */
 
-document.addEventListener("mousemove", (event) => {
+/* =========================================================
+   NOVO JOGO
+========================================================= */
 
-    if (menu.style.display === "none") return;
+function newGame() {
 
-    const x =
-        (event.clientX / window.innerWidth - .5) * 8;
+    saveData = {
 
-    const y =
-        (event.clientY / window.innerHeight - .5) * 5;
+        night:
+            1,
 
-    menu.style.backgroundPosition =
-        `calc(50% + ${x}px) calc(50% + ${y}px)`;
+        completed:
+            false
 
-});
+    };
+
+
+    localStorage.setItem(
+
+        "fnao-save",
+
+        JSON.stringify(
+            saveData
+        )
+
+    );
+
+
+    updateContinueButton();
+
+
+    startNight(
+        1
+    );
+
+}
+
+
+
+/* =========================================================
+   CONTINUE
+========================================================= */
+
+function continueGame() {
+
+    if (
+        !saveData
+    ) {
+
+        return;
+
+    }
+
+
+    startNight(
+
+        saveData.night || 1
+
+    );
+
+}
+
+
+
+/* =========================================================
+   START NIGHT
+========================================================= */
+
+function startNight(
+    night
+) {
+
+    staticFlash();
+
+
+    setTimeout(
+        () => {
+
+            menu.style.display =
+                "none";
+
+            extrasScreen.style.display =
+                "none";
+
+            nightScreen.style.display =
+                "flex";
+
+            nightTitle.textContent =
+                "NIGHT " + night;
+
+        },
+
+        180
+
+    );
+
+}
+
+
+
+/* =========================================================
+   EXTRAS
+========================================================= */
+
+function openExtras() {
+
+    staticFlash();
+
+
+    setTimeout(
+        () => {
+
+            menu.style.display =
+                "none";
+
+            extrasScreen.style.display =
+                "flex";
+
+        },
+
+        120
+    );
+
+}
+
+
+function closeExtras() {
+
+    staticFlash();
+
+
+    setTimeout(
+        () => {
+
+            extrasScreen.style.display =
+                "none";
+
+            menu.style.display =
+                "block";
+
+        },
+
+        120
+    );
+
+}
+
+
+
+/* =========================================================
+   FLASH DE ESTÁTICA
+========================================================= */
+
+function staticFlash() {
+
+    glitch.style.opacity =
+        ".8";
+
+
+    setTimeout(
+        () => {
+
+            glitch.style.opacity =
+                "0";
+
+        },
+
+        60
+    );
+
+
+    setTimeout(
+        () => {
+
+            glitch.style.opacity =
+                ".45";
+
+        },
+
+        110
+    );
+
+
+    setTimeout(
+        () => {
+
+            glitch.style.opacity =
+                "0";
+
+        },
+
+        170
+    );
+
+}
+
+
+
+/* =========================================================
+   GLITCH ALEATÓRIO
+========================================================= */
+
+function randomGlitch() {
+
+    if (
+        menu.style.display ===
+        "none"
+    ) {
+
+        return;
+
+    }
+
+
+    if (
+        Math.random() <
+        .3
+    ) {
+
+        glitch.style.opacity =
+
+            Math.random()
+            *
+            .13;
+
+
+        setTimeout(
+            () => {
+
+                glitch.style.opacity =
+                    "0";
+
+            },
+
+            35
+            +
+            Math.random()
+            *
+            60
+
+        );
+
+    }
+
+}
+
+
+setInterval(
+
+    randomGlitch,
+
+    650
+
+);
+
+
+
+/* =========================================================
+   PARALLAX DO MENU
+========================================================= */
+
+document.addEventListener(
+
+    "mousemove",
+
+    (
+        event
+    ) => {
+
+        if (
+            menu.style.display ===
+            "none"
+        ) {
+
+            return;
+
+        }
+
+
+        const x =
+
+            (
+                event.clientX
+                /
+                window.innerWidth
+                -
+                .5
+            )
+            *
+            10;
+
+
+        const y =
+
+            (
+                event.clientY
+                /
+                window.innerHeight
+                -
+                .5
+            )
+            *
+            6;
+
+
+        menu.style.backgroundPosition =
+
+            `calc(50% + ${x}px)
+             calc(50% + ${y}px)`;
+
+    }
+
+);
+
+
+
+/* =========================================================
+   JUMPSCARE CONFIG
+========================================================= */
+
+const JP_TOTAL_FRAMES =
+    20;
+
+const JP_FPS =
+    30;
+
+
+/* array dos frames */
+
+const jpFrames =
+    [];
+
+
+/* pré-carregamento */
+
+for (
+    let i = 1;
+    i <= JP_TOTAL_FRAMES;
+    i++
+) {
+
+    const img =
+        new Image();
+
+
+    img.src =
+        `images/ojp${i}.png`;
+
+
+    jpFrames.push(
+        img
+    );
+
+}
+
+
+
+/* =========================================================
+   JUMPSCARE STATE
+========================================================= */
+
+let jpPlaying =
+    false;
+
+let jpKeyboardBuffer =
+    "";
+
+
+
+/* =========================================================
+   ESCUTA DO ATALHO "JP"
+========================================================= */
+
+document.addEventListener(
+
+    "keydown",
+
+    (
+        event
+    ) => {
+
+        if (
+            jpPlaying
+        ) {
+
+            return;
+
+        }
+
+
+        if (
+            event.key.length !==
+            1
+        ) {
+
+            return;
+
+        }
+
+
+        jpKeyboardBuffer +=
+
+            event.key
+            .toLowerCase();
+
+
+        jpKeyboardBuffer =
+
+            jpKeyboardBuffer
+            .slice(
+                -2
+            );
+
+
+        if (
+            jpKeyboardBuffer ===
+            "jp"
+        ) {
+
+            jpKeyboardBuffer =
+                "";
+
+
+            playJumpscare();
+
+        }
+
+    }
+
+);
+
+
+
+/* =========================================================
+   TOCAR JUMPSCARE
+========================================================= */
+
+function playJumpscare() {
+
+    if (
+        jpPlaying
+    ) {
+
+        return;
+
+    }
+
+
+    jpPlaying =
+        true;
+
+
+    /* esconder telas */
+
+    menu.style.display =
+        "none";
+
+    nightScreen.style.display =
+        "none";
+
+    extrasScreen.style.display =
+        "none";
+
+
+    /* mostrar jumpscare */
+
+    jumpscare.style.display =
+        "block";
+
+
+    jumpscare.classList.add(
+        "jumpscare-shake"
+    );
+
+
+    jumpscareImage.src =
+        "images/ojp1.png";
+
+
+    let startTime =
+        null;
+
+
+    const frameDuration =
+
+        1000
+        /
+        JP_FPS;
+
+
+    let lastFrame =
+        -1;
+
+
+
+    function animate(
+        timestamp
+    ) {
+
+        if (
+            startTime === null
+        ) {
+
+            startTime =
+                timestamp;
+
+        }
+
+
+        const elapsed =
+
+            timestamp
+            -
+            startTime;
+
+
+        const targetFrame =
+
+            Math.floor(
+
+                elapsed
+                /
+                frameDuration
+
+            );
+
+
+        if (
+
+            targetFrame !==
+            lastFrame
+
+            &&
+
+            targetFrame <
+            JP_TOTAL_FRAMES
+
+        ) {
+
+            lastFrame =
+                targetFrame;
+
+
+            const imageNumber =
+
+                targetFrame
+                +
+                1;
+
+
+            jumpscareImage.src =
+
+                `images/ojp${imageNumber}.png`;
+
+
+
+            /* flashes nos frames finais */
+
+            if (
+                imageNumber === 16
+                ||
+                imageNumber === 18
+            ) {
+
+                flashJumpscare();
+
+            }
+
+        }
+
+
+
+        if (
+            targetFrame <
+            JP_TOTAL_FRAMES
+        ) {
+
+            requestAnimationFrame(
+                animate
+            );
+
+        }
+
+        else {
+
+            endJumpscare();
+
+        }
+
+    }
+
+
+    requestAnimationFrame(
+        animate
+    );
+
+}
+
+
+
+/* =========================================================
+   FLASH DURANTE JUMPSCARE
+========================================================= */
+
+function flashJumpscare() {
+
+    jumpscareFlash.style.opacity =
+        ".22";
+
+
+    setTimeout(
+        () => {
+
+            jumpscareFlash.style.opacity =
+                "0";
+
+        },
+
+        35
+    );
+
+}
+
+
+
+/* =========================================================
+   FIM DO JUMPSCARE
+========================================================= */
+
+function endJumpscare() {
+
+    jumpscare.classList.remove(
+        "jumpscare-shake"
+    );
+
+
+    /* segura último frame */
+
+    setTimeout(
+        () => {
+
+            jumpscare.style.background =
+                "black";
+
+            jumpscareImage.style.display =
+                "none";
+
+        },
+
+        100
+    );
+
+
+    /* voltar ao menu */
+
+    setTimeout(
+        () => {
+
+            jumpscare.style.display =
+                "none";
+
+            jumpscareImage.style.display =
+                "block";
+
+            jumpscareImage.src =
+                "";
+
+            menu.style.display =
+                "block";
+
+            jpPlaying =
+                false;
+
+        },
+
+        700
+    );
+
+}
+
+
+
+/* =========================================================
+   DEBUG
+========================================================= */
+
+console.log(
+    "%cFive Nights At Orelha's",
+    "font-size:20px;color:white;background:black;padding:10px"
+);
+
+console.log(
+    "Digite JP para testar o jumpscare."
+);
 
 </script>
 
+
 </body>
+
 </html>
