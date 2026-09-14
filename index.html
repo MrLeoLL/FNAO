@@ -3,14 +3,9 @@
 
 <head>
 <meta charset="UTF-8">
-
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Five Nights At Orelha's</title>
-
 
 <style>
 
@@ -27,13 +22,10 @@
 
 html,
 body {
-
     width: 100%;
     height: 100%;
-
     overflow: hidden;
-
-    background: black;
+    background: #000;
 
     font-family:
         Arial,
@@ -41,7 +33,6 @@ body {
         sans-serif;
 
     color: white;
-
 }
 
 
@@ -50,15 +41,12 @@ body {
 ========================================================= */
 
 #main-menu {
-
     position: fixed;
-
     inset: 0;
 
     overflow: hidden;
 
     background:
-
         linear-gradient(
             90deg,
             rgba(0,0,0,.92) 0%,
@@ -66,47 +54,39 @@ body {
             rgba(0,0,0,.2) 75%,
             rgba(0,0,0,.25) 100%
         ),
-
         url("images/menu-bg.jpg")
         center center /
         cover
         no-repeat;
-
 }
 
 
 /* ESCURECIMENTO */
 
 #main-menu::before {
-
     content: "";
 
     position: absolute;
-
     inset: 0;
 
     pointer-events: none;
 
     background:
-
         radial-gradient(
             circle at center,
             transparent 10%,
             rgba(0,0,0,.25) 50%,
             rgba(0,0,0,.88) 120%
         );
-
 }
 
 
 /* SCANLINES */
 
 #main-menu::after {
-
     content: "";
 
     position: absolute;
-
     inset: 0;
 
     pointer-events: none;
@@ -114,37 +94,12 @@ body {
     opacity: .65;
 
     background:
-
         repeating-linear-gradient(
             0deg,
-
-            rgba(
-                255,
-                255,
-                255,
-                .025
-            ),
-
-            rgba(
-                255,
-                255,
-                255,
-                .025
-            ) 1px,
-
-            rgba(
-                0,
-                0,
-                0,
-                .12
-            ) 2px,
-
-            rgba(
-                0,
-                0,
-                0,
-                .12
-            ) 4px
+            rgba(255,255,255,.025),
+            rgba(255,255,255,.025) 1px,
+            rgba(0,0,0,.12) 2px,
+            rgba(0,0,0,.12) 4px
         );
 
     animation:
@@ -152,20 +107,17 @@ body {
         6s
         linear
         infinite;
-
 }
 
 
 @keyframes scanMove {
 
     from {
-        transform:
-            translateY(0);
+        transform: translateY(0);
     }
 
     to {
-        transform:
-            translateY(10px);
+        transform: translateY(10px);
     }
 
 }
@@ -176,7 +128,6 @@ body {
 ========================================================= */
 
 .noise {
-
     position: absolute;
 
     inset: -50px;
@@ -188,7 +139,6 @@ body {
     z-index: 2;
 
     background-image:
-
         repeating-radial-gradient(
             circle at 30% 30%,
             white 0px,
@@ -196,68 +146,36 @@ body {
             transparent 4px
         );
 
-    background-size:
-        8px 8px;
+    background-size: 8px 8px;
 
     animation:
         noiseMove
         .12s
         steps(2)
         infinite;
-
 }
 
 
 @keyframes noiseMove {
 
     0% {
-
-        transform:
-            translate(
-                0,
-                0
-            );
-
+        transform: translate(0,0);
     }
 
     25% {
-
-        transform:
-            translate(
-                -8px,
-                4px
-            );
-
+        transform: translate(-8px,4px);
     }
 
     50% {
-
-        transform:
-            translate(
-                6px,
-                -5px
-            );
-
+        transform: translate(6px,-5px);
     }
 
     75% {
-
-        transform:
-            translate(
-                4px,
-                8px
-            );
-
+        transform: translate(4px,8px);
     }
 
     100% {
-
-        transform:
-            translate(
-                0,
-                0
-            );
-
+        transform: translate(0,0);
     }
 
 }
@@ -268,18 +186,15 @@ body {
 ========================================================= */
 
 .menu-content {
-
     position: absolute;
 
     z-index: 10;
 
     left: 7vw;
-
     top: 50%;
 
     transform:
         translateY(-50%);
-
 }
 
 
@@ -288,30 +203,23 @@ body {
 ========================================================= */
 
 .title {
+    margin-bottom: 60px;
 
-    margin-bottom:
-        60px;
+    text-transform: uppercase;
 
-    text-transform:
-        uppercase;
-
-    line-height:
-        .87;
+    line-height: .87;
 
     filter:
-
         drop-shadow(
             5px
             5px
             0
             black
         );
-
 }
 
 
 .title-small {
-
     display: block;
 
     font-size:
@@ -323,35 +231,28 @@ body {
 
     font-weight: 300;
 
-    letter-spacing:
-        9px;
-
+    letter-spacing: 9px;
 }
 
 
 .title-big {
-
     display: block;
 
     font-size:
-
         clamp(
             65px,
             8vw,
             150px
         );
 
-    font-weight:
-        900;
+    font-weight: 900;
 
-    letter-spacing:
-        -5px;
+    letter-spacing: -5px;
 
     animation:
         titleFlicker
         7s
         infinite;
-
 }
 
 
@@ -363,42 +264,23 @@ body {
     95%,
     98%,
     100% {
-
         opacity: 1;
-
-        transform:
-            translateX(0);
-
+        transform: translateX(0);
     }
-
 
     92% {
-
         opacity: .15;
-
-        transform:
-            translateX(-5px);
-
+        transform: translateX(-5px);
     }
-
 
     94% {
-
         opacity: .65;
-
-        transform:
-            translateX(6px);
-
+        transform: translateX(6px);
     }
 
-
     97% {
-
         opacity: .3;
-
-        transform:
-            translateX(-3px);
-
+        transform: translateX(-3px);
     }
 
 }
@@ -409,36 +291,26 @@ body {
 ========================================================= */
 
 .menu-options {
-
     display: flex;
 
-    flex-direction:
-        column;
+    flex-direction: column;
 
-    align-items:
-        flex-start;
+    align-items: flex-start;
 
-    gap:
-        6px;
-
+    gap: 6px;
 }
 
 
 .menu-button {
-
     position: relative;
 
-    border:
-        none;
+    border: none;
 
-    outline:
-        none;
+    outline: none;
 
-    background:
-        transparent;
+    background: transparent;
 
-    color:
-        #d4d4d4;
+    color: #d4d4d4;
 
     font-family:
         Arial,
@@ -446,92 +318,62 @@ body {
         sans-serif;
 
     font-size:
-
         clamp(
             22px,
             2vw,
             35px
         );
 
-    font-weight:
-        500;
+    font-weight: 500;
 
-    letter-spacing:
-        2px;
+    letter-spacing: 2px;
 
     padding:
-
         9px
         20px
         9px
         38px;
 
-    cursor:
-        pointer;
+    cursor: pointer;
 
     transition:
-
         color .08s,
         transform .08s,
         text-shadow .08s;
-
 }
 
 
 .menu-button::before {
+    content: ">>";
 
-    content:
-        ">>";
+    position: absolute;
 
-    position:
-        absolute;
-
-    left:
-        0;
-
-    top:
-        50%;
+    left: 0;
+    top: 50%;
 
     transform:
         translateY(-50%);
 
-    opacity:
-        0;
+    opacity: 0;
 
-    font-weight:
-        bold;
-
+    font-weight: bold;
 }
 
 
 .menu-button:hover {
-
-    color:
-        white;
+    color: white;
 
     transform:
         translateX(10px);
 
     text-shadow:
-
         0 0 5px white,
-
-        0 0 13px
-        rgba(
-            255,
-            255,
-            255,
-            .7
-        );
-
+        0 0 13px rgba(255,255,255,.7);
 }
 
 
 .menu-button:hover::before {
-
-    opacity:
-        1;
-
+    opacity: 1;
 }
 
 
@@ -540,98 +382,60 @@ body {
 ========================================================= */
 
 .version {
+    position: absolute;
 
-    position:
-        absolute;
+    z-index: 10;
 
-    z-index:
-        10;
+    bottom: 25px;
+    left: 30px;
 
-    bottom:
-        25px;
+    color: #707070;
 
-    left:
-        30px;
+    font-size: 13px;
 
-    color:
-        #707070;
-
-    font-size:
-        13px;
-
-    letter-spacing:
-        2px;
-
+    letter-spacing: 2px;
 }
 
 
 .copyright {
+    position: absolute;
 
-    position:
-        absolute;
+    z-index: 10;
 
-    z-index:
-        10;
+    right: 30px;
+    bottom: 25px;
 
-    right:
-        30px;
+    color: #595959;
 
-    bottom:
-        25px;
+    font-size: 12px;
 
-    color:
-        #595959;
-
-    font-size:
-        12px;
-
-    letter-spacing:
-        1px;
-
+    letter-spacing: 1px;
 }
 
 
 /* =========================================================
-   GLITCH GLOBAL
+   GLITCH
 ========================================================= */
 
 #glitch {
+    position: fixed;
 
-    position:
-        fixed;
+    inset: 0;
 
-    inset:
-        0;
+    z-index: 50000;
 
-    z-index:
-        50000;
+    pointer-events: none;
 
-    pointer-events:
-        none;
-
-    opacity:
-        0;
+    opacity: 0;
 
     background:
-
         repeating-linear-gradient(
-
             0deg,
 
-            rgba(
-                255,
-                255,
-                255,
-                .32
-            )
+            rgba(255,255,255,.32)
             0px,
 
-            rgba(
-                255,
-                255,
-                255,
-                .32
-            )
+            rgba(255,255,255,.32)
             1px,
 
             transparent
@@ -639,9 +443,7 @@ body {
 
             transparent
             5px
-
         );
-
 }
 
 
@@ -650,50 +452,34 @@ body {
 ========================================================= */
 
 #night-screen {
+    position: fixed;
 
-    position:
-        fixed;
+    inset: 0;
 
-    inset:
-        0;
+    display: none;
 
-    display:
-        none;
+    align-items: center;
+    justify-content: center;
 
-    align-items:
-        center;
+    background: black;
 
-    justify-content:
-        center;
-
-    background:
-        black;
-
-    z-index:
-        100;
-
+    z-index: 100;
 }
 
 
 .night-title {
+    text-align: center;
 
-    text-align:
-        center;
+    font-size: 42px;
 
-    font-size:
-        42px;
+    letter-spacing: 10px;
 
-    letter-spacing:
-        10px;
-
-    font-weight:
-        400;
+    font-weight: 400;
 
     animation:
         nightBlink
         2s
         infinite;
-
 }
 
 
@@ -702,89 +488,59 @@ body {
     0%,
     94%,
     100% {
-
-        opacity:
-            1;
-
+        opacity: 1;
     }
 
     95% {
-
-        opacity:
-            .2;
-
+        opacity: .2;
     }
 
 }
 
 
 /* =========================================================
-   EXTRAS TEMPORÁRIO
+   EXTRAS
 ========================================================= */
 
 #extras-screen {
+    position: fixed;
 
-    position:
-        fixed;
+    inset: 0;
 
-    inset:
-        0;
+    z-index: 150;
 
-    z-index:
-        150;
+    display: none;
 
-    display:
-        none;
+    flex-direction: column;
 
-    flex-direction:
-        column;
+    justify-content: center;
+    align-items: center;
 
-    justify-content:
-        center;
-
-    align-items:
-        center;
-
-    background:
-        black;
-
+    background: black;
 }
 
 
 #extras-screen h2 {
+    font-size: 50px;
 
-    font-size:
-        50px;
+    letter-spacing: 8px;
 
-    letter-spacing:
-        8px;
-
-    margin-bottom:
-        40px;
-
+    margin-bottom: 40px;
 }
 
 
 .back-button {
+    border: none;
 
-    border:
-        none;
+    background: transparent;
 
-    background:
-        transparent;
+    color: white;
 
-    color:
-        white;
+    font-size: 25px;
 
-    font-size:
-        25px;
+    letter-spacing: 3px;
 
-    letter-spacing:
-        3px;
-
-    cursor:
-        pointer;
-
+    cursor: pointer;
 }
 
 
@@ -793,160 +549,144 @@ body {
 ========================================================= */
 
 #jumpscare {
+    position: fixed;
 
-    position:
-        fixed;
+    inset: 0;
 
-    inset:
-        0;
+    width: 100vw;
+    height: 100vh;
 
-    width:
-        100vw;
+    background: black;
 
-    height:
-        100vh;
+    z-index: 999999;
 
-    background:
-        black;
+    display: none;
 
-    z-index:
-        999999;
-
-    display:
-        none;
-
-    overflow:
-        hidden;
-
+    overflow: hidden;
 }
 
 
 #jumpscare-image {
+    position: absolute;
 
-    position:
-        absolute;
+    inset: 0;
 
-    inset:
-        0;
+    width: 100%;
+    height: 100%;
 
-    width:
-        100%;
+    object-fit: cover;
 
-    height:
-        100%;
-
-    object-fit:
-        cover;
-
-    display:
-        block;
-
+    display: block;
 }
 
 
 /* =========================================================
-   SHAKE DO JUMPSCARE
+   JUMPSCARE SHAKE
 ========================================================= */
 
 .jumpscare-shake {
-
     animation:
-
         jumpscareShake
-        .06s
+        .055s
         infinite;
-
 }
 
 
 @keyframes jumpscareShake {
 
     0% {
-
-        transform:
-            translate(
-                0,
-                0
-            );
-
+        transform: translate(0,0) scale(1.02);
     }
 
     20% {
-
-        transform:
-            translate(
-                -6px,
-                3px
-            );
-
+        transform: translate(-6px,3px) scale(1.025);
     }
 
     40% {
-
-        transform:
-            translate(
-                6px,
-                -3px
-            );
-
+        transform: translate(7px,-4px) scale(1.02);
     }
 
     60% {
-
-        transform:
-            translate(
-                -4px,
-                -5px
-            );
-
+        transform: translate(-5px,-5px) scale(1.025);
     }
 
     80% {
-
-        transform:
-            translate(
-                5px,
-                4px
-            );
-
+        transform: translate(6px,5px) scale(1.02);
     }
 
     100% {
-
-        transform:
-            translate(
-                0,
-                0
-            );
-
+        transform: translate(0,0) scale(1.02);
     }
 
 }
 
 
 /* =========================================================
-   FLASH DO JUMPSCARE
+   FLASH BRANCO
 ========================================================= */
 
 #jumpscare-flash {
+    position: absolute;
 
-    position:
-        absolute;
+    inset: 0;
 
-    inset:
-        0;
+    pointer-events: none;
 
-    pointer-events:
-        none;
+    background: white;
 
-    background:
-        white;
+    opacity: 0;
 
-    opacity:
-        0;
+    z-index: 3;
+}
 
-    z-index:
-        3;
+
+/* =========================================================
+   TELA VERMELHA FINAL
+========================================================= */
+
+#jumpscare-red {
+    position: fixed;
+
+    inset: 0;
+
+    width: 100vw;
+    height: 100vh;
+
+    background: #c40000;
+
+    z-index: 1000000;
+
+    display: none;
+
+    pointer-events: none;
+}
+
+
+/* pequena pulsação para não parecer uma imagem parada */
+
+#jumpscare-red.active {
+    display: block;
+
+    animation:
+        redPulse
+        .08s
+        infinite;
+}
+
+
+@keyframes redPulse {
+
+    0% {
+        background: #9e0000;
+    }
+
+    50% {
+        background: #e00000;
+    }
+
+    100% {
+        background: #b00000;
+    }
 
 }
 
@@ -955,42 +695,23 @@ body {
    RESPONSIVO
 ========================================================= */
 
-@media (
-    max-width: 700px
-) {
+@media (max-width: 700px) {
 
     .menu-content {
-
-        left:
-            7vw;
-
-        top:
-            55%;
-
+        left: 7vw;
+        top: 55%;
     }
-
 
     .title {
-
-        margin-bottom:
-            35px;
-
+        margin-bottom: 35px;
     }
-
 
     .title-small {
-
-        letter-spacing:
-            5px;
-
+        letter-spacing: 5px;
     }
 
-
     .copyright {
-
-        display:
-            none;
-
+        display: none;
     }
 
 }
@@ -1004,13 +725,12 @@ body {
 
 
 <!-- ======================================================
-     MENU PRINCIPAL
+     MENU
 ====================================================== -->
 
 <div id="main-menu">
 
     <div class="noise"></div>
-
 
     <div class="menu-content">
 
@@ -1072,7 +792,7 @@ body {
 
 
 <!-- ======================================================
-     NIGHT
+     NIGHT SCREEN
 ====================================================== -->
 
 <div id="night-screen">
@@ -1118,12 +838,37 @@ body {
     <img
         id="jumpscare-image"
         src=""
+        alt=""
         draggable="false"
     >
 
     <div id="jumpscare-flash"></div>
 
 </div>
+
+
+
+<!-- ======================================================
+     TELA VERMELHA
+====================================================== -->
+
+<div id="jumpscare-red"></div>
+
+
+
+<!-- ======================================================
+     ÁUDIO
+====================================================== -->
+
+<audio
+    id="jumpscare-audio"
+    preload="auto"
+>
+    <source
+        src="audio/jumpscare.mp3"
+        type="audio/mpeg"
+    >
+</audio>
 
 
 
@@ -1186,6 +931,16 @@ const jumpscareFlash =
         "jumpscare-flash"
     );
 
+const jumpscareRed =
+    document.getElementById(
+        "jumpscare-red"
+    );
+
+const jumpscareAudio =
+    document.getElementById(
+        "jumpscare-audio"
+    );
+
 
 
 /* =========================================================
@@ -1206,23 +961,21 @@ try {
 
 }
 
-catch (
-    error
-) {
+catch (error) {
 
-    saveData =
-        null;
+    saveData = null;
 
 }
 
 
-/* CONTINUE DESATIVADO */
+
+/* =========================================================
+   CONTINUE
+========================================================= */
 
 function updateContinueButton() {
 
-    if (
-        !saveData
-    ) {
+    if (!saveData) {
 
         continueButton.style.opacity =
             ".25";
@@ -1250,63 +1003,44 @@ updateContinueButton();
 
 
 /* =========================================================
-   NOVO JOGO
+   NEW GAME
 ========================================================= */
 
 function newGame() {
 
     saveData = {
-
-        night:
-            1,
-
-        completed:
-            false
-
+        night: 1,
+        completed: false
     };
 
 
     localStorage.setItem(
-
         "fnao-save",
-
-        JSON.stringify(
-            saveData
-        )
-
+        JSON.stringify(saveData)
     );
 
 
     updateContinueButton();
 
-
-    startNight(
-        1
-    );
+    startNight(1);
 
 }
 
 
 
 /* =========================================================
-   CONTINUE
+   CONTINUE GAME
 ========================================================= */
 
 function continueGame() {
 
-    if (
-        !saveData
-    ) {
-
+    if (!saveData) {
         return;
-
     }
 
 
     startNight(
-
         saveData.night || 1
-
     );
 
 }
@@ -1317,33 +1051,26 @@ function continueGame() {
    START NIGHT
 ========================================================= */
 
-function startNight(
-    night
-) {
+function startNight(night) {
 
     staticFlash();
 
 
-    setTimeout(
-        () => {
+    setTimeout(() => {
 
-            menu.style.display =
-                "none";
+        menu.style.display =
+            "none";
 
-            extrasScreen.style.display =
-                "none";
+        extrasScreen.style.display =
+            "none";
 
-            nightScreen.style.display =
-                "flex";
+        nightScreen.style.display =
+            "flex";
 
-            nightTitle.textContent =
-                "NIGHT " + night;
+        nightTitle.textContent =
+            "NIGHT " + night;
 
-        },
-
-        180
-
-    );
+    }, 180);
 
 }
 
@@ -1358,19 +1085,15 @@ function openExtras() {
     staticFlash();
 
 
-    setTimeout(
-        () => {
+    setTimeout(() => {
 
-            menu.style.display =
-                "none";
+        menu.style.display =
+            "none";
 
-            extrasScreen.style.display =
-                "flex";
+        extrasScreen.style.display =
+            "flex";
 
-        },
-
-        120
-    );
+    }, 120);
 
 }
 
@@ -1380,68 +1103,42 @@ function closeExtras() {
     staticFlash();
 
 
-    setTimeout(
-        () => {
+    setTimeout(() => {
 
-            extrasScreen.style.display =
-                "none";
+        extrasScreen.style.display =
+            "none";
 
-            menu.style.display =
-                "block";
+        menu.style.display =
+            "block";
 
-        },
-
-        120
-    );
+    }, 120);
 
 }
 
 
 
 /* =========================================================
-   FLASH DE ESTÁTICA
+   STATIC FLASH
 ========================================================= */
 
 function staticFlash() {
 
-    glitch.style.opacity =
-        ".8";
+    glitch.style.opacity = ".8";
 
 
-    setTimeout(
-        () => {
-
-            glitch.style.opacity =
-                "0";
-
-        },
-
-        60
-    );
+    setTimeout(() => {
+        glitch.style.opacity = "0";
+    }, 60);
 
 
-    setTimeout(
-        () => {
-
-            glitch.style.opacity =
-                ".45";
-
-        },
-
-        110
-    );
+    setTimeout(() => {
+        glitch.style.opacity = ".45";
+    }, 110);
 
 
-    setTimeout(
-        () => {
-
-            glitch.style.opacity =
-                "0";
-
-        },
-
-        170
-    );
+    setTimeout(() => {
+        glitch.style.opacity = "0";
+    }, 170);
 
 }
 
@@ -1457,39 +1154,24 @@ function randomGlitch() {
         menu.style.display ===
         "none"
     ) {
-
         return;
-
     }
 
 
     if (
-        Math.random() <
-        .3
+        Math.random() < .3
     ) {
 
         glitch.style.opacity =
-
-            Math.random()
-            *
-            .13;
+            Math.random() * .13;
 
 
-        setTimeout(
-            () => {
+        setTimeout(() => {
 
-                glitch.style.opacity =
-                    "0";
+            glitch.style.opacity =
+                "0";
 
-            },
-
-            35
-            +
-            Math.random()
-            *
-            60
-
-        );
+        }, 35 + Math.random() * 60);
 
     }
 
@@ -1497,92 +1179,99 @@ function randomGlitch() {
 
 
 setInterval(
-
     randomGlitch,
-
     650
-
 );
 
 
 
 /* =========================================================
-   PARALLAX DO MENU
+   PARALLAX MENU
 ========================================================= */
 
 document.addEventListener(
-
     "mousemove",
-
-    (
-        event
-    ) => {
+    (event) => {
 
         if (
             menu.style.display ===
             "none"
         ) {
-
             return;
-
         }
 
 
         const x =
-
             (
-                event.clientX
-                /
-                window.innerWidth
-                -
+                event.clientX /
+                window.innerWidth -
                 .5
-            )
-            *
-            10;
+            ) * 10;
 
 
         const y =
-
             (
-                event.clientY
-                /
-                window.innerHeight
-                -
+                event.clientY /
+                window.innerHeight -
                 .5
-            )
-            *
-            6;
+            ) * 6;
 
 
         menu.style.backgroundPosition =
-
             `calc(50% + ${x}px)
              calc(50% + ${y}px)`;
 
     }
-
 );
 
 
 
 /* =========================================================
-   JUMPSCARE CONFIG
+   CONFIGURAÇÃO DO JUMPSCARE
 ========================================================= */
 
-const JP_TOTAL_FRAMES =
-    20;
+/*
 
-const JP_FPS =
-    30;
+20 frames
+30 FPS
+
+20 / 30 = 0.666666 segundos
+
+O áudio tem 2 segundos.
+
+Portanto:
+
+0.000s -> começa áudio + frame 1
+
+0.667s -> termina animação
+
+0.667s até 2.000s -> tela vermelha
+
+2.000s -> fim
+
+*/
+
+const JP_TOTAL_FRAMES = 20;
+
+const JP_FPS = 30;
+
+const JP_TOTAL_DURATION = 2000;
+
+const JP_ANIMATION_DURATION =
+    (JP_TOTAL_FRAMES / JP_FPS) * 1000;
+
+const JP_RED_DURATION =
+    JP_TOTAL_DURATION -
+    JP_ANIMATION_DURATION;
 
 
-/* array dos frames */
 
-const jpFrames =
-    [];
+/* =========================================================
+   PRÉ-CARREGAR FRAMES
+========================================================= */
 
+const jpFrames = [];
 
-/* pré-carregamento */
 
 for (
     let i = 1;
@@ -1590,118 +1279,85 @@ for (
     i++
 ) {
 
-    const img =
-        new Image();
-
+    const img = new Image();
 
     img.src =
         `images/ojp${i}.png`;
 
-
-    jpFrames.push(
-        img
-    );
+    jpFrames.push(img);
 
 }
 
 
 
 /* =========================================================
-   JUMPSCARE STATE
+   ESTADO
 ========================================================= */
 
-let jpPlaying =
-    false;
+let jpPlaying = false;
 
-let jpKeyboardBuffer =
-    "";
+let jpKeyboardBuffer = "";
 
 
 
 /* =========================================================
-   ESCUTA DO ATALHO "JP"
+   ATALHO SECRETO "JP"
 ========================================================= */
 
 document.addEventListener(
-
     "keydown",
+    (event) => {
 
-    (
-        event
-    ) => {
-
-        if (
-            jpPlaying
-        ) {
-
+        if (jpPlaying) {
             return;
-
         }
 
 
         if (
-            event.key.length !==
-            1
+            event.key.length !== 1
         ) {
-
             return;
-
         }
 
 
         jpKeyboardBuffer +=
-
-            event.key
-            .toLowerCase();
+            event.key.toLowerCase();
 
 
         jpKeyboardBuffer =
-
-            jpKeyboardBuffer
-            .slice(
-                -2
-            );
+            jpKeyboardBuffer.slice(-2);
 
 
         if (
-            jpKeyboardBuffer ===
-            "jp"
+            jpKeyboardBuffer === "jp"
         ) {
 
-            jpKeyboardBuffer =
-                "";
-
+            jpKeyboardBuffer = "";
 
             playJumpscare();
 
         }
 
     }
-
 );
 
 
 
 /* =========================================================
-   TOCAR JUMPSCARE
+   PLAY JUMPSCARE
 ========================================================= */
 
 function playJumpscare() {
 
-    if (
-        jpPlaying
-    ) {
-
+    if (jpPlaying) {
         return;
-
     }
 
 
-    jpPlaying =
-        true;
+    jpPlaying = true;
 
 
-    /* esconder telas */
+    /* ESCONDE TELAS */
 
     menu.style.display =
         "none";
@@ -1713,40 +1369,61 @@ function playJumpscare() {
         "none";
 
 
-    /* mostrar jumpscare */
+    /* LIMPA TELA VERMELHA */
+
+    jumpscareRed.classList.remove(
+        "active"
+    );
+
+    jumpscareRed.style.display =
+        "none";
+
+
+    /* MOSTRA JUMPSCARE */
 
     jumpscare.style.display =
         "block";
-
 
     jumpscare.classList.add(
         "jumpscare-shake"
     );
 
 
+    jumpscareImage.style.display =
+        "block";
+
     jumpscareImage.src =
         "images/ojp1.png";
 
 
-    let startTime =
-        null;
+    /* COMEÇA O SOM */
+
+    jumpscareAudio.pause();
+
+    jumpscareAudio.currentTime = 0;
 
 
-    const frameDuration =
-
-        1000
-        /
-        JP_FPS;
+    const audioPromise =
+        jumpscareAudio.play();
 
 
-    let lastFrame =
-        -1;
+    if (audioPromise !== undefined) {
+
+        audioPromise.catch(
+            () => {}
+        );
+
+    }
 
 
+    /* ANIMAÇÃO */
 
-    function animate(
-        timestamp
-    ) {
+    let startTime = null;
+
+    let lastFrame = -1;
+
+
+    function animate(timestamp) {
 
         if (
             startTime === null
@@ -1759,58 +1436,41 @@ function playJumpscare() {
 
 
         const elapsed =
-
-            timestamp
-            -
+            timestamp -
             startTime;
 
 
         const targetFrame =
-
             Math.floor(
-
-                elapsed
-                /
-                frameDuration
-
+                elapsed /
+                (1000 / JP_FPS)
             );
 
 
+        /* TROCAR FRAME */
+
         if (
-
-            targetFrame !==
-            lastFrame
-
-            &&
-
-            targetFrame <
-            JP_TOTAL_FRAMES
-
+            targetFrame !== lastFrame &&
+            targetFrame < JP_TOTAL_FRAMES
         ) {
 
             lastFrame =
                 targetFrame;
 
 
-            const imageNumber =
-
-                targetFrame
-                +
-                1;
+            const frameNumber =
+                targetFrame + 1;
 
 
             jumpscareImage.src =
-
-                `images/ojp${imageNumber}.png`;
-
+                `images/ojp${frameNumber}.png`;
 
 
-            /* flashes nos frames finais */
+            /* FLASHES NOS ÚLTIMOS FRAMES */
 
             if (
-                imageNumber === 16
-                ||
-                imageNumber === 18
+                frameNumber === 16 ||
+                frameNumber === 18
             ) {
 
                 flashJumpscare();
@@ -1820,10 +1480,11 @@ function playJumpscare() {
         }
 
 
+        /* CONTINUA */
 
         if (
-            targetFrame <
-            JP_TOTAL_FRAMES
+            elapsed <
+            JP_ANIMATION_DURATION
         ) {
 
             requestAnimationFrame(
@@ -1834,7 +1495,7 @@ function playJumpscare() {
 
         else {
 
-            endJumpscare();
+            showRedJumpscare();
 
         }
 
@@ -1850,82 +1511,119 @@ function playJumpscare() {
 
 
 /* =========================================================
-   FLASH DURANTE JUMPSCARE
+   FLASH
 ========================================================= */
 
 function flashJumpscare() {
 
     jumpscareFlash.style.opacity =
-        ".22";
+        ".2";
 
 
-    setTimeout(
-        () => {
+    setTimeout(() => {
 
-            jumpscareFlash.style.opacity =
-                "0";
+        jumpscareFlash.style.opacity =
+            "0";
 
-        },
-
-        35
-    );
+    }, 35);
 
 }
 
 
 
 /* =========================================================
-   FIM DO JUMPSCARE
+   TELA VERMELHA
 ========================================================= */
 
-function endJumpscare() {
+function showRedJumpscare() {
+
+    /* tira a animação */
 
     jumpscare.classList.remove(
         "jumpscare-shake"
     );
 
 
-    /* segura último frame */
+    jumpscare.style.display =
+        "none";
 
-    setTimeout(
-        () => {
 
-            jumpscare.style.background =
-                "black";
+    /* vermelho */
 
-            jumpscareImage.style.display =
-                "none";
+    jumpscareRed.style.display =
+        "block";
 
-        },
-
-        100
+    jumpscareRed.classList.add(
+        "active"
     );
 
 
-    /* voltar ao menu */
+    /*
 
-    setTimeout(
-        () => {
+    ~0.667s já passaram.
 
-            jumpscare.style.display =
-                "none";
+    Esperamos ~1.333s.
 
-            jumpscareImage.style.display =
-                "block";
+    Total = 2 segundos.
 
-            jumpscareImage.src =
-                "";
+    */
 
-            menu.style.display =
-                "block";
+    setTimeout(() => {
 
-            jpPlaying =
-                false;
+        endJumpscare();
 
-        },
+    }, JP_RED_DURATION);
 
-        700
+}
+
+
+
+/* =========================================================
+   FINALIZAR
+========================================================= */
+
+function endJumpscare() {
+
+    /* VERMELHO */
+
+    jumpscareRed.classList.remove(
+        "active"
     );
+
+    jumpscareRed.style.display =
+        "none";
+
+
+    /* JUMPSCARE */
+
+    jumpscare.style.display =
+        "none";
+
+    jumpscare.classList.remove(
+        "jumpscare-shake"
+    );
+
+
+    jumpscareImage.src = "";
+
+    jumpscareImage.style.display =
+        "block";
+
+
+    /* ÁUDIO */
+
+    jumpscareAudio.pause();
+
+    jumpscareAudio.currentTime = 0;
+
+
+    /* VOLTA AO MENU */
+
+    menu.style.display =
+        "block";
+
+
+    jpPlaying = false;
 
 }
 
@@ -1940,8 +1638,20 @@ console.log(
     "font-size:20px;color:white;background:black;padding:10px"
 );
 
+
 console.log(
     "Digite JP para testar o jumpscare."
+);
+
+
+console.log(
+    "Jumpscare:",
+    JP_ANIMATION_DURATION,
+    "ms de animação +",
+    JP_RED_DURATION,
+    "ms vermelho =",
+    JP_TOTAL_DURATION,
+    "ms"
 );
 
 </script>
