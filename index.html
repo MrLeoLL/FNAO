@@ -1267,7 +1267,7 @@ body {
 
 /* CAMERA / SYSTEMS UPDATE */
 #system-alerts{position:absolute;top:22px;left:50%;transform:translateX(-50%);z-index:45;text-align:center;font:700 18px "Courier New",monospace;color:#ff4545;text-shadow:0 0 8px #000;pointer-events:none}
-#audio-lure{position:absolute;right:22px;bottom:calc(28px + min(31vw, 500px) * .87);z-index:54;display:none;border:1px solid #aaa;background:#080808;color:#fff;padding:12px 18px;font:700 16px "Courier New",monospace;letter-spacing:2px;cursor:pointer}
+#audio-lure{position:absolute;left:22px;bottom:22px;z-index:54;display:none;border:1px solid #aaa;background:#080808;color:#fff;padding:12px 18px;font:700 16px "Courier New",monospace;letter-spacing:2px;cursor:pointer}
 #audio-lure.show{display:block} #audio-lure:disabled{opacity:.35}
 #repair-ui{position:absolute;inset:0;z-index:60;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.9);font-family:"Courier New",monospace}
 #repair-ui.active{display:flex}.repair-panel{width:min(620px,88vw);border:1px solid #777;background:#050505;padding:28px}.repair-panel h2{letter-spacing:5px;margin-bottom:22px}.repair-status{display:flex;justify-content:space-between;border-bottom:1px solid #333;padding:13px 0}.repair-button{margin-top:10px;width:100%;padding:12px;background:#111;border:1px solid #777;color:white;font:16px "Courier New",monospace;cursor:pointer}.repair-button:disabled{opacity:.35}.repair-hint{margin-top:18px;color:#888;font-size:13px;line-height:1.5}
@@ -1650,6 +1650,19 @@ const CAMERA_DATA = {
 const CAM_BY_KEY=Object.fromEntries(Object.entries(CAMERA_DATA).map(([n,c])=>[c.key,Number(n)]));
 const CAMERA_KEYS=Object.values(CAMERA_DATA).map(c=>c.key);
 const ORELHA_START_CAMERA="loading_dock";
+// O Orelha só pode andar entre salas fisicamente vizinhas do mapa.
+const ORELHA_ADJACENCY={
+  loading_dock:["main_storage"],
+  main_storage:["loading_dock","receiving_area","sorting_area","bulk_storage","eletrical_room","maintenance","back_corridor"],
+  receiving_area:["main_storage","sorting_area"],
+  sorting_area:["receiving_area","main_storage","maintenance"],
+  bulk_storage:["main_storage","eletrical_room"],
+  eletrical_room:["bulk_storage","main_storage","back_corridor"],
+  maintenance:["sorting_area","main_storage","back_corridor"],
+  back_corridor:["maintenance","main_storage","eletrical_room","security_corridor"],
+  security_corridor:["back_corridor"]
+};
+function adjacentCameras(loc){return ORELHA_ADJACENCY[loc]||[];}
 let orelhaLocation=ORELHA_START_CAMERA, orelhaMoveTimer=null, maintenanceDangerTimer=null, securityAttackTimer=null;
 let repairOpen=false, repairing=false, audioCooldown=false, audioUses=0;
 let systems={audio:true,camera:true,vent:true}; let failureTimer=null;
@@ -1663,13 +1676,36 @@ function setOrelhaLocation(loc){orelhaLocation=loc; clearTimeout(maintenanceDang
 function armMaintenance(){maintenanceDangerTimer=setTimeout(()=>{if(!gameActive||orelhaLocation!=="maintenance")return;if(camerasOpen&&currentCamera===7){setOrelhaLocation(randomNormalCamera());}else{setOrelhaLocation("vent");setTimeout(()=>{if(gameActive&&orelhaLocation==="vent"){currentView="back";updateGameImage();}},900);}}, systems.vent?6500:4500);}
 function armSecurity(){securityAttackTimer=setTimeout(()=>{if(gameActive&&orelhaLocation==="security_corridor"){setOrelhaLocation("door");currentView="door";updateGameImage();setTimeout(()=>{if(gameActive&&orelhaLocation==="door"&&!doorClosed)playJumpscare();},2200);}},3000);}
 function randomNormalCamera(){const a=CAMERA_KEYS.filter(k=>k!=="maintenance"&&k!=="security_corridor");return a[Math.floor(Math.random()*a.length)];}
-function scheduleOrelhaMove(){clearTimeout(orelhaMoveTimer);if(!gameActive)return;const ai=ORELHA_NIGHT_AI[currentNight]??2;const ventBoost=systems.vent?0:2;const moveChance=Math.min(.95,(ai+ventBoost)/20);const interval=5000+Math.random()*2500;orelhaMoveTimer=setTimeout(()=>{if(!gameActive)return;if(CAMERA_KEYS.includes(orelhaLocation)&&Math.random()<moveChance){let choices=CAMERA_KEYS.filter(k=>k!==orelhaLocation);setOrelhaLocation(choices[Math.floor(Math.random()*choices.length)]);}scheduleOrelhaMove();},interval);}
+function scheduleOrelhaMove(){
+  clearTimeout(orelhaMoveTimer);
+  if(!gameActive)return;
+
+  // Night 1: Orelha stays at Loading Dock until 3 AM (180 in-game minutes).
+  // This gives the first night a much slower opening instead of constant early pressure.
+  if(currentNight===1 && gameMinutes<180){
+    orelhaMoveTimer=setTimeout(scheduleOrelhaMove,1000);
+    return;
+  }
+
+  const ai=ORELHA_NIGHT_AI[currentNight]??2;
+  const ventBoost=systems.vent?0:2;
+  const moveChance=Math.min(.95,(ai+ventBoost)/20);
+  const interval=5000+Math.random()*2500;
+  orelhaMoveTimer=setTimeout(()=>{
+    if(!gameActive)return;
+    if(CAMERA_KEYS.includes(orelhaLocation)&&Math.random()<moveChance){
+      let choices=adjacentCameras(orelhaLocation);
+      if(choices.length)setOrelhaLocation(choices[Math.floor(Math.random()*choices.length)]);
+    }
+    scheduleOrelhaMove();
+  },interval);
+}
 function updateSystemUI(){let errs=[];if(!systems.audio)errs.push("AUDIO ERROR");if(!systems.camera)errs.push("VIDEO ERROR");if(!systems.vent)errs.push("VENTILATION ERROR");systemAlerts.textContent=camerasOpen?errs.join("   |   "):"";cameraFailure.classList.toggle("active",camerasOpen&&!systems.camera);ventRed.classList.toggle("active",!systems.vent);ventBlink.classList.toggle("active",!systems.vent);document.getElementById("audio-status").textContent=systems.audio?"ONLINE":"ERROR";document.getElementById("camera-status").textContent=systems.camera?"ONLINE":"ERROR";document.getElementById("vent-status").textContent=systems.vent?"ONLINE":"ERROR";document.getElementById("fix-audio").disabled=systems.audio||repairing;document.getElementById("fix-camera").disabled=systems.camera||repairing;document.getElementById("fix-vent").disabled=systems.vent||repairing;}
 function breakSystem(type){if(!systems[type])return;systems[type]=false;if(type==="vent"){ventErrorAudio.loop=true;ventErrorAudio.currentTime=0;ventErrorAudio.play().catch(()=>{});}updateSystemUI();}
 function scheduleFailure(){clearTimeout(failureTimer);if(!gameActive)return;let min=Math.max(18,55-currentNight*7)*1000;failureTimer=setTimeout(()=>{if(!gameActive)return;let pool=camerasOpen?["camera","vent"]:["vent"];breakSystem(pool[Math.floor(Math.random()*pool.length)]);scheduleFailure();},min+Math.random()*25000);}
 function repair(type){if(repairing)return;let targets=type==="all"?["audio","camera","vent"].filter(x=>!systems[x]):[type];if(!targets.length)return;repairing=true;updateSystemUI();fixingAudio.loop=true;fixingAudio.currentTime=0;fixingAudio.play().catch(()=>{});setTimeout(()=>{targets.forEach(x=>systems[x]=true);if(targets.includes("audio"))audioUses=0;if(targets.includes("vent")){ventErrorAudio.pause();ventErrorAudio.currentTime=0;}repairing=false;fixingAudio.pause();fixingAudio.currentTime=0;updateSystemUI();if(camerasOpen)selectCamera(currentCamera,false);},type==="all"?7000:3500);}
 function toggleRepair(){if(!gameActive||repairing)return;repairOpen=!repairOpen;repairUI.classList.toggle("active",repairOpen);if(repairOpen&&camerasOpen)closeCameras();}
-function useAudioLure(){if(!gameActive||!camerasOpen||audioCooldown||!systems.audio)return;audioCooldown=true;audioLure.disabled=true;lureAudio.currentTime=0;lureAudio.play().catch(()=>{});audioUses++;let c=CAMERA_DATA[currentCamera];if(c.key!=="maintenance"&&c.key!=="security_corridor"&&Math.random()<(AUDIO_CHANCE[currentNight]??.1))setOrelhaLocation(c.key);if(audioUses>=AUDIO_LIMIT[currentNight])breakSystem("audio");setTimeout(()=>{audioCooldown=false;audioLure.disabled=!systems.audio;},5000);}
+function useAudioLure(){if(!gameActive||!camerasOpen||audioCooldown||!systems.audio)return;audioCooldown=true;audioLure.disabled=true;lureAudio.currentTime=0;lureAudio.play().catch(()=>{});audioUses++;let c=CAMERA_DATA[currentCamera];if(c.key!=="maintenance"&&c.key!=="security_corridor"&&adjacentCameras(orelhaLocation).includes(c.key)&&Math.random()<(AUDIO_CHANCE[currentNight]??.1))setOrelhaLocation(c.key);if(audioUses>=AUDIO_LIMIT[currentNight])breakSystem("audio");setTimeout(()=>{audioCooldown=false;audioLure.disabled=!systems.audio;},5000);}
 function updateStars(){let n=Number(localStorage.getItem("fnao-stars")||0),el=document.getElementById("stars");el.innerHTML=Array.from({length:n},()=>'<span class="star">★</span>').join("");}
 function completeNight(){gameActive=false;clearInterval(nightTimer);clearInterval(powerTimer);clearTimeout(orelhaMoveTimer);clearTimeout(failureTimer);if(currentNight<5){saveData={night:currentNight+1,completed:false};localStorage.setItem("fnao-save",JSON.stringify(saveData));startNight(currentNight+1);return;}let stars=currentNight>=6?2:1;localStorage.setItem("fnao-stars",String(Math.max(stars,Number(localStorage.getItem("fnao-stars")||0))));if(currentNight===5){saveData={night:6,completed:false};localStorage.setItem("fnao-save",JSON.stringify(saveData));}document.getElementById("the-end").style.display="flex";}
 document.getElementById("the-end").addEventListener("click",()=>{document.getElementById("the-end").style.display="none";menu.style.display="block";updateStars();updateContinueButton();});
