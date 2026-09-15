@@ -1748,6 +1748,7 @@ font:700 17px "Courier New",monospace;letter-spacing:2px;text-align:center;text-
 <audio id="vent-closer-audio" src="audio/vent_closer1.mp3" preload="auto"></audio>
 <audio id="menu-audio" src="audio/menu.mp3" preload="auto" loop></audio>
 <div id="power-outage"><div id="power-outage-title">EAR IS COMING</div><div id="power-outage-count">10</div></div>
+<audio id="ambience-audio" src="audio/ambience.mp3" preload="auto" loop></audio>
 <audio id="phone-audio" src="audio/phone.mp3" preload="auto"></audio>
 <audio id="night-call-audio" preload="auto"></audio>
 <audio id="startday-audio" src="audio/startday.mp3" preload="auto"></audio>
@@ -1990,6 +1991,7 @@ function useAudioLure(){if(!gameActive||!camerasOpen||audioCooldown||!systems.au
 function updateStars(){let n=Number(localStorage.getItem("fnao-stars")||0),el=document.getElementById("stars");el.innerHTML=Array.from({length:n},()=>'<span class="star">★</span>').join("");}
 let nightCompletionRunning=false;
 function completeNight(){
+    stopNightAmbience();
     stopNightCall();
  if(nightCompletionRunning)return;
  nightCompletionRunning=true;gameActive=false;clearInterval(nightTimer);clearInterval(powerTimer);clearTimeout(orelhaMoveTimer);clearTimeout(failureTimer);clearTimeout(maintenanceDangerTimer);clearTimeout(securityAttackTimer);clearTimeout(ventTravelTimer);
@@ -2017,6 +2019,7 @@ function resetGameplayUIForMenu(){
  document.getElementById("the-end").style.display="none";document.getElementById("night-complete").style.display="none";nightCompletionRunning=false;const nca=document.getElementById("night-complete-audio");if(nca){nca.pause();nca.currentTime=0;}currentView="office";
 }
 function returnToMainMenu(){
+    stopNightAmbience();
     stopNightCall();resetGameplayUIForMenu();nightScreen.style.display="none";gameoverScreen.style.display="none";extrasScreen.style.display="none";controlsScreen.style.display="none";document.getElementById("custom-night-screen").style.display="none";menu.style.display="block";updateStars();updateContinueButton();playMenuMusic();}
 document.getElementById("the-end").addEventListener("click",returnToMainMenu);
 document.getElementById("repair-pull").onclick=()=>{if(!repairOpen)toggleRepair();};
@@ -2218,6 +2221,7 @@ function beginGameplay(night) {
     power = (customNightMode && customMods.lowPower) ? 65 : 100;
     gameMinutes = 0;
     gameActive = true;
+    startNightAmbience();
     startNightCall();
     camerasOpen = false;
     currentCamera = 3;
@@ -3194,6 +3198,7 @@ function endJumpscare() {
 ========================================================= */
 
 function showGameOver() {
+    stopNightAmbience();
     stopNightCall();
 
     menu.style.display =
@@ -3262,6 +3267,24 @@ function backToMenu() {
 ========================================================= */
 
 
+
+
+/* ===== NIGHT AMBIENCE ===== */
+const ambienceAudio=document.getElementById("ambience-audio");
+if(ambienceAudio) ambienceAudio.volume=0.18;
+
+function startNightAmbience(){
+    if(!ambienceAudio)return;
+    ambienceAudio.volume=0.18;
+    ambienceAudio.currentTime=0;
+    ambienceAudio.play().catch(()=>{});
+}
+
+function stopNightAmbience(){
+    if(!ambienceAudio)return;
+    ambienceAudio.pause();
+    ambienceAudio.currentTime=0;
+}
 
 /* ===== NIGHT PHONE CALLS ===== */
 const phoneAudio=document.getElementById("phone-audio");
