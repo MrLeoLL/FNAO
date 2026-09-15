@@ -1263,6 +1263,19 @@ body {
     #camera-location-name { width:min(62vw,480px); right:10px; bottom:calc(10px + min(62vw,480px) * .87); font-size:13px; }
 }
 
+
+/* CAMERA / SYSTEMS UPDATE */
+#system-alerts{position:absolute;top:22px;left:50%;transform:translateX(-50%);z-index:45;text-align:center;font:700 18px "Courier New",monospace;color:#ff4545;text-shadow:0 0 8px #000;pointer-events:none}
+#audio-lure{position:absolute;left:24px;bottom:24px;z-index:42;display:none;border:1px solid #aaa;background:#080808;color:#fff;padding:12px 18px;font:700 16px "Courier New",monospace;letter-spacing:2px;cursor:pointer}
+#audio-lure.show{display:block} #audio-lure:disabled{opacity:.35}
+#repair-ui{position:absolute;inset:0;z-index:60;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.9);font-family:"Courier New",monospace}
+#repair-ui.active{display:flex}.repair-panel{width:min(620px,88vw);border:1px solid #777;background:#050505;padding:28px}.repair-panel h2{letter-spacing:5px;margin-bottom:22px}.repair-status{display:flex;justify-content:space-between;border-bottom:1px solid #333;padding:13px 0}.repair-button{margin-top:10px;width:100%;padding:12px;background:#111;border:1px solid #777;color:white;font:16px "Courier New",monospace;cursor:pointer}.repair-button:disabled{opacity:.35}.repair-hint{margin-top:18px;color:#888;font-size:13px;line-height:1.5}
+#vent-red{position:absolute;inset:0;z-index:7;pointer-events:none;display:none;background:rgba(180,0,0,.15);animation:ventPulse .7s infinite}#vent-red.active{display:block}@keyframes ventPulse{50%{background:rgba(255,0,0,.32)}}
+#vent-blink{position:absolute;inset:0;z-index:55;background:#000;pointer-events:none;opacity:0}#vent-blink.active{animation:eyeBlink 3.2s infinite}@keyframes eyeBlink{0%,72%,100%{opacity:0}78%,88%{opacity:.96}}
+#camera-failure{position:absolute;inset:0;z-index:29;display:none;align-items:center;justify-content:center;background:#050505;color:#aaa;font:700 28px "Courier New",monospace;letter-spacing:4px}#camera-failure.active{display:flex}
+#stars{position:absolute;right:28px;top:24px;z-index:12;font-size:38px;line-height:.9;text-align:center;text-shadow:0 0 8px white}.star{display:block}
+#the-end{position:fixed;inset:0;z-index:3000000;display:none;align-items:center;justify-content:center;flex-direction:column;background:#000;color:#fff;font-family:"Courier New",monospace}.end-title{font-size:clamp(55px,10vw,130px);letter-spacing:12px}.end-sub{margin-top:20px;color:#888;letter-spacing:4px}
+
 </style>
 
 </head>
@@ -1326,6 +1339,8 @@ body {
     </div>
 
 
+    <div id="stars"></div>
+
     <div class="version">
         v0.1 ALPHA
     </div>
@@ -1387,6 +1402,7 @@ body {
         <div class="control-row"><span class="control-key">D</span><span>OPEN / CLOSE DOOR</span></div>
         <div class="control-row"><span class="control-key">SPACE</span><span>FLASHLIGHT</span></div>
         <div class="control-row"><span class="control-key">S</span><span>SECURITY CAMERAS</span></div>
+        <div class="control-row"><span class="control-key">A</span><span>SYSTEM REPAIR MONITOR</span></div>
         <div class="controls-warning">Watch your power.<br>Listen carefully.</div>
         <button class="controls-confirm" onclick="confirmControls()">I UNDERSTAND</button>
     </div>
@@ -1408,6 +1424,17 @@ body {
     <div id="turn-left" class="turn-zone">‹</div>
     <div id="turn-right" class="turn-zone">›</div>
     <div id="turn-back" class="turn-zone">⌄</div>
+    <div id="vent-red"></div><div id="vent-blink"></div>
+    <div id="system-alerts"></div>
+    <div id="camera-failure">VIDEO ERROR</div>
+    <button id="audio-lure">PLAY AUDIO</button>
+
+    <div id="repair-ui"><div class="repair-panel"><h2>SYSTEM RESTART</h2>
+      <div class="repair-status"><span>AUDIO DEVICES</span><span id="audio-status">ONLINE</span></div><button class="repair-button" id="fix-audio">REBOOT AUDIO</button>
+      <div class="repair-status"><span>CAMERA SYSTEM</span><span id="camera-status">ONLINE</span></div><button class="repair-button" id="fix-camera">REBOOT CAMERAS</button>
+      <div class="repair-status"><span>VENTILATION</span><span id="vent-status">ONLINE</span></div><button class="repair-button" id="fix-vent">REBOOT VENTILATION</button>
+      <button class="repair-button" id="fix-all">REBOOT ALL</button><div class="repair-hint">A closes this panel. REBOOT ALL takes longer and is recommended when multiple systems are offline.</div>
+    </div>
 
     <div id="camera-ui">
         <div id="camera-location-name">RECEIVING AREA</div>
@@ -1508,6 +1535,10 @@ body {
      GLITCH
 ====================================================== -->
 
+<audio id="lure-audio" src="audio/lure.mp3" preload="auto"></audio>
+<audio id="vent-error-audio" src="audio/verror.mp3" preload="auto" loop></audio>
+<audio id="fixing-audio" src="audio/fixing.mp3" preload="auto" loop></audio>
+<div id="the-end"><div class="end-title">THE END</div><div class="end-sub">CLICK TO RETURN TO MENU</div></div>
 <div id="glitch"></div>
 
 
@@ -1612,20 +1643,39 @@ let gameMinutes = 0;
 let camerasOpen = false;
 let currentCamera = 1;
 const CAMERA_DATA = {
-    1: { name: "RECEIVING AREA", image: "images/cam01.png" },
-    2: { name: "MAIN STORAGE", image: "images/cam02.png" },
-    3: { name: "LOADING DOCK", image: "images/cam03.png" },
-    4: { name: "SORTING AREA", image: "images/cam04.png" },
-    5: { name: "BULK STORAGE", image: "images/cam05.png" },
-    6: { name: "ELECTRICAL ROOM", image: "images/cam06.png" },
-    7: { name: "MAINTENANCE", image: "images/cam07.png" },
-    8: { name: "BACK CORRIDOR", image: "images/cam08.png" },
-    9: { name: "SECURITY CORRIDOR", image: "images/cam09.png" }
+  1:{name:"RECEIVING AREA",key:"receiving_area"},2:{name:"MAIN STORAGE",key:"main_storage"},3:{name:"LOADING DOCK",key:"loading_dock"},4:{name:"SORTING AREA",key:"sorting_area"},5:{name:"BULK STORAGE",key:"bulk_storage"},6:{name:"ELECTRICAL ROOM",key:"eletrical_room"},7:{name:"MAINTENANCE",key:"maintenance"},8:{name:"BACK CORRIDOR",key:"back_corridor"},9:{name:"SECURITY CORRIDOR",key:"security_corridor"}
 };
+const CAM_BY_KEY=Object.fromEntries(Object.entries(CAMERA_DATA).map(([n,c])=>[c.key,Number(n)]));
+const CAMERA_KEYS=Object.values(CAMERA_DATA).map(c=>c.key);
+const ORELHA_START_CAMERA="loading_dock";
+let orelhaLocation=ORELHA_START_CAMERA, orelhaMoveTimer=null, maintenanceDangerTimer=null, securityAttackTimer=null;
+let repairOpen=false, repairing=false, audioCooldown=false, audioUses=0;
+let systems={audio:true,camera:true,vent:true}; let failureTimer=null;
+const AUDIO_CHANCE={1:1,2:.8,3:.6,4:.4,5:.2,6:.12}; const AUDIO_LIMIT={1:Infinity,2:10,3:7,4:5,5:3,6:3};
+const lureAudio=document.getElementById("lure-audio"),ventErrorAudio=document.getElementById("vent-error-audio"),fixingAudio=document.getElementById("fixing-audio");
+const audioLure=document.getElementById("audio-lure"),repairUI=document.getElementById("repair-ui"),systemAlerts=document.getElementById("system-alerts"),cameraFailure=document.getElementById("camera-failure"),ventRed=document.getElementById("vent-red"),ventBlink=document.getElementById("vent-blink");
+function cameraImage(n){const c=CAMERA_DATA[n];return `images/${c.key}_${orelhaLocation===c.key?"comorelha":"semorelha"}.png`;}
+function setOrelhaLocation(loc){orelhaLocation=loc; clearTimeout(maintenanceDangerTimer);clearTimeout(securityAttackTimer); if(camerasOpen) selectCamera(currentCamera,false); if(loc==="maintenance") armMaintenance(); if(loc==="security_corridor") armSecurity();}
+function armMaintenance(){maintenanceDangerTimer=setTimeout(()=>{if(!gameActive||orelhaLocation!=="maintenance")return;if(camerasOpen&&currentCamera===7){setOrelhaLocation(randomNormalCamera());}else{setOrelhaLocation("vent");setTimeout(()=>{if(gameActive&&orelhaLocation==="vent"){currentView="back";updateGameImage();}},900);}}, systems.vent?6500:4500);}
+function armSecurity(){securityAttackTimer=setTimeout(()=>{if(gameActive&&orelhaLocation==="security_corridor"){setOrelhaLocation("door");currentView="door";updateGameImage();setTimeout(()=>{if(gameActive&&orelhaLocation==="door"&&!doorClosed)playJumpscare();},2200);}},3000);}
+function randomNormalCamera(){const a=CAMERA_KEYS.filter(k=>k!=="maintenance"&&k!=="security_corridor");return a[Math.floor(Math.random()*a.length)];}
+function scheduleOrelhaMove(){clearTimeout(orelhaMoveTimer);if(!gameActive)return;let base=Math.max(3500,12500-currentNight*1200-(systems.vent?0:1800));orelhaMoveTimer=setTimeout(()=>{if(!gameActive)return;if(CAMERA_KEYS.includes(orelhaLocation)){let choices=CAMERA_KEYS.filter(k=>k!==orelhaLocation);setOrelhaLocation(choices[Math.floor(Math.random()*choices.length)]);}scheduleOrelhaMove();},base+Math.random()*5000);}
+function updateSystemUI(){let errs=[];if(!systems.audio)errs.push("AUDIO ERROR");if(!systems.camera)errs.push("VIDEO ERROR");if(!systems.vent)errs.push("VENTILATION ERROR");systemAlerts.textContent=errs.join("   |   ");cameraFailure.classList.toggle("active",camerasOpen&&!systems.camera);ventRed.classList.toggle("active",!systems.vent);ventBlink.classList.toggle("active",!systems.vent);document.getElementById("audio-status").textContent=systems.audio?"ONLINE":"ERROR";document.getElementById("camera-status").textContent=systems.camera?"ONLINE":"ERROR";document.getElementById("vent-status").textContent=systems.vent?"ONLINE":"ERROR";document.getElementById("fix-audio").disabled=systems.audio||repairing;document.getElementById("fix-camera").disabled=systems.camera||repairing;document.getElementById("fix-vent").disabled=systems.vent||repairing;}
+function breakSystem(type){if(!systems[type])return;systems[type]=false;if(type==="vent"){ventErrorAudio.currentTime=0;ventErrorAudio.play().catch(()=>{});}updateSystemUI();}
+function scheduleFailure(){clearTimeout(failureTimer);if(!gameActive)return;let min=Math.max(18,55-currentNight*7)*1000;failureTimer=setTimeout(()=>{if(!gameActive)return;let pool=["camera","vent"];breakSystem(pool[Math.floor(Math.random()*pool.length)]);scheduleFailure();},min+Math.random()*25000);}
+function repair(type){if(repairing)return;let targets=type==="all"?["audio","camera","vent"].filter(x=>!systems[x]):[type];if(!targets.length)return;repairing=true;updateSystemUI();fixingAudio.currentTime=0;fixingAudio.play().catch(()=>{});setTimeout(()=>{targets.forEach(x=>systems[x]=true);if(targets.includes("audio"))audioUses=0;if(targets.includes("vent")){ventErrorAudio.pause();ventErrorAudio.currentTime=0;}repairing=false;fixingAudio.pause();fixingAudio.currentTime=0;updateSystemUI();if(camerasOpen)selectCamera(currentCamera,false);},type==="all"?7000:3500);}
+function toggleRepair(){if(!gameActive||repairing)return;repairOpen=!repairOpen;repairUI.classList.toggle("active",repairOpen);if(repairOpen&&camerasOpen)closeCameras();}
+function useAudioLure(){if(!gameActive||!camerasOpen||audioCooldown||!systems.audio)return;audioCooldown=true;audioLure.disabled=true;lureAudio.currentTime=0;lureAudio.play().catch(()=>{});audioUses++;let c=CAMERA_DATA[currentCamera];if(c.key!=="maintenance"&&c.key!=="security_corridor"&&Math.random()<(AUDIO_CHANCE[currentNight]??.1))setOrelhaLocation(c.key);if(audioUses>=AUDIO_LIMIT[currentNight])breakSystem("audio");setTimeout(()=>{audioCooldown=false;audioLure.disabled=!systems.audio;},5000);}
+function updateStars(){let n=Number(localStorage.getItem("fnao-stars")||0),el=document.getElementById("stars");el.innerHTML=Array.from({length:n},()=>'<span class="star">★</span>').join("");}
+function completeNight(){gameActive=false;clearInterval(nightTimer);clearInterval(powerTimer);clearTimeout(orelhaMoveTimer);clearTimeout(failureTimer);if(currentNight<5){saveData={night:currentNight+1,completed:false};localStorage.setItem("fnao-save",JSON.stringify(saveData));startNight(currentNight+1);return;}let stars=currentNight>=6?2:1;localStorage.setItem("fnao-stars",String(Math.max(stars,Number(localStorage.getItem("fnao-stars")||0))));if(currentNight===5){saveData={night:6,completed:false};localStorage.setItem("fnao-save",JSON.stringify(saveData));}document.getElementById("the-end").style.display="flex";}
+document.getElementById("the-end").addEventListener("click",()=>{document.getElementById("the-end").style.display="none";menu.style.display="block";updateStars();updateContinueButton();});
+document.getElementById("fix-audio").onclick=()=>repair("audio");document.getElementById("fix-camera").onclick=()=>repair("camera");document.getElementById("fix-vent").onclick=()=>repair("vent");document.getElementById("fix-all").onclick=()=>repair("all");audioLure.onclick=useAudioLure;updateStars();
 
 
 
 
+
+[...Object.values(CAMERA_DATA)].forEach(c=>["comorelha","semorelha"].forEach(v=>{const i=new Image();i.src=`images/${c.key}_${v}.png`;}));
 /* =========================================================
    SAVE DATA
 ========================================================= */
@@ -1800,6 +1850,7 @@ function beginGameplay(night) {
     powerValue.textContent = "100";
     updateTurnZones();
     gameScreen.style.display = "block";
+    repairOpen=false;repairing=false;repairUI.classList.remove("active");systems={audio:true,camera:true,vent:true};audioUses=0;audioCooldown=false;setOrelhaLocation(ORELHA_START_CAMERA);updateSystemUI();scheduleOrelhaMove();scheduleFailure();
 
     clearInterval(nightTimer);
     clearInterval(powerTimer);
@@ -1811,6 +1862,7 @@ function beginGameplay(night) {
         const hourIndex = Math.floor(gameMinutes / 60);
         const hour = hourIndex === 0 ? 12 : hourIndex;
         gameTime.textContent = hour + " AM";
+        if (gameMinutes >= 360) completeNight();
     }, 1000);
 
     powerTimer = setInterval(() => {
@@ -1828,11 +1880,11 @@ function updateGameImage() {
         gameView.src = "images/office.png";
     } else if (currentView === "door") {
         gameView.src = doorClosed ? "images/door_closed.png" : "images/door_open.png";
+        if (orelhaLocation === "door" && doorClosed) setTimeout(()=>{if(gameActive&&doorClosed&&orelhaLocation==="door")setOrelhaLocation(ORELHA_START_CAMERA);},700);
     } else if (currentView === "back") {
-        // Orelha is not programmed yet, so the rear view is empty for now.
         gameView.src = flashlightOn
-            ? "images/tras_claro_vazio.png"
-            : "images/tras_escuro_vazio.png";
+            ? (orelhaLocation === "vent" ? "images/tras_claro_orelha.png" : "images/tras_claro_vazio.png")
+            : (orelhaLocation === "vent" ? "images/tras_escuro_orelha.png" : "images/tras_escuro_vazio.png");
     }
     updateTurnZones();
 }
@@ -1869,17 +1921,20 @@ turnBack.addEventListener("mouseenter", () => {
     else if (currentView === "back") turnTo("office");
 });
 
-function selectCamera(number) {
+function selectCamera(number, flash = true) {
     if (!camerasOpen || !CAMERA_DATA[number]) return;
     currentCamera = number;
     const camera = CAMERA_DATA[number];
-    gameView.src = camera.image;
+    gameView.src = cameraImage(number);
     cameraLocationName.textContent = camera.name;
     cameraHotspots.forEach(button => {
         button.classList.toggle("active", Number(button.dataset.camera) === number);
     });
-    staticFlash();
+    if (flash) staticFlash();
     setNoise(2);
+    audioLure.classList.toggle("show", camerasOpen);
+    audioLure.disabled = !systems.audio || audioCooldown;
+    if(number===7 && orelhaLocation==="maintenance"){ clearTimeout(maintenanceDangerTimer); maintenanceDangerTimer=setTimeout(()=>{if(gameActive&&orelhaLocation==="maintenance"&&camerasOpen&&currentCamera===7)setOrelhaLocation(randomNormalCamera());},1800); }
 }
 
 function openCameras() {
@@ -1897,6 +1952,7 @@ function closeCameras() {
     if (!camerasOpen) return;
     camerasOpen = false;
     cameraUI.classList.remove("active");
+    audioLure.classList.remove("show");
     currentView = "office";
     updateGameImage();
     staticFlash();
@@ -1944,9 +2000,8 @@ document.addEventListener("keydown", event => {
         event.preventDefault();
         if (currentView === "back") setFlashlight(true);
     }
-    if (event.code === "KeyS" && !event.repeat) {
-        toggleCameras();
-    }
+    if (event.code === "KeyS" && !event.repeat && !repairOpen) toggleCameras();
+    if (event.code === "KeyA" && !event.repeat) toggleRepair();
 });
 
 document.addEventListener("keyup", event => {
@@ -2717,6 +2772,7 @@ function backToMenu() {
 
     menu.style.display =
         "block";
+    updateStars();
 
 
     staticFlash();
