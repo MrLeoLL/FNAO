@@ -1217,6 +1217,52 @@ body {
 }
 #flashlight-overlay.on { opacity:1; }
 
+
+
+/* =========================================================
+   SECURITY CAMERA SYSTEM
+========================================================= */
+#camera-ui {
+    position:absolute; inset:0; z-index:30; display:none;
+    pointer-events:none; font-family:"Courier New",monospace;
+}
+#camera-ui.active { display:block; }
+#camera-map-wrap {
+    position:absolute; right:22px; bottom:18px;
+    width:min(42vw, 620px); aspect-ratio:1306 / 1125;
+    pointer-events:auto;
+}
+#camera-map-image {
+    position:absolute; inset:0; width:100%; height:100%;
+    object-fit:contain; pointer-events:none;
+}
+#camera-location-name {
+    position:absolute; right:22px; bottom:calc(18px + min(42vw, 620px) * .87);
+    width:min(42vw, 620px); text-align:center;
+    color:#fff; font-size:clamp(15px,1.5vw,25px); font-weight:bold;
+    letter-spacing:3px; text-shadow:2px 2px 3px #000,0 0 8px #000;
+    pointer-events:none;
+}
+.camera-hotspot {
+    position:absolute; border:1px solid transparent; background:transparent;
+    cursor:pointer; padding:0; z-index:2;
+}
+.camera-hotspot:hover { background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.35); }
+.camera-hotspot.active { background:rgba(255,255,255,.16); border-color:#fff; box-shadow:0 0 9px rgba(255,255,255,.65); }
+#cam-01 { left:2.2%; top:27.0%; width:18.5%; height:14.5%; }
+#cam-02 { left:27.5%; top:20.5%; width:45.0%; height:39.5%; }
+#cam-03 { left:39.0%; top:2.8%; width:22.0%; height:14.5%; }
+#cam-04 { left:4.5%; top:48.5%; width:23.5%; height:14.5%; }
+#cam-05 { left:76.5%; top:21.8%; width:21.0%; height:16.0%; }
+#cam-06 { left:76.8%; top:48.0%; width:20.5%; height:14.5%; }
+#cam-07 { left:28.0%; top:68.0%; width:18.0%; height:13.0%; }
+#cam-08 { left:53.5%; top:68.0%; width:18.0%; height:13.0%; }
+#cam-09 { left:64.0%; top:82.0%; width:20.0%; height:12.0%; }
+@media (max-width:700px) {
+    #camera-map-wrap { width:min(62vw,480px); right:10px; bottom:10px; }
+    #camera-location-name { width:min(62vw,480px); right:10px; bottom:calc(10px + min(62vw,480px) * .87); font-size:13px; }
+}
+
 </style>
 
 </head>
@@ -1362,6 +1408,22 @@ body {
     <div id="turn-left" class="turn-zone">‹</div>
     <div id="turn-right" class="turn-zone">›</div>
     <div id="turn-back" class="turn-zone">⌄</div>
+
+    <div id="camera-ui">
+        <div id="camera-location-name">RECEIVING AREA</div>
+        <div id="camera-map-wrap">
+            <img id="camera-map-image" src="images/camera_map.png" alt="Camera map" draggable="false">
+            <button class="camera-hotspot" id="cam-01" data-camera="1" aria-label="CAM 01"></button>
+            <button class="camera-hotspot" id="cam-02" data-camera="2" aria-label="CAM 02"></button>
+            <button class="camera-hotspot" id="cam-03" data-camera="3" aria-label="CAM 03"></button>
+            <button class="camera-hotspot" id="cam-04" data-camera="4" aria-label="CAM 04"></button>
+            <button class="camera-hotspot" id="cam-05" data-camera="5" aria-label="CAM 05"></button>
+            <button class="camera-hotspot" id="cam-06" data-camera="6" aria-label="CAM 06"></button>
+            <button class="camera-hotspot" id="cam-07" data-camera="7" aria-label="CAM 07"></button>
+            <button class="camera-hotspot" id="cam-08" data-camera="8" aria-label="CAM 08"></button>
+            <button class="camera-hotspot" id="cam-09" data-camera="9" aria-label="CAM 09"></button>
+        </div>
+    </div>
 </div>
 
 
@@ -1526,6 +1588,9 @@ const flashlightOverlay = document.getElementById("flashlight-overlay");
 const powerValue = document.getElementById("power-value");
 const noiseMeter = document.getElementById("noise-meter");
 const gameTime = document.getElementById("game-time");
+const cameraUI = document.getElementById("camera-ui");
+const cameraLocationName = document.getElementById("camera-location-name");
+const cameraHotspots = [...document.querySelectorAll(".camera-hotspot")];
 
 ["tras_escuro_vazio.png","tras_claro_vazio.png","tras_escuro_orelha.png","tras_claro_orelha.png"].forEach(name => {
     const img = new Image();
@@ -1544,6 +1609,19 @@ let gameActive = false;
 let nightTimer = null;
 let powerTimer = null;
 let gameMinutes = 0;
+let camerasOpen = false;
+let currentCamera = 1;
+const CAMERA_DATA = {
+    1: { name: "RECEIVING AREA", image: "images/cam01.png" },
+    2: { name: "MAIN STORAGE", image: "images/cam02.png" },
+    3: { name: "LOADING DOCK", image: "images/cam03.png" },
+    4: { name: "SORTING AREA", image: "images/cam04.png" },
+    5: { name: "BULK STORAGE", image: "images/cam05.png" },
+    6: { name: "ELECTRICAL ROOM", image: "images/cam06.png" },
+    7: { name: "MAINTENANCE", image: "images/cam07.png" },
+    8: { name: "BACK CORRIDOR", image: "images/cam08.png" },
+    9: { name: "SECURITY CORRIDOR", image: "images/cam09.png" }
+};
 
 
 
@@ -1713,6 +1791,9 @@ function beginGameplay(night) {
     power = 100;
     gameMinutes = 0;
     gameActive = true;
+    camerasOpen = false;
+    currentCamera = 1;
+    cameraUI.classList.remove("active");
     gameView.src = "images/office.png";
     gameNight.textContent = "Night " + night;
     gameTime.textContent = "12 AM";
@@ -1788,6 +1869,51 @@ turnBack.addEventListener("mouseenter", () => {
     else if (currentView === "back") turnTo("office");
 });
 
+function selectCamera(number) {
+    if (!camerasOpen || !CAMERA_DATA[number]) return;
+    currentCamera = number;
+    const camera = CAMERA_DATA[number];
+    gameView.src = camera.image;
+    cameraLocationName.textContent = camera.name;
+    cameraHotspots.forEach(button => {
+        button.classList.toggle("active", Number(button.dataset.camera) === number);
+    });
+    staticFlash();
+    setNoise(2);
+}
+
+function openCameras() {
+    if (!gameActive || power <= 0 || turning) return;
+    camerasOpen = true;
+    currentView = "camera";
+    flashlightOn = false;
+    flashlightOverlay.classList.remove("on");
+    cameraUI.classList.add("active");
+    updateTurnZones();
+    selectCamera(currentCamera);
+}
+
+function closeCameras() {
+    if (!camerasOpen) return;
+    camerasOpen = false;
+    cameraUI.classList.remove("active");
+    currentView = "office";
+    updateGameImage();
+    staticFlash();
+}
+
+function toggleCameras() {
+    if (camerasOpen) closeCameras();
+    else openCameras();
+}
+
+cameraHotspots.forEach(button => {
+    button.addEventListener("click", event => {
+        event.stopPropagation();
+        selectCamera(Number(button.dataset.camera));
+    });
+});
+
 function toggleDoor() {
     if (!gameActive || power <= 0 || currentView !== "door" || turning) return;
     doorClosed = !doorClosed;
@@ -1819,8 +1945,7 @@ document.addEventListener("keydown", event => {
         if (currentView === "back") setFlashlight(true);
     }
     if (event.code === "KeyS" && !event.repeat) {
-        // Camera system will be added next.
-        setNoise(2);
+        toggleCameras();
     }
 });
 
