@@ -2746,6 +2746,12 @@ let extrasJumpscareMode = false;
 
 function playExtrasJumpscare() {
     if (jpPlaying) return;
+
+    // Pause menu music while the Extras jumpscare is playing.
+    if (menuMusic) {
+        menuMusic.pause();
+    }
+
     extrasJumpscareMode = true;
     playJumpscare();
 }
@@ -3075,6 +3081,11 @@ function endJumpscare() {
         gameoverScreen.style.display = "none";
         menu.style.display = "none";
         extrasScreen.style.display = "flex";
+
+        // Resume menu music after the non-lethal Extras jumpscare.
+        if (menuMusic) {
+            menuMusic.play().catch(() => {});
+        }
         return;
     }
 
