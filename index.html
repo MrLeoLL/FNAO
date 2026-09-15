@@ -1163,6 +1163,54 @@ body {
 
 }
 
+
+/* =========================================================
+   CONTROLS + GAMEPLAY
+========================================================= */
+#controls-screen {
+    position: fixed; inset: 0; z-index: 180; display: none;
+    align-items: center; justify-content: center; background: #000;
+}
+.controls-panel {
+    width: min(680px, 88vw); text-align: center; font-family: "Courier New", monospace;
+}
+.controls-panel h2 { font-size: clamp(32px,5vw,58px); letter-spacing: 7px; margin-bottom: 38px; }
+.control-row { display:flex; justify-content:space-between; border-bottom:1px solid #333; padding:15px 5px; font-size:clamp(16px,2vw,23px); letter-spacing:2px; }
+.control-key { font-weight:bold; color:#fff; }
+.controls-warning { margin:30px 0; color:#aaa; line-height:1.8; letter-spacing:2px; }
+.controls-confirm { border:1px solid #777; background:#080808; color:white; padding:13px 24px; font:18px "Courier New",monospace; letter-spacing:3px; cursor:pointer; }
+.controls-confirm:hover { background:#fff; color:#000; }
+
+#game-screen {
+    position: fixed; inset:0; z-index:90; display:none; overflow:hidden; background:#000;
+}
+#game-view {
+    position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+    transform:scale(1.015); opacity:1;
+    transition: opacity .18s ease, transform .38s cubic-bezier(.2,.7,.2,1);
+}
+#game-screen.turning #game-view { opacity:.38; transform:scale(1.035) translateX(-1.5%); }
+#game-screen.turning-left #game-view { opacity:.38; transform:scale(1.035) translateX(1.5%); }
+
+.turn-zone {
+    position:absolute; top:0; bottom:0; width:90px; z-index:15;
+    display:flex; align-items:center; font-size:64px; color:rgba(255,255,255,.28);
+    text-shadow:0 0 14px #000; cursor:pointer; transition:color .2s;
+}
+.turn-zone:hover { color:rgba(255,255,255,.85); }
+#turn-left { left:0; justify-content:flex-start; padding-left:18px; display:none; }
+#turn-right { right:0; justify-content:flex-end; padding-right:18px; }
+.game-hud { position:absolute; inset:0; z-index:12; pointer-events:none; font-family:"Courier New",monospace; text-shadow:2px 2px 3px #000; }
+.hud-top { position:absolute; right:30px; top:24px; text-align:right; font-size:23px; font-weight:bold; line-height:1.45; }
+.hud-bottom { position:absolute; left:28px; bottom:24px; font-size:19px; line-height:1.55; }
+#noise-meter { letter-spacing:2px; }
+#flashlight-overlay {
+    position:absolute; inset:0; z-index:8; pointer-events:none; opacity:0;
+    background:radial-gradient(circle at 50% 48%, rgba(255,255,220,.12) 0%, rgba(255,255,210,.05) 22%, rgba(0,0,0,.02) 40%, rgba(0,0,0,.42) 72%);
+    transition:opacity .06s;
+}
+#flashlight-overlay.on { opacity:1; }
+
 </style>
 
 </head>
@@ -1275,6 +1323,39 @@ body {
 
 </div>
 
+
+
+
+<!-- ======================================================
+     FIRST-TIME CONTROLS
+====================================================== -->
+<div id="controls-screen">
+    <div class="controls-panel">
+        <h2>HOW TO SURVIVE</h2>
+        <div class="control-row"><span class="control-key">D</span><span>OPEN / CLOSE DOOR</span></div>
+        <div class="control-row"><span class="control-key">SPACE</span><span>FLASHLIGHT</span></div>
+        <div class="control-row"><span class="control-key">S</span><span>SECURITY CAMERAS</span></div>
+        <div class="controls-warning">Watch your power.<br>Listen carefully.</div>
+        <button class="controls-confirm" onclick="confirmControls()">I UNDERSTAND</button>
+    </div>
+</div>
+
+<!-- ======================================================
+     GAME
+====================================================== -->
+<div id="game-screen">
+    <img id="game-view" src="images/office.png" alt="" draggable="false">
+    <div id="flashlight-overlay"></div>
+    <div class="game-hud">
+        <div class="hud-top"><div id="game-time">12 AM</div><div id="game-night">Night 1</div></div>
+        <div class="hud-bottom">
+            <div>Power: <span id="power-value">100</span>%</div>
+            <div>Noise: <span id="noise-meter">▮□□□□</span></div>
+        </div>
+    </div>
+    <div id="turn-left" class="turn-zone">‹</div>
+    <div id="turn-right" class="turn-zone">›</div>
+</div>
 
 
 <!-- ======================================================
@@ -1428,6 +1509,29 @@ const gameoverScreen =
         "gameover-screen"
     );
 
+const controlsScreen = document.getElementById("controls-screen");
+const gameScreen = document.getElementById("game-screen");
+const gameView = document.getElementById("game-view");
+const turnLeft = document.getElementById("turn-left");
+const turnRight = document.getElementById("turn-right");
+const flashlightOverlay = document.getElementById("flashlight-overlay");
+const powerValue = document.getElementById("power-value");
+const noiseMeter = document.getElementById("noise-meter");
+const gameTime = document.getElementById("game-time");
+const gameNight = document.getElementById("game-night");
+
+let currentView = "office";
+let doorClosed = false;
+let turning = false;
+let currentNight = 1;
+let power = 100;
+let flashlightOn = false;
+let gameActive = false;
+let nightTimer = null;
+let powerTimer = null;
+let gameMinutes = 0;
+
+
 
 
 /* =========================================================
@@ -1517,9 +1621,11 @@ function newGame() {
     updateContinueButton();
 
 
-    startNight(
-        1
-    );
+    if (localStorage.getItem("fnao-controls-seen") === "true") {
+        startNight(1);
+    } else {
+        showControls();
+    }
 
 }
 
@@ -1552,34 +1658,145 @@ function continueGame() {
    START NIGHT
 ========================================================= */
 
-function startNight(
-    night
-) {
-
+function showControls() {
     staticFlash();
-
-
     setTimeout(() => {
-
-        menu.style.display =
-            "none";
-
-        extrasScreen.style.display =
-            "none";
-
-        gameoverScreen.style.display =
-            "none";
-
-        nightScreen.style.display =
-            "flex";
-
-        nightTitle.textContent =
-            "NIGHT " + night;
-
+        menu.style.display = "none";
+        extrasScreen.style.display = "none";
+        controlsScreen.style.display = "flex";
     }, 180);
-
 }
 
+function confirmControls() {
+    localStorage.setItem("fnao-controls-seen", "true");
+    controlsScreen.style.display = "none";
+    startNight(1);
+}
+
+function startNight(night) {
+    currentNight = night;
+    gameActive = false;
+    staticFlash();
+    setTimeout(() => {
+        menu.style.display = "none";
+        extrasScreen.style.display = "none";
+        controlsScreen.style.display = "none";
+        gameScreen.style.display = "none";
+        gameoverScreen.style.display = "none";
+        nightScreen.style.display = "flex";
+        nightTitle.textContent = "NIGHT " + night;
+
+        setTimeout(() => {
+            nightScreen.style.display = "none";
+            beginGameplay(night);
+        }, 1700);
+    }, 180);
+}
+
+function beginGameplay(night) {
+    currentView = "office";
+    doorClosed = false;
+    power = 100;
+    gameMinutes = 0;
+    gameActive = true;
+    gameView.src = "images/office.png";
+    gameNight.textContent = "Night " + night;
+    gameTime.textContent = "12 AM";
+    powerValue.textContent = "100";
+    updateTurnZones();
+    gameScreen.style.display = "block";
+
+    clearInterval(nightTimer);
+    clearInterval(powerTimer);
+
+    // Temporary alpha timing: one in-game hour every 60 seconds.
+    nightTimer = setInterval(() => {
+        if (!gameActive) return;
+        gameMinutes++;
+        const hourIndex = Math.floor(gameMinutes / 60);
+        const hour = hourIndex === 0 ? 12 : hourIndex;
+        gameTime.textContent = hour + " AM";
+    }, 1000);
+
+    powerTimer = setInterval(() => {
+        if (!gameActive || power <= 0) return;
+        let drain = 0.015;
+        if (doorClosed) drain += 0.025;
+        if (flashlightOn) drain += 0.035;
+        power = Math.max(0, power - drain);
+        powerValue.textContent = Math.ceil(power);
+    }, 1000);
+}
+
+function updateGameImage() {
+    if (currentView === "office") {
+        gameView.src = "images/office.png";
+    } else {
+        gameView.src = doorClosed ? "images/door_closed.png" : "images/door_open.png";
+    }
+    updateTurnZones();
+}
+
+function updateTurnZones() {
+    turnLeft.style.display = currentView === "door" ? "flex" : "none";
+    turnRight.style.display = currentView === "office" ? "flex" : "none";
+}
+
+function turnTo(view) {
+    if (!gameActive || turning || currentView === view) return;
+    turning = true;
+    const goingLeft = view === "office";
+    gameScreen.classList.add(goingLeft ? "turning-left" : "turning");
+
+    setTimeout(() => {
+        currentView = view;
+        updateGameImage();
+        gameScreen.classList.remove("turning", "turning-left");
+        setTimeout(() => turning = false, 400);
+    }, 220);
+}
+
+turnRight.addEventListener("mouseenter", () => turnTo("door"));
+turnLeft.addEventListener("mouseenter", () => turnTo("office"));
+
+function toggleDoor() {
+    if (!gameActive || power <= 0) return;
+    doorClosed = !doorClosed;
+    if (currentView === "door") updateGameImage();
+    setNoise(doorClosed ? 4 : 3);
+}
+
+function setNoise(level) {
+    const n = Math.max(0, Math.min(5, level));
+    noiseMeter.textContent = "▮".repeat(n) + "□".repeat(5 - n);
+    setTimeout(() => {
+        if (gameActive) noiseMeter.textContent = "▮□□□□";
+    }, 650);
+}
+
+function setFlashlight(on) {
+    if (!gameActive || power <= 0) on = false;
+    flashlightOn = on;
+    flashlightOverlay.classList.toggle("on", on);
+    if (on) setNoise(2);
+}
+
+document.addEventListener("keydown", event => {
+    if (!gameActive || jpPlaying) return;
+    if (event.code === "KeyD" && !event.repeat) toggleDoor();
+    if (event.code === "Space") {
+        event.preventDefault();
+        setFlashlight(true);
+    }
+    if (event.code === "KeyS" && !event.repeat) {
+        // Camera system will be added next.
+        setNoise(2);
+    }
+});
+
+document.addEventListener("keyup", event => {
+    if (event.code === "Space") setFlashlight(false);
+});
 
 
 /* =========================================================
@@ -2014,6 +2231,12 @@ function playJumpscare() {
 
     gameoverScreen.style.display =
         "none";
+
+    gameScreen.style.display = "none";
+    controlsScreen.style.display = "none";
+    gameActive = false;
+    clearInterval(nightTimer);
+    clearInterval(powerTimer);
 
 
 
