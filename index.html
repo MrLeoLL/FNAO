@@ -607,6 +607,34 @@ body {
         40px;
 }
 
+#extras-character {
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:14px;
+    margin-bottom:28px;
+}
+#extras-character img {
+    height:min(58vh,620px);
+    max-width:80vw;
+    object-fit:contain;
+}
+#extras-character-name {
+    font-size:30px;
+    letter-spacing:5px;
+}
+#extras-jumpscare-button {
+    border:1px solid #777;
+    background:#050505;
+    color:white;
+    padding:12px 26px;
+    margin-bottom:24px;
+    font:700 18px "Courier New",monospace;
+    letter-spacing:3px;
+    cursor:pointer;
+}
+#extras-jumpscare-button:hover { background:#171717; }
+
 
 .back-button {
     border:
@@ -1438,6 +1466,15 @@ body {
     <h2>
         EXTRAS
     </h2>
+
+    <div id="extras-character">
+        <img src="images/ear_dog.png" alt="Ear Dog">
+        <div id="extras-character-name">EAR DOG</div>
+    </div>
+
+    <button id="extras-jumpscare-button" onclick="playExtrasJumpscare()">
+        JUMPSCARE
+    </button>
 
     <button
         class="back-button"
@@ -2705,6 +2742,14 @@ document.addEventListener(
    PLAY JUMPSCARE
 ========================================================= */
 
+let extrasJumpscareMode = false;
+
+function playExtrasJumpscare() {
+    if (jpPlaying) return;
+    extrasJumpscareMode = true;
+    playJumpscare();
+}
+
 function playJumpscare() {
 
     if (
@@ -3022,10 +3067,16 @@ function endJumpscare() {
         false;
 
 
-    /*
-       Instead of returning to menu,
-       show Game Over.
-    */
+    // In Extras, the preview is non-lethal and returns directly
+    // to the Extras character screen after the animation.
+    if (extrasJumpscareMode) {
+        extrasJumpscareMode = false;
+        gameActive = false;
+        gameoverScreen.style.display = "none";
+        menu.style.display = "none";
+        extrasScreen.style.display = "flex";
+        return;
+    }
 
     showGameOver();
 
