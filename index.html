@@ -1185,7 +1185,7 @@ body {
     position: fixed; inset:0; z-index:90; display:none; overflow:hidden; background:#000;
 }
 #game-view {
-    position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+    position:absolute; inset:0; z-index:1; width:100%; height:100%; object-fit:cover;
     transform:scale(1.015); opacity:1;
     transition: opacity .07s ease, transform .13s cubic-bezier(.2,.7,.2,1);
 }
@@ -1228,8 +1228,8 @@ body {
 }
 #camera-ui.active { display:block; }
 #camera-map-wrap {
-    position:absolute; right:22px; bottom:18px;
-    width:min(42vw, 620px); aspect-ratio:1306 / 1125;
+    position:absolute; right:22px; bottom:18px; z-index:52;
+    width:min(31vw, 500px); aspect-ratio:1306 / 1125;
     pointer-events:auto;
 }
 #camera-map-image {
@@ -1237,8 +1237,8 @@ body {
     object-fit:contain; pointer-events:none;
 }
 #camera-location-name {
-    position:absolute; right:22px; bottom:calc(18px + min(42vw, 620px) * .87);
-    width:min(42vw, 620px); text-align:center;
+    position:absolute; right:22px; bottom:calc(18px + min(31vw, 500px) * .87); z-index:53;
+    width:min(31vw, 500px); text-align:center;
     color:#fff; font-size:clamp(15px,1.5vw,25px); font-weight:bold;
     letter-spacing:3px; text-shadow:2px 2px 3px #000,0 0 8px #000;
     pointer-events:none;
@@ -1261,12 +1261,13 @@ body {
 @media (max-width:700px) {
     #camera-map-wrap { width:min(62vw,480px); right:10px; bottom:10px; }
     #camera-location-name { width:min(62vw,480px); right:10px; bottom:calc(10px + min(62vw,480px) * .87); font-size:13px; }
+    #audio-lure { right:10px; bottom:calc(20px + min(62vw,480px) * .87); }
 }
 
 
 /* CAMERA / SYSTEMS UPDATE */
 #system-alerts{position:absolute;top:22px;left:50%;transform:translateX(-50%);z-index:45;text-align:center;font:700 18px "Courier New",monospace;color:#ff4545;text-shadow:0 0 8px #000;pointer-events:none}
-#audio-lure{position:absolute;left:24px;bottom:24px;z-index:42;display:none;border:1px solid #aaa;background:#080808;color:#fff;padding:12px 18px;font:700 16px "Courier New",monospace;letter-spacing:2px;cursor:pointer}
+#audio-lure{position:absolute;right:22px;bottom:calc(28px + min(31vw, 500px) * .87);z-index:54;display:none;border:1px solid #aaa;background:#080808;color:#fff;padding:12px 18px;font:700 16px "Courier New",monospace;letter-spacing:2px;cursor:pointer}
 #audio-lure.show{display:block} #audio-lure:disabled{opacity:.35}
 #repair-ui{position:absolute;inset:0;z-index:60;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.9);font-family:"Courier New",monospace}
 #repair-ui.active{display:flex}.repair-panel{width:min(620px,88vw);border:1px solid #777;background:#050505;padding:28px}.repair-panel h2{letter-spacing:5px;margin-bottom:22px}.repair-status{display:flex;justify-content:space-between;border-bottom:1px solid #333;padding:13px 0}.repair-button{margin-top:10px;width:100%;padding:12px;background:#111;border:1px solid #777;color:white;font:16px "Courier New",monospace;cursor:pointer}.repair-button:disabled{opacity:.35}.repair-hint{margin-top:18px;color:#888;font-size:13px;line-height:1.5}
@@ -1652,18 +1653,20 @@ let orelhaLocation=ORELHA_START_CAMERA, orelhaMoveTimer=null, maintenanceDangerT
 let repairOpen=false, repairing=false, audioCooldown=false, audioUses=0;
 let systems={audio:true,camera:true,vent:true}; let failureTimer=null;
 const AUDIO_CHANCE={1:1,2:.8,3:.6,4:.4,5:.2,6:.12}; const AUDIO_LIMIT={1:Infinity,2:10,3:7,4:5,5:3,6:3};
+const ORELHA_NIGHT_AI={1:2,2:4,3:8,4:10,5:15,6:19}; // escala 1-20; AI 20 fica fora das noites normais
 const lureAudio=document.getElementById("lure-audio"),ventErrorAudio=document.getElementById("vent-error-audio"),fixingAudio=document.getElementById("fixing-audio");
+ventErrorAudio.loop=true; fixingAudio.loop=true;
 const audioLure=document.getElementById("audio-lure"),repairUI=document.getElementById("repair-ui"),systemAlerts=document.getElementById("system-alerts"),cameraFailure=document.getElementById("camera-failure"),ventRed=document.getElementById("vent-red"),ventBlink=document.getElementById("vent-blink");
 function cameraImage(n){const c=CAMERA_DATA[n];return `images/${c.key}_${orelhaLocation===c.key?"comorelha":"semorelha"}.png`;}
 function setOrelhaLocation(loc){orelhaLocation=loc; clearTimeout(maintenanceDangerTimer);clearTimeout(securityAttackTimer); if(camerasOpen) selectCamera(currentCamera,false); if(loc==="maintenance") armMaintenance(); if(loc==="security_corridor") armSecurity();}
 function armMaintenance(){maintenanceDangerTimer=setTimeout(()=>{if(!gameActive||orelhaLocation!=="maintenance")return;if(camerasOpen&&currentCamera===7){setOrelhaLocation(randomNormalCamera());}else{setOrelhaLocation("vent");setTimeout(()=>{if(gameActive&&orelhaLocation==="vent"){currentView="back";updateGameImage();}},900);}}, systems.vent?6500:4500);}
 function armSecurity(){securityAttackTimer=setTimeout(()=>{if(gameActive&&orelhaLocation==="security_corridor"){setOrelhaLocation("door");currentView="door";updateGameImage();setTimeout(()=>{if(gameActive&&orelhaLocation==="door"&&!doorClosed)playJumpscare();},2200);}},3000);}
 function randomNormalCamera(){const a=CAMERA_KEYS.filter(k=>k!=="maintenance"&&k!=="security_corridor");return a[Math.floor(Math.random()*a.length)];}
-function scheduleOrelhaMove(){clearTimeout(orelhaMoveTimer);if(!gameActive)return;let base=Math.max(3500,12500-currentNight*1200-(systems.vent?0:1800));orelhaMoveTimer=setTimeout(()=>{if(!gameActive)return;if(CAMERA_KEYS.includes(orelhaLocation)){let choices=CAMERA_KEYS.filter(k=>k!==orelhaLocation);setOrelhaLocation(choices[Math.floor(Math.random()*choices.length)]);}scheduleOrelhaMove();},base+Math.random()*5000);}
+function scheduleOrelhaMove(){clearTimeout(orelhaMoveTimer);if(!gameActive)return;const ai=ORELHA_NIGHT_AI[currentNight]??2;const ventBoost=systems.vent?0:2;const moveChance=Math.min(.95,(ai+ventBoost)/20);const interval=5000+Math.random()*2500;orelhaMoveTimer=setTimeout(()=>{if(!gameActive)return;if(CAMERA_KEYS.includes(orelhaLocation)&&Math.random()<moveChance){let choices=CAMERA_KEYS.filter(k=>k!==orelhaLocation);setOrelhaLocation(choices[Math.floor(Math.random()*choices.length)]);}scheduleOrelhaMove();},interval);}
 function updateSystemUI(){let errs=[];if(!systems.audio)errs.push("AUDIO ERROR");if(!systems.camera)errs.push("VIDEO ERROR");if(!systems.vent)errs.push("VENTILATION ERROR");systemAlerts.textContent=errs.join("   |   ");cameraFailure.classList.toggle("active",camerasOpen&&!systems.camera);ventRed.classList.toggle("active",!systems.vent);ventBlink.classList.toggle("active",!systems.vent);document.getElementById("audio-status").textContent=systems.audio?"ONLINE":"ERROR";document.getElementById("camera-status").textContent=systems.camera?"ONLINE":"ERROR";document.getElementById("vent-status").textContent=systems.vent?"ONLINE":"ERROR";document.getElementById("fix-audio").disabled=systems.audio||repairing;document.getElementById("fix-camera").disabled=systems.camera||repairing;document.getElementById("fix-vent").disabled=systems.vent||repairing;}
-function breakSystem(type){if(!systems[type])return;systems[type]=false;if(type==="vent"){ventErrorAudio.currentTime=0;ventErrorAudio.play().catch(()=>{});}updateSystemUI();}
+function breakSystem(type){if(!systems[type])return;systems[type]=false;if(type==="vent"){ventErrorAudio.loop=true;ventErrorAudio.currentTime=0;ventErrorAudio.play().catch(()=>{});}updateSystemUI();}
 function scheduleFailure(){clearTimeout(failureTimer);if(!gameActive)return;let min=Math.max(18,55-currentNight*7)*1000;failureTimer=setTimeout(()=>{if(!gameActive)return;let pool=["camera","vent"];breakSystem(pool[Math.floor(Math.random()*pool.length)]);scheduleFailure();},min+Math.random()*25000);}
-function repair(type){if(repairing)return;let targets=type==="all"?["audio","camera","vent"].filter(x=>!systems[x]):[type];if(!targets.length)return;repairing=true;updateSystemUI();fixingAudio.currentTime=0;fixingAudio.play().catch(()=>{});setTimeout(()=>{targets.forEach(x=>systems[x]=true);if(targets.includes("audio"))audioUses=0;if(targets.includes("vent")){ventErrorAudio.pause();ventErrorAudio.currentTime=0;}repairing=false;fixingAudio.pause();fixingAudio.currentTime=0;updateSystemUI();if(camerasOpen)selectCamera(currentCamera,false);},type==="all"?7000:3500);}
+function repair(type){if(repairing)return;let targets=type==="all"?["audio","camera","vent"].filter(x=>!systems[x]):[type];if(!targets.length)return;repairing=true;updateSystemUI();fixingAudio.loop=true;fixingAudio.currentTime=0;fixingAudio.play().catch(()=>{});setTimeout(()=>{targets.forEach(x=>systems[x]=true);if(targets.includes("audio"))audioUses=0;if(targets.includes("vent")){ventErrorAudio.pause();ventErrorAudio.currentTime=0;}repairing=false;fixingAudio.pause();fixingAudio.currentTime=0;updateSystemUI();if(camerasOpen)selectCamera(currentCamera,false);},type==="all"?7000:3500);}
 function toggleRepair(){if(!gameActive||repairing)return;repairOpen=!repairOpen;repairUI.classList.toggle("active",repairOpen);if(repairOpen&&camerasOpen)closeCameras();}
 function useAudioLure(){if(!gameActive||!camerasOpen||audioCooldown||!systems.audio)return;audioCooldown=true;audioLure.disabled=true;lureAudio.currentTime=0;lureAudio.play().catch(()=>{});audioUses++;let c=CAMERA_DATA[currentCamera];if(c.key!=="maintenance"&&c.key!=="security_corridor"&&Math.random()<(AUDIO_CHANCE[currentNight]??.1))setOrelhaLocation(c.key);if(audioUses>=AUDIO_LIMIT[currentNight])breakSystem("audio");setTimeout(()=>{audioCooldown=false;audioLure.disabled=!systems.audio;},5000);}
 function updateStars(){let n=Number(localStorage.getItem("fnao-stars")||0),el=document.getElementById("stars");el.innerHTML=Array.from({length:n},()=>'<span class="star">★</span>').join("");}
