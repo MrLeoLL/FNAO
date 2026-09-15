@@ -1440,7 +1440,7 @@ body {
         <div id="camera-failure">VIDEO ERROR</div>
         <div id="camera-location-name">RECEIVING AREA</div>
         <div id="camera-map-wrap">
-            <img id="camera-map-image" src="images/camera_map.png" alt="Camera map" draggable="false">
+            <img id="camera-map-image" src="camera_map.png" alt="Camera map" draggable="false" onerror="if(!this.dataset.fallback){this.dataset.fallback='1';this.src='images/camera_map.png';}">
             <button class="camera-hotspot" id="cam-01" data-camera="1" aria-label="CAM 01"></button>
             <button class="camera-hotspot" id="cam-02" data-camera="2" aria-label="CAM 02"></button>
             <button class="camera-hotspot" id="cam-03" data-camera="3" aria-label="CAM 03"></button>
@@ -1845,7 +1845,7 @@ function beginGameplay(night) {
     gameMinutes = 0;
     gameActive = true;
     camerasOpen = false;
-    currentCamera = 1;
+    currentCamera = 3;
     cameraUI.classList.remove("active");
     gameView.src = "images/office.png";
     gameNight.textContent = "Night " + night;
