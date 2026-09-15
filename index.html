@@ -1582,6 +1582,7 @@ font:700 17px "Courier New",monospace;letter-spacing:2px;text-align:center;text-
 <label class="custom-mod"><input type="checkbox" id="mod-fast-errors">FAST ERRORS</label>
 <label class="custom-mod"><input type="checkbox" id="mod-low-power">LOW POWER</label>
 <label class="custom-mod"><input type="checkbox" id="mod-weak-audio">WEAK AUDIO</label>
+<label class="custom-mod"><input type="checkbox" id="mod-no-map">NO CAMERA MAP</label>
 </div>
 <div style="margin-bottom:15px">
 <button class="menu-button custom-preset" onclick="setCustomPreset('earhell')">EAR HELL</button>
@@ -1940,15 +1941,44 @@ function enterVentRoute(){
   },travelTime);
 }
 function armMaintenance(){maintenanceDangerTimer=setTimeout(()=>{if(!gameActive||orelhaLocation!=="maintenance")return;if(camerasOpen&&currentCamera===7){setOrelhaLocation(randomNormalCamera());}else{enterVentRoute();}}, systems.vent?6500:4500);}
-function armSecurity() {
-    // Security Corridor only transfers Ear Dog to the office door.
-    // The actual kill window is handled exclusively by startDoorAttackCountdown().
-    clearTimeout(securityTimer);
-    securityTimer = setTimeout(() => {
-        if (!gameActive || orelhaLocation !== "security_corridor") return;
-        setOrelhaLocation("door");
-        if (currentView === "door") updateGameImage();
-    }, 1800 + Math.random() * 2200);
+function armSecurity(){securityAttackTimer=setTimeout(()=>{if(gameActive&&orelhaLocation==="security_corridor"){setOrelhaLocation("door");currentView="door";updateGameImage();setTimeout(()=>{if(gameActive&&orelhaLocation==="door"&&!doorClosed)playJumpscare();},2200);}},3000);}
+function randomNormalCamera(){const a=CAMERA_KEYS.filter(k=>k!=="maintenance"&&k!=="security_corridor");return a[Math.floor(Math.random()*a.length)];}
+function scheduleOrelhaMove(){
+  clearTimeout(orelhaMoveTimer);
+  if(!gameActive)return;
+
+  // Night 1: Orelha stays at Loading Dock until 3 AM (180 in-game minutes).
+  // This gives the first night a much slower opening instead of constant early pressure.
+  if(currentNight===1 && gameMinutes<180){
+    orelhaMoveTimer=setTimeout(scheduleOrelhaMove,1000);
+    return;
+  }
+
+  const ai=customNightMode?customAI:(ORELHA_NIGHT_AI[currentNight]??2);
+  const ventBoost=systems.vent?0:2;
+  const moveChance=Math.min(.95,(ai+ventBoost)/20);
+  const interval=5000+Math.random()*2500;
+  orelhaMoveTimer=setTimeout(()=>{
+    if(!gameActive)return;
+    if(CAMERA_KEYS.includes(orelhaLocation)&&Math.random()<moveChance){
+      let choices=adjacentCameras(orelhaLocation);
+      if(choices.length){
+        // Objective AI: prefer routes that actually pressure the player instead of wandering forever.
+        const attackTargets=["security_corridor","maintenance"];
+        const direct=choices.filter(k=>attackTargets.includes(k));
+        let target;
+        const objectiveBias=Math.min(.90,.35+ai*.0275);
+        if(direct.length && Math.random()<objectiveBias) target=direct[Math.floor(Math.random()*direct.length)];
+        else {
+          // Prefer neighbors whose next step can reach an attack route.
+          const forward=choices.filter(k=>adjacentCameras(k).some(n=>attackTargets.includes(n)));
+          target=(forward.length && Math.random()<objectiveBias)?forward[Math.floor(Math.random()*forward.length)]:choices[Math.floor(Math.random()*choices.length)];
+        }
+        setOrelhaLocation(target);
+      }
+    }
+    scheduleOrelhaMove();
+  },interval);
 }
 function updateSystemUI(){let errs=[];if(!systems.audio)errs.push("AUDIO ERROR");if(!systems.camera)errs.push("VIDEO ERROR");if(!systems.vent)errs.push("VENTILATION ERROR");systemAlerts.textContent=camerasOpen?errs.join("   |   "):"";cameraFailure.classList.toggle("active",camerasOpen&&!systems.camera);ventRed.classList.toggle("active",!systems.vent);ventBlink.classList.toggle("active",!systems.vent);document.getElementById("audio-status").textContent=systems.audio?"ONLINE":"ERROR";document.getElementById("camera-status").textContent=systems.camera?"ONLINE":"ERROR";document.getElementById("vent-status").textContent=systems.vent?"ONLINE":"ERROR";document.getElementById("fix-audio").disabled=systems.audio||repairing;document.getElementById("fix-camera").disabled=systems.camera||repairing;document.getElementById("fix-vent").disabled=systems.vent||repairing;updateRepairPull();}
 function breakSystem(type){if(!systems[type])return;systems[type]=false;if(type==="vent"){ventErrorAudio.loop=true;ventErrorAudio.currentTime=0;ventErrorAudio.play().catch(()=>{});}updateSystemUI();}
@@ -1989,7 +2019,6 @@ function resetGameplayUIForMenu(){
  document.getElementById("the-end").style.display="none";document.getElementById("night-complete").style.display="none";nightCompletionRunning=false;const nca=document.getElementById("night-complete-audio");if(nca){nca.pause();nca.currentTime=0;}currentView="office";
 }
 function returnToMainMenu(){
-    cancelDoorAttack();
     stopNightAmbience();
     stopNightCall();resetGameplayUIForMenu();nightScreen.style.display="none";gameoverScreen.style.display="none";extrasScreen.style.display="none";controlsScreen.style.display="none";document.getElementById("custom-night-screen").style.display="none";menu.style.display="block";updateStars();updateContinueButton();playMenuMusic();}
 document.getElementById("the-end").addEventListener("click",returnToMainMenu);
@@ -2187,13 +2216,6 @@ function startNight(night) {
 }
 
 function beginGameplay(night) {
-    cancelDoorAttack();
-    clearTimeout(ventTravelTimer);
-    clearTimeout(securityTimer);
-    clearTimeout(maintenanceTimer);
-    clearTimeout(orelhaMoveTimer);
-    clearTimeout(failureTimer);
-
     currentView = "office";
     doorClosed = false;
     power = (customNightMode && customMods.lowPower) ? 65 : 100;
@@ -2837,8 +2859,6 @@ function playExtrasJumpscare() {
 }
 
 function playJumpscare() {
-    if (!extrasJumpscareMode) stopNightCall();
-    if (!extrasJumpscareMode) stopNightAmbience();
 
     if (
         jpPlaying
@@ -3180,7 +3200,6 @@ function endJumpscare() {
 ========================================================= */
 
 function showGameOver() {
-    cancelDoorAttack();
     stopNightAmbience();
     stopNightCall();
 
@@ -3410,14 +3429,14 @@ function readCustomMods(){
     fastErrors:document.getElementById("mod-fast-errors")?.checked||false,
     lowPower:document.getElementById("mod-low-power")?.checked||false,
     weakAudio:document.getElementById("mod-weak-audio")?.checked||false,
-    noMap:false
+    noMap:document.getElementById("mod-no-map")?.checked||false
   };
 }
 function setCustomPreset(name){
   if(name==="earhell"){
-    customAI=20;["mod-fast-errors","mod-low-power","mod-weak-audio"].forEach(id=>document.getElementById(id).checked=true);
+    customAI=20;["mod-fast-errors","mod-low-power","mod-weak-audio","mod-no-map"].forEach(id=>document.getElementById(id).checked=true);
   }else{
-    customAI=20;["mod-fast-errors","mod-low-power","mod-weak-audio"].forEach(id=>document.getElementById(id).checked=false);
+    customAI=20;["mod-fast-errors","mod-low-power","mod-weak-audio","mod-no-map"].forEach(id=>document.getElementById(id).checked=false);
   }
   document.getElementById("custom-ai-value").textContent=customAI;
 }
