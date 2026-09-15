@@ -1404,6 +1404,15 @@ font:700 17px "Courier New",monospace;letter-spacing:2px;text-align:center;text-
     }
 }
 
+
+#mute-call-button{
+    position:absolute;right:24px;bottom:24px;z-index:92;
+    display:none;border:1px solid #aaa;background:rgba(0,0,0,.72);color:#fff;
+    padding:10px 16px;font:700 15px "Courier New",monospace;letter-spacing:2px;
+    cursor:pointer;text-shadow:1px 1px #000;
+}
+#mute-call-button:hover{background:rgba(255,255,255,.12)}
+
 </style>
 
 </head>
@@ -1619,7 +1628,9 @@ font:700 17px "Courier New",monospace;letter-spacing:2px;text-align:center;text-
     <div id="vent-red"></div><div id="vent-blink"></div>
     <div id="system-alerts"></div>
 
-    <div id="repair-ui"><div id="repair-close" title="Close System Repair Monitor">‹</div><div class="repair-panel"><h2>SYSTEM RESTART</h2>
+    <button id="mute-call-button" onclick="muteNightCall()">MUTE CALL</button>
+
+<div id="repair-ui"><div id="repair-close" title="Close System Repair Monitor">‹</div><div class="repair-panel"><h2>SYSTEM RESTART</h2>
       <div class="repair-status"><span>AUDIO DEVICES</span><span id="audio-status">ONLINE</span></div><button class="repair-button" id="fix-audio">REBOOT AUDIO</button>
       <div class="repair-status"><span>CAMERA SYSTEM</span><span id="camera-status">ONLINE</span></div><button class="repair-button" id="fix-camera">REBOOT CAMERAS</button>
       <div class="repair-status"><span>VENTILATION</span><span id="vent-status">ONLINE</span></div><button class="repair-button" id="fix-vent">REBOOT VENTILATION</button>
@@ -1737,6 +1748,8 @@ font:700 17px "Courier New",monospace;letter-spacing:2px;text-align:center;text-
 <audio id="vent-closer-audio" src="audio/vent_closer1.mp3" preload="auto"></audio>
 <audio id="menu-audio" src="audio/menu.mp3" preload="auto" loop></audio>
 <div id="power-outage"><div id="power-outage-title">EAR IS COMING</div><div id="power-outage-count">10</div></div>
+<audio id="phone-audio" src="audio/phone.mp3" preload="auto"></audio>
+<audio id="night-call-audio" preload="auto"></audio>
 <audio id="startday-audio" src="audio/startday.mp3" preload="auto"></audio>
 <audio id="night-complete-audio" src="audio/Clocks_Chimes_Cl_02480702.mp3" preload="auto"></audio>
 <audio id="flashlight-audio" src="audio/Buzz_Fan_Florescent2.mp3" preload="auto" loop></audio>
@@ -1977,6 +1990,7 @@ function useAudioLure(){if(!gameActive||!camerasOpen||audioCooldown||!systems.au
 function updateStars(){let n=Number(localStorage.getItem("fnao-stars")||0),el=document.getElementById("stars");el.innerHTML=Array.from({length:n},()=>'<span class="star">★</span>').join("");}
 let nightCompletionRunning=false;
 function completeNight(){
+    stopNightCall();
  if(nightCompletionRunning)return;
  nightCompletionRunning=true;gameActive=false;clearInterval(nightTimer);clearInterval(powerTimer);clearTimeout(orelhaMoveTimer);clearTimeout(failureTimer);clearTimeout(maintenanceDangerTimer);clearTimeout(securityAttackTimer);clearTimeout(ventTravelTimer);
  camerasOpen=false;cameraUI.classList.remove("active");repairOpen=false;repairUI.classList.remove("active");gameScreen.style.display="none";
@@ -2002,7 +2016,8 @@ function resetGameplayUIForMenu(){
  if(ventErrorAudio){ventErrorAudio.pause();ventErrorAudio.currentTime=0;}if(fixingAudio){fixingAudio.pause();fixingAudio.currentTime=0;}
  document.getElementById("the-end").style.display="none";document.getElementById("night-complete").style.display="none";nightCompletionRunning=false;const nca=document.getElementById("night-complete-audio");if(nca){nca.pause();nca.currentTime=0;}currentView="office";
 }
-function returnToMainMenu(){resetGameplayUIForMenu();nightScreen.style.display="none";gameoverScreen.style.display="none";extrasScreen.style.display="none";controlsScreen.style.display="none";document.getElementById("custom-night-screen").style.display="none";menu.style.display="block";updateStars();updateContinueButton();playMenuMusic();}
+function returnToMainMenu(){
+    stopNightCall();resetGameplayUIForMenu();nightScreen.style.display="none";gameoverScreen.style.display="none";extrasScreen.style.display="none";controlsScreen.style.display="none";document.getElementById("custom-night-screen").style.display="none";menu.style.display="block";updateStars();updateContinueButton();playMenuMusic();}
 document.getElementById("the-end").addEventListener("click",returnToMainMenu);
 document.getElementById("repair-pull").onclick=()=>{if(!repairOpen)toggleRepair();};
 document.getElementById("repair-close").onclick=()=>{if(repairOpen&&!repairing)toggleRepair();};
@@ -2203,6 +2218,7 @@ function beginGameplay(night) {
     power = (customNightMode && customMods.lowPower) ? 65 : 100;
     gameMinutes = 0;
     gameActive = true;
+    startNightCall();
     camerasOpen = false;
     currentCamera = 3;
     cameraUI.classList.remove("active");
@@ -3178,6 +3194,7 @@ function endJumpscare() {
 ========================================================= */
 
 function showGameOver() {
+    stopNightCall();
 
     menu.style.display =
         "none";
@@ -3244,6 +3261,53 @@ function backToMenu() {
    DEBUG
 ========================================================= */
 
+
+
+/* ===== NIGHT PHONE CALLS ===== */
+const phoneAudio=document.getElementById("phone-audio");
+const nightCallAudio=document.getElementById("night-call-audio");
+const muteCallButton=document.getElementById("mute-call-button");
+let nightCallToken=0;
+let nightCallMuted=false;
+
+function stopNightCall(){
+    nightCallToken++;
+    nightCallMuted=false;
+    if(phoneAudio){phoneAudio.pause();phoneAudio.currentTime=0;phoneAudio.onended=null;}
+    if(nightCallAudio){nightCallAudio.pause();nightCallAudio.currentTime=0;nightCallAudio.onended=null;}
+    if(muteCallButton)muteCallButton.style.display="none";
+}
+
+function muteNightCall(){
+    nightCallMuted=true;
+    if(phoneAudio){phoneAudio.pause();phoneAudio.currentTime=0;}
+    if(nightCallAudio){nightCallAudio.pause();nightCallAudio.currentTime=0;}
+    if(muteCallButton)muteCallButton.style.display="none";
+}
+
+function startNightCall(){
+    // Night 1–5 only. It begins once gameplay starts, after startday.mp3.
+    if(!gameActive||customNightMode||currentNight<1||currentNight>5)return;
+    const token=++nightCallToken;
+    nightCallMuted=false;
+    muteCallButton.style.display="block";
+
+    const playRecordedCall=()=>{
+        if(token!==nightCallToken||nightCallMuted||!gameActive)return;
+        nightCallAudio.src=`audio/night${currentNight}call.mp3`;
+        nightCallAudio.currentTime=0;
+        nightCallAudio.onended=()=>{
+            if(token===nightCallToken)muteCallButton.style.display="none";
+        };
+        nightCallAudio.play().catch(()=>{});
+    };
+
+    phoneAudio.pause();
+    phoneAudio.currentTime=0;
+    phoneAudio.onended=playRecordedCall;
+    const ringing=phoneAudio.play();
+    if(ringing)ringing.catch(playRecordedCall);
+}
 
 /* ===== GAMEPLAY EXPANSION ===== */
 let customMods={fastErrors:false,lowPower:false,weakAudio:false,noMap:false};
