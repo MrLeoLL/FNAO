@@ -1441,6 +1441,14 @@ font:700 17px "Courier New",monospace;letter-spacing:2px;text-align:center;text-
 #controlled-shock.show{display:block}
 #controlled-shock:hover{background:#7b0000}
 
+
+/* ===== REPAIR LOADING ===== */
+#repair-loading{display:none;width:340px;max-width:72vw;margin:18px auto 0;text-align:center}
+#repair-loading.active{display:block}
+#repair-loading-track{height:14px;border:1px solid #888;background:#050505;overflow:hidden}
+#repair-loading-bar{height:100%;width:0%;background:#ddd}
+#repair-loading-text{margin-top:8px;font:700 12px "Courier New",monospace;letter-spacing:2px;color:#ddd}
+
 </style>
 
 </head>
@@ -2014,7 +2022,47 @@ function scheduleOrelhaMove(){
 function updateSystemUI(){let errs=[];if(!systems.audio)errs.push("AUDIO ERROR");if(!systems.camera)errs.push("VIDEO ERROR");if(!systems.vent)errs.push("VENTILATION ERROR");systemAlerts.textContent=camerasOpen?errs.join("   |   "):"";cameraFailure.classList.toggle("active",camerasOpen&&!systems.camera);ventRed.classList.toggle("active",!systems.vent);ventBlink.classList.toggle("active",!systems.vent);document.getElementById("audio-status").textContent=systems.audio?"ONLINE":"ERROR";document.getElementById("camera-status").textContent=systems.camera?"ONLINE":"ERROR";document.getElementById("vent-status").textContent=systems.vent?"ONLINE":"ERROR";document.getElementById("fix-audio").disabled=systems.audio||repairing;document.getElementById("fix-camera").disabled=systems.camera||repairing;document.getElementById("fix-vent").disabled=systems.vent||repairing;updateRepairPull();}
 function breakSystem(type){if(!systems[type])return;systems[type]=false;if(type==="vent"){ventErrorAudio.loop=true;ventErrorAudio.currentTime=0;ventErrorAudio.play().catch(()=>{});}updateSystemUI();}
 function scheduleFailure(){clearTimeout(failureTimer);if(!gameActive)return;const min=(75-Math.min(currentNight,6)*3)*1000;failureTimer=setTimeout(()=>{if(!gameActive)return;/* Ventilation failures are intentionally rare. Video errors can only happen while cameras are open. */const ventChance=Math.min(.12,.035+currentNight*.012);if(Math.random()<ventChance){breakSystem("vent");}else if(camerasOpen){breakSystem("camera");}scheduleFailure();},min+Math.random()*45000);}
-function repair(type){if(repairing)return;let targets=type==="all"?["audio","camera","vent"].filter(x=>!systems[x]):[type];if(!targets.length)return;repairing=true;updateSystemUI();fixingAudio.loop=true;fixingAudio.currentTime=0;fixingAudio.play().catch(()=>{});setTimeout(()=>{targets.forEach(x=>systems[x]=true);if(targets.includes("audio"))audioUses=0;if(targets.includes("vent")){ventErrorAudio.pause();ventErrorAudio.currentTime=0;}repairing=false;fixingAudio.pause();fixingAudio.currentTime=0;updateSystemUI();if(camerasOpen)selectCamera(currentCamera,false);repairOpen=false;playLever2();repairUI.classList.remove("active");updateRepairPull();},type==="all"?7000:3500);}
+function repair(type){
+ if(repairing)return;
+ let targets=type==="all"?["audio","camera","vent"].filter(x=>!systems[x]):[type];
+ if(!targets.length)return;
+
+ repairing=true;updateSystemUI();
+ const duration=type==="all"?7000:3500;
+ const loading=document.getElementById("repair-loading");
+ const bar=document.getElementById("repair-loading-bar");
+ const txt=document.getElementById("repair-loading-text");
+ loading.classList.add("active");bar.style.width="0%";txt.textContent="REPAIRING... 0%";
+
+ const started=performance.now();
+ let progressRAF;
+ const tick=(now)=>{
+   if(!repairing)return;
+   const pct=Math.min(100,((now-started)/duration)*100);
+   bar.style.width=pct+"%";
+   txt.textContent=pct>=100?"COMPLETE — YOU CAN CLOSE":"REPAIRING... "+Math.floor(pct)+"%";
+   if(pct<100)progressRAF=requestAnimationFrame(tick);
+ };
+ progressRAF=requestAnimationFrame(tick);
+
+ fixingAudio.loop=true;fixingAudio.currentTime=0;fixingAudio.play().catch(()=>{});
+ setTimeout(()=>{
+   targets.forEach(x=>systems[x]=true);
+   if(targets.includes("audio"))audioUses=0;
+   if(targets.includes("vent")){ventErrorAudio.pause();ventErrorAudio.currentTime=0;}
+   repairing=false;
+   cancelAnimationFrame(progressRAF);
+   bar.style.width="100%";
+   txt.textContent="COMPLETE — YOU CAN CLOSE";
+   fixingAudio.pause();fixingAudio.currentTime=0;
+   updateSystemUI();
+   if(camerasOpen)selectCamera(currentCamera,false);
+
+   // Do NOT auto-close anymore. Player closes it with the arrow after seeing COMPLETE.
+   setTimeout(()=>loading.classList.remove("active"),1200);
+   updateRepairPull();
+ },duration);
+}
 function updateRepairPull(){const el=document.getElementById("repair-pull");if(!el)return;el.style.display=(gameActive&&!camerasOpen&&!repairOpen&&currentView==="office")?"flex":"none";}
 function toggleRepair(){if(!gameActive||repairing)return;repairOpen=!repairOpen;playLever2();repairUI.classList.toggle("active",repairOpen);if(repairOpen&&camerasOpen)closeCameras();updateRepairPull();}
 function orelhaIsActive(){return !(currentNight===1 && gameMinutes<180);}
@@ -2035,7 +2083,15 @@ function completeNight(){
  // Full completion sequence lasts exactly 16 seconds.
  setTimeout(()=>{
    transition.style.display="none";if(chime){chime.pause();chime.currentTime=0;}nightCompletionRunning=false;
-   if(customNightMode){if(customAI===20){localStorage.setItem("fnao-stars",String(Math.max(3,Number(localStorage.getItem("fnao-stars")||0))));updateStars();}document.getElementById("the-end").style.display="flex";return;}
+   if(customNightMode){
+      if(customAI===20){
+        const earnedStar = (earHellRun && customMods.fastErrors && customMods.lowPower && customMods.weakAudio) ? 4 : 3;
+        localStorage.setItem("fnao-stars",String(Math.max(earnedStar,Number(localStorage.getItem("fnao-stars")||0))));
+        updateStars();
+      }
+      document.getElementById("the-end").style.display="flex";
+      return;
+   }
    if(currentNight<5){saveData={night:currentNight+1,completed:false};localStorage.setItem("fnao-save",JSON.stringify(saveData));startNight(currentNight+1);return;}
    if(currentNight===5){localStorage.setItem("fnao-stars",String(Math.max(1,Number(localStorage.getItem("fnao-stars")||0))));saveData={night:5,completed:true};localStorage.setItem("fnao-save",JSON.stringify(saveData));}
    if(currentNight===6){localStorage.setItem("fnao-stars",String(Math.max(2,Number(localStorage.getItem("fnao-stars")||0))));}
@@ -2184,7 +2240,7 @@ function continueGame() {
 function startNight6(){ customNightMode=false; startNight(6); }
 function openCustomNight(){ customAI=1; document.getElementById("custom-ai-value").textContent=customAI; menu.style.display="none"; stopMenuMusic(); document.getElementById("custom-night-screen").style.display="flex"; }
 function closeCustomNight(){ document.getElementById("custom-night-screen").style.display="none"; menu.style.display="block"; playMenuMusic(); }
-function changeCustomAI(delta){ customAI=Math.max(1,Math.min(20,customAI+delta)); document.getElementById("custom-ai-value").textContent=customAI; }
+function changeCustomAI(delta){ earHellRun=false; customAI=Math.max(1,Math.min(20,customAI+delta)); document.getElementById("custom-ai-value").textContent=customAI; }
 function startCustomNight(){ customNightMode=true; document.getElementById("custom-night-screen").style.display="none"; startNight(7); }
 
 /* =========================================================
@@ -2305,6 +2361,26 @@ function beginGameplay(night) {
 function triggerPowerOutage(){
     if(powerOut||!gameActive)return;
     powerOut=true; power=0; powerValue.textContent="0";
+
+    // Blackout overrides all normal Orelha attack states.
+    clearTimeout(ventTravelTimer);
+    clearTimeout(securityTimer);
+    clearTimeout(maintenanceTimer);
+    clearTimeout(orelhaMoveTimer);
+    if(typeof cancelDoorAttack==="function")cancelDoorAttack();
+    orelhaLocation="powerout";
+    flashlightOn=false;
+    doorClosed=false;
+    if(typeof flashlightHum!=="undefined"){
+        flashlightHum.pause();
+        flashlightHum.currentTime=0;
+    }
+    if(typeof doorImage!=="undefined" && doorImage)doorImage.style.display="none";
+    camerasOpen=false;
+    if(typeof cameraUI!=="undefined")cameraUI.classList.remove("active");
+    repairOpen=false;
+    if(typeof repairUI!=="undefined")repairUI.classList.remove("active");
+
     doorClosed=false; flashlightOn=false; stopFlashlightHum(); stopVentFlashCounter();
     camerasOpen=false; cameraUI.classList.remove("active"); repairOpen=false; repairUI.classList.remove("active");
     updateGameImage();
@@ -2312,7 +2388,14 @@ function triggerPowerOutage(){
     overlay.classList.add("active");
     let seconds=10; count.textContent=seconds;
     powerDeathInterval=setInterval(()=>{seconds--;count.textContent=Math.max(0,seconds);if(seconds<=0)clearInterval(powerDeathInterval);},1000);
-    powerDeathTimer=setTimeout(()=>{if(gameActive&&powerOut){overlay.classList.remove("active");playJumpscare();}},10000);
+    powerDeathTimer=setTimeout(()=>{
+        if(gameActive&&powerOut){
+            overlay.classList.remove("active");
+            deathReason="power";
+            orelhaLocation="powerout";
+            playJumpscare();
+        }
+    },10000);
 }
 
 function updateGameImage() {
@@ -2549,8 +2632,8 @@ function startElectricalDrain(){
         power = Math.max(0, power - 0.30);
         powerValue.textContent = Math.ceil(power);
 
-        if(power <= 0 && !powerOutActive){
-            triggerPowerOut();
+        if(power <= 0 && !powerOut){
+            triggerPowerOutage();
         }
         updateElectricalUI();
     },1000);
@@ -2646,7 +2729,7 @@ completeNight = function(){
 let debugCodeBuffer = "";
 
 function applyDebugProgress(stars) {
-    stars = Math.max(0, Math.min(3, stars));
+    stars = Math.max(0, Math.min(4, stars));
     localStorage.setItem("fnao-stars", String(stars));
 
     // First star means the main five nights were completed.
@@ -3542,6 +3625,7 @@ function startNightCall(){
 
 /* ===== GAMEPLAY EXPANSION ===== */
 let customMods={fastErrors:false,lowPower:false,weakAudio:false,noMap:false};
+let earHellRun=false;
 let deathReason="caught";
 let rareEventCooldown=false;
 
@@ -3639,6 +3723,7 @@ function readCustomMods(){
   };
 }
 function setCustomPreset(name){
+  earHellRun=(name==="earhell");
   if(name==="earhell"){
     customAI=20;["mod-fast-errors","mod-low-power","mod-weak-audio","mod-no-map"].forEach(id=>document.getElementById(id).checked=true);
   }else{
@@ -3799,6 +3884,128 @@ console.log(
 console.log(
     "Type JP to test the jumpscare."
 );
+
+
+
+/* ===== VENT ATTACK FIX =====
+   Maintenance -> vent travel 1 -> vent travel 2 -> behind player.
+   Once behind the player, Ear Dog kills after a short reaction window unless
+   the flashlight is held on him continuously for 5 seconds.
+*/
+let ventKillTimer = null;
+
+function cancelVentKill(){
+    if(ventKillTimer){
+        clearTimeout(ventKillTimer);
+        ventKillTimer = null;
+    }
+}
+
+function armVentKill(){
+    cancelVentKill();
+    if(!gameActive || powerOut || orelhaLocation !== "vent") return;
+
+    // Gives enough time to turn around and hold the flashlight for the required 5s.
+    const killDelay = customNightMode
+        ? Math.max(6.0, 9.0 - ((Math.max(1,Math.min(20,customAI))-1)/19)*3.0)
+        : ({1:10,2:9,3:8.5,4:8,5:7.5,6:7}[currentNight] || 8);
+
+    ventKillTimer = setTimeout(()=>{
+        ventKillTimer = null;
+        if(gameActive && !powerOut && orelhaLocation === "vent"){
+            deathReason = "vent";
+            playJumpscare();
+        }
+    }, killDelay * 1000);
+}
+
+/* Replace the vent route with one authoritative route. */
+enterVentRoute = function(){
+    clearTimeout(ventTravelTimer);
+    cancelVentKill();
+    stopVentFlashCounter();
+
+    if(!gameActive || powerOut || orelhaLocation !== "maintenance") return;
+
+    orelhaLocation = "vent_travel_1";
+    if(camerasOpen) selectCamera(currentCamera,false);
+
+    if(ventCloserAudio){
+        ventCloserAudio.currentTime=0;
+        ventCloserAudio.play().catch(()=>{});
+    }
+
+    // Broken ventilation makes him travel faster.
+    const speed = systems.vent ? 1 : 0.72;
+
+    ventTravelTimer=setTimeout(()=>{
+        if(!gameActive || powerOut || orelhaLocation!=="vent_travel_1") return;
+
+        orelhaLocation="vent_travel_2";
+
+        ventTravelTimer=setTimeout(()=>{
+            if(!gameActive || powerOut || orelhaLocation!=="vent_travel_2") return;
+
+            // Direct assignment avoids legacy location wrappers cancelling the route.
+            orelhaLocation="vent";
+            clearTimeout(maintenanceDangerTimer);
+            clearTimeout(securityAttackTimer);
+
+            if(camerasOpen) selectCamera(currentCamera,false);
+            if(currentView==="back") updateGameImage();
+
+            armVentKill();
+        },(3000+Math.random()*1800)*speed);
+
+    },(3200+Math.random()*1800)*speed);
+};
+
+/* Flashlight success must also cancel the pending vent kill. */
+const _ventFixedStartFlashCounter = startVentFlashCounter;
+startVentFlashCounter = function(){
+    if(ventFlashTimer || !flashlightOn || currentView!=="back" || orelhaLocation!=="vent") return;
+
+    ventFlashStartedAt=performance.now();
+    ventFlashTimer=setInterval(()=>{
+        if(!gameActive || powerOut || !flashlightOn || currentView!=="back" || orelhaLocation!=="vent"){
+            stopVentFlashCounter();
+            return;
+        }
+
+        if(performance.now()-ventFlashStartedAt>=5000){
+            stopVentFlashCounter();
+            cancelVentKill();
+
+            // Successful defense sends him back to Loading Dock.
+            setOrelhaLocation(ORELHA_START_CAMERA);
+            updateGameImage();
+        }
+    },50);
+};
+
+/* Any normal move away from the final vent state cancels its kill timer. */
+const _ventFixedSetLocation = setOrelhaLocation;
+setOrelhaLocation = function(location){
+    const leavingVent = orelhaLocation==="vent" && location!=="vent";
+    _ventFixedSetLocation(location);
+    if(leavingVent) cancelVentKill();
+    if(location==="vent") armVentKill();
+};
+
+/* Clean up the vent attack timer when a night ends or power goes out. */
+const _ventFixedCompleteNight = completeNight;
+completeNight = function(){
+    cancelVentKill();
+    clearTimeout(ventTravelTimer);
+    return _ventFixedCompleteNight.apply(this,arguments);
+};
+
+const _ventFixedPowerOutage = triggerPowerOutage;
+triggerPowerOutage = function(){
+    cancelVentKill();
+    clearTimeout(ventTravelTimer);
+    return _ventFixedPowerOutage.apply(this,arguments);
+};
 
 </script>
 
