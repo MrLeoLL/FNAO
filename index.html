@@ -1413,6 +1413,34 @@ font:700 17px "Courier New",monospace;letter-spacing:2px;text-align:center;text-
 }
 #mute-call-button:hover{background:rgba(255,255,255,.12)}
 
+
+/* ===== ELECTRICAL ROOM POWER DRAIN ===== */
+#electrical-warning{
+    position:absolute;right:28px;top:112px;z-index:58;display:none;
+    color:#ff2b2b;font:900 17px "Courier New",monospace;letter-spacing:2px;
+    text-shadow:0 0 7px #f00,2px 2px #000;pointer-events:none;
+}
+#electrical-warning.active{display:block;animation:electricalAlert .55s steps(2,end) infinite}
+@keyframes electricalAlert{0%,45%{opacity:1}46%,100%{opacity:.18}}
+
+#electrical-cam-alert{
+    position:absolute;left:76.8%;top:43.0%;z-index:57;display:none;
+    color:#ff3030;font:900 15px "Courier New",monospace;
+    text-shadow:0 0 8px #f00,2px 2px #000;pointer-events:none;
+    animation:electricalAlert .55s steps(2,end) infinite;
+}
+#electrical-cam-alert.active{display:block}
+
+#controlled-shock{
+    position:absolute;left:86.8%;top:66%;z-index:58;display:none;
+    transform:translate(-50%,-50%);
+    border:1px solid #ff4a4a;background:rgba(15,0,0,.88);color:#fff;
+    padding:9px 12px;font:900 11px "Courier New",monospace;letter-spacing:1px;
+    cursor:pointer;white-space:nowrap;
+}
+#controlled-shock.show{display:block}
+#controlled-shock:hover{background:#7b0000}
+
 </style>
 
 </head>
@@ -1627,6 +1655,7 @@ font:700 17px "Courier New",monospace;letter-spacing:2px;text-align:center;text-
     <div id="turn-back" class="turn-zone">⌄</div>
     <div id="vent-red"></div><div id="vent-blink"></div>
     <div id="system-alerts"></div>
+    <div id="electrical-warning">⚠ POWER DRAIN</div>
 
     <button id="mute-call-button" onclick="muteNightCall()">MUTE CALL</button>
 
@@ -1650,6 +1679,8 @@ font:700 17px "Courier New",monospace;letter-spacing:2px;text-align:center;text-
             <button class="camera-hotspot" id="cam-04" data-camera="4" aria-label="CAM 04"></button>
             <button class="camera-hotspot" id="cam-05" data-camera="5" aria-label="CAM 05"></button>
             <button class="camera-hotspot" id="cam-06" data-camera="6" aria-label="CAM 06"></button>
+            <div id="electrical-cam-alert">⚠</div>
+            <button id="controlled-shock" type="button">CONTROLLED SHOCK</button>
             <button class="camera-hotspot" id="cam-07" data-camera="7" aria-label="CAM 07"></button>
             <button class="camera-hotspot" id="cam-08" data-camera="8" aria-label="CAM 08"></button>
             <button class="camera-hotspot" id="cam-09" data-camera="9" aria-label="CAM 09"></button>
@@ -2467,17 +2498,192 @@ document.addEventListener("keyup", event => {
 });
 window.addEventListener("blur", cancelEraseDataHold);
 
-// Secret debug shortcut: type cd1 during an active night to instantly reach 6 AM.
+
+/* ===== ELECTRICAL ROOM MECHANIC =====
+   While Ear Dog is in Electrical Room he continuously drains extra power.
+   The office shows a blinking warning. With cameras open, the warning moves
+   beside Electrical Room and CONTROLLED SHOCK sends him back to Loading Dock.
+*/
+const electricalWarning = document.getElementById("electrical-warning");
+const electricalCamAlert = document.getElementById("electrical-cam-alert");
+const controlledShockButton = document.getElementById("controlled-shock");
+
+let electricalDrainTimer = null;
+let electricalShockCooldown = false;
+
+function orelhaIsDrainingPower(){
+    return gameActive && orelhaLocation === "eletrical_room";
+}
+
+function updateElectricalUI(){
+    const draining = orelhaIsDrainingPower();
+
+    // Office/global warning only while cameras are closed.
+    if(electricalWarning)
+        electricalWarning.classList.toggle("active", draining && !camerasOpen);
+
+    // With cameras open, warning is shown directly beside CAM 06.
+    if(electricalCamAlert)
+        electricalCamAlert.classList.toggle("active", draining && camerasOpen);
+
+    // Shock can only be used while viewing Electrical Room and Ear Dog is actually there.
+    if(controlledShockButton){
+        const canShock = draining && camerasOpen && currentCamera === 6 && systems.camera && !electricalShockCooldown;
+        controlledShockButton.classList.toggle("show", draining && camerasOpen && currentCamera === 6);
+        controlledShockButton.disabled = !canShock;
+    }
+}
+
+function startElectricalDrain(){
+    stopElectricalDrain();
+    updateElectricalUI();
+
+    electricalDrainTimer = setInterval(()=>{
+        if(!orelhaIsDrainingPower()){
+            stopElectricalDrain();
+            return;
+        }
+
+        // Additional drain: 0.30% per second while he remains in Electrical Room.
+        // This stacks on top of normal Usage consumption.
+        power = Math.max(0, power - 0.30);
+        powerValue.textContent = Math.ceil(power);
+
+        if(power <= 0 && !powerOutActive){
+            triggerPowerOut();
+        }
+        updateElectricalUI();
+    },1000);
+}
+
+function stopElectricalDrain(){
+    if(electricalDrainTimer){
+        clearInterval(electricalDrainTimer);
+        electricalDrainTimer = null;
+    }
+    updateElectricalUI();
+}
+
+function controlledShock(){
+    if(!orelhaIsDrainingPower() || !camerasOpen || currentCamera !== 6 || !systems.camera || electricalShockCooldown)
+        return;
+
+    electricalShockCooldown = true;
+
+    // Camera interference gives visual feedback for the shock.
+    if(typeof cameraStaticBurst === "function") cameraStaticBurst();
+    else {
+        const st = document.getElementById("camera-static");
+        if(st){
+            st.classList.remove("burst");
+            void st.offsetWidth;
+            st.classList.add("burst");
+        }
+    }
+
+    // Shock immediately sends Ear Dog back to his initial spawn point.
+    setOrelhaLocation(ORELHA_START_CAMERA);
+    stopElectricalDrain();
+    updateCameraFeed();
+    updateElectricalUI();
+
+    // Small anti-spam cooldown.
+    setTimeout(()=>{
+        electricalShockCooldown = false;
+        updateElectricalUI();
+    },3000);
+}
+
+if(controlledShockButton)
+    controlledShockButton.addEventListener("click", controlledShock);
+
+// Hook Ear Dog movement without replacing the existing movement logic.
+const _electricalSetOrelhaLocation = setOrelhaLocation;
+setOrelhaLocation = function(location){
+    _electricalSetOrelhaLocation(location);
+
+    if(location === "eletrical_room") startElectricalDrain();
+    else stopElectricalDrain();
+
+    updateElectricalUI();
+};
+
+// Keep warning/button correct when camera state or selected camera changes.
+const _electricalSelectCamera = selectCamera;
+selectCamera = function(number){
+    const result = _electricalSelectCamera.apply(this, arguments);
+    updateElectricalUI();
+    return result;
+};
+
+const _electricalOpenCameras = openCameras;
+openCameras = function(){
+    const result = _electricalOpenCameras.apply(this, arguments);
+    updateElectricalUI();
+    return result;
+};
+
+const _electricalCloseCameras = closeCameras;
+closeCameras = function(){
+    const result = _electricalCloseCameras.apply(this, arguments);
+    updateElectricalUI();
+    return result;
+};
+
+// Cleanup between nights / game states.
+const _electricalCompleteNight = completeNight;
+completeNight = function(){
+    stopElectricalDrain();
+    return _electricalCompleteNight.apply(this, arguments);
+};
+
+
+// Secret debug shortcuts.
+// cd1 = instantly completes the current night.
+// cd2 = simulates completing Nights 1-5: first star + Night 6 unlocked.
+// cd3 = simulates completing Night 6: second star + Custom Night unlocked.
+// cd4 = simulates completing AI 20 Custom Night: third star.
 let debugCodeBuffer = "";
+
+function applyDebugProgress(stars) {
+    stars = Math.max(0, Math.min(3, stars));
+    localStorage.setItem("fnao-stars", String(stars));
+
+    // First star means the main five nights were completed.
+    if (stars >= 1) {
+        saveData = { night: 5, completed: true };
+        localStorage.setItem("fnao-save", JSON.stringify(saveData));
+    }
+
+    updateStars();
+    updateContinueButton();
+}
+
 document.addEventListener("keydown", event => {
-    if (!gameActive || jpPlaying || event.repeat) return;
-    if (event.key && event.key.length === 1) {
-        debugCodeBuffer = (debugCodeBuffer + event.key.toLowerCase()).slice(-3);
-        if (debugCodeBuffer === "cd1") {
+    if (jpPlaying || event.repeat) return;
+    if (!event.key || event.key.length !== 1) return;
+
+    debugCodeBuffer = (debugCodeBuffer + event.key.toLowerCase()).slice(-3);
+
+    if (debugCodeBuffer === "cd1" && gameActive) {
+        debugCodeBuffer = "";
+        gameMinutes = 360;
+        gameTime.textContent = "6 AM";
+        completeNight();
+        return;
+    }
+
+    // Progress shortcuts work from the menu, so the unlock can be seen immediately.
+    if (menu.style.display !== "none") {
+        if (debugCodeBuffer === "cd2") {
             debugCodeBuffer = "";
-            gameMinutes = 360;
-            gameTime.textContent = "6 AM";
-            completeNight();
+            applyDebugProgress(Math.max(1, Number(localStorage.getItem("fnao-stars") || 0)));
+        } else if (debugCodeBuffer === "cd3") {
+            debugCodeBuffer = "";
+            applyDebugProgress(Math.max(2, Number(localStorage.getItem("fnao-stars") || 0)));
+        } else if (debugCodeBuffer === "cd4") {
+            debugCodeBuffer = "";
+            applyDebugProgress(3);
         }
     }
 });
