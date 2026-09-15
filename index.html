@@ -1298,12 +1298,39 @@ body {
     user-select: none;
 }
 .erase-data-hint.holding { color: #fff; }
+
+/* CONTENT WARNING */
+#content-warning{position:fixed;inset:0;z-index:99999;background:#000;display:flex;align-items:center;justify-content:center;color:#fff;font-family:"Courier New",monospace;}
+.warning-box{width:min(720px,88vw);text-align:center;padding:42px 34px;border:2px solid rgba(255,255,255,.7);background:rgba(0,0,0,.96);box-shadow:0 0 40px rgba(255,255,255,.08);}
+.warning-title{font-size:34px;letter-spacing:5px;margin-bottom:26px;}
+.warning-text{font-size:17px;line-height:1.7;color:#d8d8d8;margin-bottom:30px;}
+.warning-text strong{color:#fff;}
+#warning-confirm{font:700 15px "Courier New",monospace;letter-spacing:2px;color:#fff;background:#050505;border:1px solid #aaa;padding:14px 24px;cursor:pointer;}
+#warning-confirm:hover{background:#fff;color:#000;}
+
+
+#power-outage{display:none;position:fixed;inset:0;z-index:2400000;background:rgba(0,0,0,.94);color:#d00;align-items:center;justify-content:center;flex-direction:column;font-family:"Courier New",monospace;text-align:center;text-shadow:0 0 12px #700;}
+#power-outage.active{display:flex;}
+#power-outage-title{font-size:clamp(38px,7vw,92px);font-weight:bold;letter-spacing:8px;}
+#power-outage-count{font-size:clamp(54px,10vw,130px);font-weight:bold;margin-top:22px;}
 </style>
 
 </head>
 
 
 <body>
+
+<div id="content-warning">
+  <div class="warning-box">
+    <div class="warning-title">WARNING</div>
+    <div class="warning-text">
+      This game contains <strong>jumpscares</strong>, <strong>loud sounds</strong>, <strong>flashing lights</strong> and rapidly changing visual effects.<br><br>
+      These effects may be unsuitable for people with photosensitive epilepsy or sensitivity to sudden sounds and images.
+    </div>
+    <button id="warning-confirm" type="button">CONFIRM &amp; CONTINUE</button>
+  </div>
+</div>
+
 
 
 <!-- ======================================================
@@ -1463,7 +1490,7 @@ body {
         <div class="hud-top"><div id="game-time">12 AM</div><div id="game-night">Night 1</div></div>
         <div class="hud-bottom">
             <div>Power: <span id="power-value">100</span>%</div>
-            <div>Noise: <span id="noise-meter">▮□□□□</span></div>
+            <div>Usage: <span id="noise-meter">▮□□□□</span></div>
         </div>
     </div>
     <div id="turn-left" class="turn-zone">‹</div>
@@ -1590,8 +1617,10 @@ body {
 <audio id="door-audio" src="audio/Sfxbible_12478.mp3" preload="auto"></audio>
 <audio id="vent-closer-audio" src="audio/vent_closer1.mp3" preload="auto"></audio>
 <audio id="menu-audio" src="audio/menu.mp3" preload="auto" loop></audio>
+<div id="power-outage"><div id="power-outage-title">EAR IS COMING</div><div id="power-outage-count">10</div></div>
 <audio id="startday-audio" src="audio/startday.mp3" preload="auto"></audio>
 <audio id="night-complete-audio" src="audio/Clocks_Chimes_Cl_02480702.mp3" preload="auto"></audio>
+<audio id="flashlight-audio" src="audio/Buzz_Fan_Florescent2.mp3" preload="auto" loop></audio>
 <div id="night-complete"><div class="night-complete-time"><span class="hour-swap"><span class="hour-five">5</span><span class="hour-six">6</span></span><span>&nbsp;AM</span></div></div>
 <div id="the-end"><div class="end-title">THE END</div><div class="end-sub">CLICK TO RETURN TO MENU</div></div>
 <div id="glitch"></div>
@@ -1722,6 +1751,7 @@ let systems={audio:true,camera:true,vent:true}; let failureTimer=null;
 const AUDIO_CHANCE={1:1,2:.8,3:.6,4:.4,5:.2,6:.12}; const AUDIO_LIMIT={1:Infinity,2:10,3:7,4:5,5:3,6:3};
 const ORELHA_NIGHT_AI={1:2,2:4,3:8,4:10,5:15,6:19}; // escala 1-20
 let customNightMode=false, customAI=1;
+let powerOut=false, powerDeathTimer=null, powerDeathInterval=null;
 const lureAudio=document.getElementById("lure-audio"),ventErrorAudio=document.getElementById("vent-error-audio"),fixingAudio=document.getElementById("fixing-audio");
 ventErrorAudio.loop=true; fixingAudio.loop=true;
 const lever2Audio=document.getElementById("lever2-audio");
@@ -1732,7 +1762,15 @@ let ventTravelTimer=null, ventFlashTimer=null, ventFlashStartedAt=0;
 const menuAudio=document.getElementById("menu-audio");
 const startdayAudio=document.getElementById("startday-audio");
 menuAudio.loop=true;
-function playMenuMusic(){ if(!menuAudio)return; if(menu.style.display!=="none"){ menuAudio.play().catch(()=>{}); } }
+function playMenuMusic(){ if(!menuAudio)return; if(document.getElementById("content-warning"))return; if(menu.style.display!=="none"){ menuAudio.play().catch(()=>{}); } }
+
+const warningConfirm=document.getElementById("warning-confirm");
+if(warningConfirm){warningConfirm.addEventListener("click",()=>{
+  const warning=document.getElementById("content-warning");
+  if(warning) warning.remove();
+  playMenuMusic();
+});}
+
 function stopMenuMusic(){ if(!menuAudio)return; menuAudio.pause(); menuAudio.currentTime=0; }
 // Browsers may block autoplay until the first interaction. Start it as soon as interaction is allowed.
 window.addEventListener("load",playMenuMusic);
@@ -1791,7 +1829,20 @@ function scheduleOrelhaMove(){
     if(!gameActive)return;
     if(CAMERA_KEYS.includes(orelhaLocation)&&Math.random()<moveChance){
       let choices=adjacentCameras(orelhaLocation);
-      if(choices.length)setOrelhaLocation(choices[Math.floor(Math.random()*choices.length)]);
+      if(choices.length){
+        // Objective AI: prefer routes that actually pressure the player instead of wandering forever.
+        const attackTargets=["security_corridor","maintenance"];
+        const direct=choices.filter(k=>attackTargets.includes(k));
+        let target;
+        const objectiveBias=Math.min(.90,.35+ai*.0275);
+        if(direct.length && Math.random()<objectiveBias) target=direct[Math.floor(Math.random()*direct.length)];
+        else {
+          // Prefer neighbors whose next step can reach an attack route.
+          const forward=choices.filter(k=>adjacentCameras(k).some(n=>attackTargets.includes(n)));
+          target=(forward.length && Math.random()<objectiveBias)?forward[Math.floor(Math.random()*forward.length)]:choices[Math.floor(Math.random()*choices.length)];
+        }
+        setOrelhaLocation(target);
+      }
     }
     scheduleOrelhaMove();
   },interval);
@@ -1818,7 +1869,7 @@ function completeNight(){
  // Full completion sequence lasts exactly 16 seconds.
  setTimeout(()=>{
    transition.style.display="none";if(chime){chime.pause();chime.currentTime=0;}nightCompletionRunning=false;
-   if(customNightMode){document.getElementById("the-end").style.display="flex";return;}
+   if(customNightMode){if(customAI===20){localStorage.setItem("fnao-stars",String(Math.max(3,Number(localStorage.getItem("fnao-stars")||0))));updateStars();}document.getElementById("the-end").style.display="flex";return;}
    if(currentNight<5){saveData={night:currentNight+1,completed:false};localStorage.setItem("fnao-save",JSON.stringify(saveData));startNight(currentNight+1);return;}
    if(currentNight===5){localStorage.setItem("fnao-stars",String(Math.max(1,Number(localStorage.getItem("fnao-stars")||0))));saveData={night:5,completed:true};localStorage.setItem("fnao-save",JSON.stringify(saveData));}
    if(currentNight===6){localStorage.setItem("fnao-stars",String(Math.max(2,Number(localStorage.getItem("fnao-stars")||0))));}
@@ -1826,7 +1877,7 @@ function completeNight(){
  },16000);
 }
 function resetGameplayUIForMenu(){
- gameActive=false;camerasOpen=false;repairOpen=false;repairing=false;
+ gameActive=false;camerasOpen=false;repairOpen=false;repairing=false;powerOut=false;clearTimeout(powerDeathTimer);clearInterval(powerDeathInterval);const po=document.getElementById("power-outage");if(po)po.classList.remove("active");
  clearInterval(nightTimer);clearInterval(powerTimer);clearTimeout(orelhaMoveTimer);clearTimeout(failureTimer);clearTimeout(maintenanceDangerTimer);clearTimeout(securityAttackTimer);clearTimeout(ventTravelTimer);stopVentFlashCounter();
  gameScreen.style.display="none";cameraUI.classList.remove("active");repairUI.classList.remove("active");audioLure.classList.remove("show");flashlightOverlay.classList.remove("on");
  if(ventErrorAudio){ventErrorAudio.pause();ventErrorAudio.currentTime=0;}if(fixingAudio){fixingAudio.pause();fixingAudio.currentTime=0;}
@@ -2040,6 +2091,7 @@ function beginGameplay(night) {
     gameNight.textContent = customNightMode ? ("Custom " + customAI) : ("Night " + night);
     gameTime.textContent = "12 AM";
     powerValue.textContent = "100";
+    updateUsage();
     updateTurnZones();
     gameScreen.style.display = "block";
     repairOpen=false;repairing=false;repairUI.classList.remove("active");systems={audio:true,camera:true,vent:true};audioUses=0;audioCooldown=false;setOrelhaLocation(ORELHA_START_CAMERA);updateSystemUI();scheduleOrelhaMove();scheduleFailure();
@@ -2059,13 +2111,38 @@ function beginGameplay(night) {
     }, 1000);
 
     powerTimer = setInterval(() => {
-        if (!gameActive || power <= 0) return;
-        let drain = 0.015;
-        if (doorClosed) drain += 0.025;
+        if (!gameActive || powerOut) return;
+        // Power consumption scales with the night.
+        // Night 1 is the baseline; later nights progressively punish waste.
+        const nightPowerMultiplier = customNightMode
+            ? (1 + ((customAI - 1) / 19) * 0.50) // AI 1 = 1.00x, AI 20 = 1.50x
+            : ({1:1.00, 2:1.08, 3:1.16, 4:1.25, 5:1.35, 6:1.45}[currentNight] || 1.00);
+
+        // Per-second drain. Door is intentionally expensive so leaving it
+        // closed is visibly dangerous even on Night 1.
+        let drain = 0.018;          // passive
+        if (doorClosed) drain += 0.72;
         if (flashlightOn) drain += 0.035;
+        if (camerasOpen) drain += 0.014;
+
+        drain *= nightPowerMultiplier;
         power = Math.max(0, power - drain);
         powerValue.textContent = Math.ceil(power);
+        if(power<=0) triggerPowerOutage();
     }, 1000);
+}
+
+function triggerPowerOutage(){
+    if(powerOut||!gameActive)return;
+    powerOut=true; power=0; powerValue.textContent="0";
+    doorClosed=false; flashlightOn=false; stopFlashlightHum(); stopVentFlashCounter();
+    camerasOpen=false; cameraUI.classList.remove("active"); repairOpen=false; repairUI.classList.remove("active");
+    updateGameImage();
+    const overlay=document.getElementById("power-outage"), count=document.getElementById("power-outage-count");
+    overlay.classList.add("active");
+    let seconds=10; count.textContent=seconds;
+    powerDeathInterval=setInterval(()=>{seconds--;count.textContent=Math.max(0,seconds);if(seconds<=0)clearInterval(powerDeathInterval);},1000);
+    powerDeathTimer=setTimeout(()=>{if(gameActive&&powerOut){overlay.classList.remove("active");playJumpscare();}},10000);
 }
 
 function updateGameImage() {
@@ -2137,9 +2214,11 @@ function selectCamera(number, flash = true) {
 function openCameras() {
     if (!gameActive || power <= 0 || turning) return;
     camerasOpen = true;
+    updateUsage();
     playLever2();
     currentView = "camera";
     flashlightOn = false;
+    const fa = document.getElementById("flashlight-audio"); if(fa){fa.pause();fa.currentTime=0;}
     flashlightOverlay.classList.remove("on");
     cameraUI.classList.add("active");
     updateTurnZones();
@@ -2149,6 +2228,7 @@ function openCameras() {
 function closeCameras() {
     if (!camerasOpen) return;
     camerasOpen = false;
+    updateUsage();
     playLever2();
     cameraUI.classList.remove("active");
     audioLure.classList.remove("show");
@@ -2172,22 +2252,38 @@ cameraHotspots.forEach(button => {
 function toggleDoor() {
     if (!gameActive || power <= 0 || currentView !== "door" || turning) return;
     doorClosed = !doorClosed;
+    updateUsage();
     playDoorSound();
     if (currentView === "door") updateGameImage();
     setNoise(doorClosed ? 4 : 3);
 }
 
+function updateUsage() {
+    // One bar = the building's normal/passive electrical load.
+    // Additional bars represent equipment currently drawing power.
+    let usage = 1;
+    if (camerasOpen) usage += 1;
+    if (flashlightOn) usage += 1;
+    if (doorClosed) usage += 2; // the powered security door is the heaviest load
+    usage = Math.max(1, Math.min(5, usage));
+    noiseMeter.textContent = "▮".repeat(usage) + "□".repeat(5 - usage);
+}
+
 function setNoise(level) {
-    const n = Math.max(0, Math.min(5, level));
-    noiseMeter.textContent = "▮".repeat(n) + "□".repeat(5 - n);
-    setTimeout(() => {
-        if (gameActive) noiseMeter.textContent = "▮□□□□";
-    }, 650);
+    // Legacy calls now simply refresh the live Usage meter.
+    updateUsage();
 }
 
 function setFlashlight(on) {
     if (!gameActive || power <= 0 || currentView !== "back") on = false;
+    const wasOn = flashlightOn;
     flashlightOn = on;
+    updateUsage();
+    const flashlightAudio = document.getElementById("flashlight-audio");
+    if (flashlightAudio) {
+        if (on && !wasOn) { flashlightAudio.currentTime = 0; flashlightAudio.play().catch(()=>{}); }
+        else if (!on && wasOn) { flashlightAudio.pause(); flashlightAudio.currentTime = 0; }
+    }
     flashlightOverlay.classList.remove("on");
     if (currentView === "back") updateGameImage();
     // Orelha must be held in the flashlight for 5 continuous seconds to be driven out of the vent.
