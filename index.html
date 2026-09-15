@@ -1341,6 +1341,34 @@ body {
 #power-outage.active{display:flex;}
 #power-outage-title{font-size:clamp(38px,7vw,92px);font-weight:bold;letter-spacing:8px;}
 #power-outage-count{font-size:clamp(54px,10vw,130px);font-weight:bold;margin-top:22px;}
+
+/* ===== EXPANDED GAMEPLAY / EXTRAS ===== */
+#camera-static{position:absolute;inset:0;z-index:34;pointer-events:none;opacity:0;background:
+repeating-linear-gradient(0deg,rgba(255,255,255,.16) 0 1px,rgba(0,0,0,.15) 2px 4px);
+mix-blend-mode:screen}
+#camera-static.burst{animation:camStaticBurst .48s steps(5,end)}
+#camera-static.heavy{animation:camStaticHeavy .9s steps(7,end)}
+@keyframes camStaticBurst{0%{opacity:.9}100%{opacity:0}}
+@keyframes camStaticHeavy{0%,100%{opacity:0}20%,70%{opacity:.95}}
+#rare-camera-event{position:absolute;inset:0;z-index:35;display:none;align-items:center;justify-content:center;
+font:700 28px "Courier New",monospace;letter-spacing:5px;color:#fff;text-shadow:0 0 12px #fff;background:rgba(0,0,0,.15);pointer-events:none}
+#gameover-message{position:absolute;left:50%;bottom:8%;transform:translateX(-50%);z-index:4;color:#ddd;
+font:700 17px "Courier New",monospace;letter-spacing:2px;text-align:center;text-shadow:2px 2px #000}
+.extras-tabs{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:-18px 0 20px}
+.extras-tab{border:1px solid #666;background:#050505;color:#fff;padding:9px 14px;font:700 14px "Courier New",monospace;cursor:pointer}
+.extras-tab.active{background:#fff;color:#000}
+.extras-page{display:none;min-height:58vh;max-height:64vh;width:min(900px,90vw);overflow:auto;text-align:center}
+.extras-page.active{display:block}
+.extras-gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.extras-gallery img{width:100%;aspect-ratio:16/9;object-fit:cover;border:1px solid #444}
+.extras-gallery div{font:700 12px "Courier New",monospace;letter-spacing:1px}
+.extras-sound{margin:6px}
+#extras-screen h2{margin-bottom:25px}
+.custom-mods{margin:18px auto 25px;display:grid;grid-template-columns:1fr 1fr;gap:8px;width:min(520px,90vw);text-align:left}
+.custom-mod{border:1px solid #555;padding:10px;cursor:pointer;background:#080808}
+.custom-mod input{margin-right:9px}
+.custom-preset{font-size:14px!important;margin:5px!important}
+
 </style>
 
 </head>
@@ -1462,30 +1490,39 @@ body {
 ====================================================== -->
 
 <div id="extras-screen">
-
-    <h2>
-        EXTRAS
-    </h2>
-
-    <div id="extras-character">
-        <img src="images/ear_dog.png" alt="Ear Dog">
-        <div id="extras-character-name">EAR DOG</div>
+    <h2>EXTRAS</h2>
+    <div class="extras-tabs">
+      <button class="extras-tab active" data-extra="characters">CHARACTERS</button>
+      <button class="extras-tab" data-extra="jumpscares">JUMPSCARES</button>
+      <button class="extras-tab" data-extra="cameras">CAMERAS</button>
+      <button class="extras-tab" data-extra="sounds">SOUNDS</button>
+      <button class="extras-tab" data-extra="making">MAKING OF</button>
     </div>
-
-    <button id="extras-jumpscare-button" onclick="playExtrasJumpscare()">
-        JUMPSCARE
-    </button>
-
-    <button
-        class="back-button"
-        onclick="closeExtras()"
-    >
-        &lt; BACK
-    </button>
-
+    <div class="extras-page active" id="extra-characters">
+      <div id="extras-character"><img src="images/ear_dog.png" alt="Ear Dog"><div id="extras-character-name">EAR DOG</div></div>
+    </div>
+    <div class="extras-page" id="extra-jumpscares">
+      <div id="extras-character"><img src="images/ear_dog.png" alt="Ear Dog"><div id="extras-character-name">EAR DOG</div></div>
+      <button id="extras-jumpscare-button" onclick="playExtrasJumpscare()">JUMPSCARE</button>
+    </div>
+    <div class="extras-page" id="extra-cameras"><div class="extras-gallery" id="extras-camera-gallery"></div></div>
+    <div class="extras-page" id="extra-sounds">
+      <button class="extras-jumpscare-button extras-sound" onclick="previewSound('lure-audio')">AUDIO LURE</button>
+      <button class="extras-jumpscare-button extras-sound" onclick="previewSound('camera-switch-audio')">CAMERA SWITCH</button>
+      <button class="extras-jumpscare-button extras-sound" onclick="previewSound('door-audio')">DOOR</button>
+      <button class="extras-jumpscare-button extras-sound" onclick="previewSound('vent-closer-audio')">VENT</button>
+      <button class="extras-jumpscare-button extras-sound" onclick="previewSound('lever2-audio')">MONITOR</button>
+    </div>
+    <div class="extras-page" id="extra-making">
+      <div style="font:18px 'Courier New',monospace;line-height:1.8;padding:35px">
+        <b>FIVE NIGHTS AT ORELHA'S</b><br><br>
+        Survive the Steplers facility by tracking Ear Dog through the camera network,
+        managing power, repairing failing systems and keeping him away from the office.<br><br>
+        CAMERA NETWORK • AUDIO LURE • VENT ROUTE • POWER MANAGEMENT
+      </div>
+    </div>
+    <button class="back-button" onclick="closeExtras()">&lt; BACK</button>
 </div>
-
-
 
 
 <div id="custom-night-screen" style="display:none;position:fixed;inset:0;z-index:2500000;background:#000;color:#fff;align-items:center;justify-content:center;font-family:'Courier New',monospace;">
@@ -1497,7 +1534,17 @@ body {
       <span id="custom-ai-value" style="font-size:44px;min-width:70px;">1</span>
       <button class="menu-button" onclick="changeCustomAI(1)" style="font-size:28px;">&gt;</button>
     </div>
-    <button class="menu-button" onclick="startCustomNight()">START</button>
+    <div class="custom-mods">
+<label class="custom-mod"><input type="checkbox" id="mod-fast-errors">FAST ERRORS</label>
+<label class="custom-mod"><input type="checkbox" id="mod-low-power">LOW POWER</label>
+<label class="custom-mod"><input type="checkbox" id="mod-weak-audio">WEAK AUDIO</label>
+<label class="custom-mod"><input type="checkbox" id="mod-no-map">NO CAMERA MAP</label>
+</div>
+<div style="margin-bottom:15px">
+<button class="menu-button custom-preset" onclick="setCustomPreset('earhell')">EAR HELL</button>
+<button class="menu-button custom-preset" onclick="setCustomPreset('classic20')">20/20</button>
+</div>
+<button class="menu-button" onclick="startCustomNight()">START</button>
     <button class="menu-button" onclick="closeCustomNight()">BACK</button>
   </div>
 </div>
@@ -1546,7 +1593,7 @@ body {
 </div>
 
     <div id="camera-ui">
-        <div id="camera-failure">VIDEO ERROR</div>
+        <div id="camera-failure">VIDEO ERROR</div><div id="camera-static"></div><div id="rare-camera-event"></div>
         <div id="camera-location-name">RECEIVING AREA</div>
         <div id="camera-map-wrap">
             <img id="camera-map-image" src="images/camera_map.png" alt="Camera map" draggable="false">
@@ -1607,7 +1654,7 @@ body {
     >
 
 
-    <div class="gameover-options">
+    <div id="gameover-message"></div><div class="gameover-options">
 
         <button
             class="gameover-button"
@@ -2118,7 +2165,7 @@ function startNight(night) {
 function beginGameplay(night) {
     currentView = "office";
     doorClosed = false;
-    power = 100;
+    power = (customNightMode && customMods.lowPower) ? 65 : 100;
     gameMinutes = 0;
     gameActive = true;
     camerasOpen = false;
@@ -2127,7 +2174,7 @@ function beginGameplay(night) {
     gameView.src = "images/office.png";
     gameNight.textContent = customNightMode ? ("Custom " + customAI) : ("Night " + night);
     gameTime.textContent = "12 AM";
-    powerValue.textContent = "100";
+    powerValue.textContent = Math.ceil(power);
     updateUsage();
     updateTurnZones();
     gameScreen.style.display = "block";
@@ -2748,9 +2795,7 @@ function playExtrasJumpscare() {
     if (jpPlaying) return;
 
     // Pause menu music while the Extras jumpscare is playing.
-    if (menuMusic) {
-        menuMusic.pause();
-    }
+    if (menuAudio) { menuAudio.pause(); }
 
     extrasJumpscareMode = true;
     playJumpscare();
@@ -3083,9 +3128,7 @@ function endJumpscare() {
         extrasScreen.style.display = "flex";
 
         // Resume menu music after the non-lethal Extras jumpscare.
-        if (menuMusic) {
-            menuMusic.play().catch(() => {});
-        }
+        if (menuAudio) { menuAudio.play().catch(() => {}); }
         return;
     }
 
@@ -3165,6 +3208,185 @@ function backToMenu() {
 /* =========================================================
    DEBUG
 ========================================================= */
+
+
+/* ===== GAMEPLAY EXPANSION ===== */
+let customMods={fastErrors:false,lowPower:false,weakAudio:false,noMap:false};
+let deathReason="caught";
+let rareEventCooldown=false;
+
+const NIGHT_BEHAVIOR={
+  1:{wake:180,objective:.38,moveMin:6500,moveMax:9000},
+  2:{wake:105,objective:.48,moveMin:5900,moveMax:8200},
+  3:{wake:60, objective:.62,moveMin:5100,moveMax:7300},
+  4:{wake:30, objective:.74,moveMin:4400,moveMax:6500},
+  5:{wake:0,  objective:.86,moveMin:3600,moveMax:5600},
+  6:{wake:0,  objective:.92,moveMin:3100,moveMax:5000}
+};
+function currentBehavior(){
+  if(customNightMode){
+    let t=(customAI-1)/19;
+    return {wake:0,objective:.45+t*.52,moveMin:6200-t*3600,moveMax:8500-t*3900};
+  }
+  return NIGHT_BEHAVIOR[currentNight]||NIGHT_BEHAVIOR[6];
+}
+orelhaIsActive=function(){return gameMinutes>=currentBehavior().wake;};
+
+function distanceToAttack(start){
+  const targets=new Set(["maintenance","security_corridor"]);
+  let q=[[start,0]],seen=new Set([start]);
+  while(q.length){let [x,d]=q.shift();if(targets.has(x))return d;for(const n of adjacentCameras(x))if(!seen.has(n)){seen.add(n);q.push([n,d+1]);}}
+  return 99;
+}
+scheduleOrelhaMove=function(){
+  clearTimeout(orelhaMoveTimer); if(!gameActive)return;
+  const b=currentBehavior();
+  if(!orelhaIsActive()){orelhaMoveTimer=setTimeout(scheduleOrelhaMove,1000);return;}
+  const ai=customNightMode?customAI:(ORELHA_NIGHT_AI[currentNight]??2);
+  const moveChance=Math.min(.97,(ai+(systems.vent?0:2))/20);
+  const interval=b.moveMin+Math.random()*(b.moveMax-b.moveMin);
+  orelhaMoveTimer=setTimeout(()=>{
+    if(!gameActive)return;
+    if(CAMERA_KEYS.includes(orelhaLocation)&&Math.random()<moveChance){
+      let choices=adjacentCameras(orelhaLocation);
+      if(choices.length){
+        let target;
+        if(Math.random()<b.objective){
+          const best=Math.min(...choices.map(distanceToAttack));
+          const forward=choices.filter(x=>distanceToAttack(x)===best);
+          target=forward[Math.floor(Math.random()*forward.length)];
+        }else target=choices[Math.floor(Math.random()*choices.length)];
+        setOrelhaLocation(target);
+      }
+    }
+    scheduleOrelhaMove();
+  },interval);
+};
+
+function cameraStatic(kind="burst"){
+  const el=document.getElementById("camera-static");if(!el||!camerasOpen)return;
+  el.classList.remove("burst","heavy");void el.offsetWidth;el.classList.add(kind);
+  setTimeout(()=>el.classList.remove(kind),kind==="heavy"?950:520);
+}
+const originalSelectCamera=selectCamera;
+selectCamera=function(number,withSound=true){
+  originalSelectCamera(number,withSound);
+  if(withSound)cameraStatic("burst");
+  maybeRareCameraEvent();
+};
+function maybeRareCameraEvent(){
+  if(rareEventCooldown||!gameActive||!camerasOpen||!systems.camera||Math.random()>.012)return;
+  rareEventCooldown=true;cameraStatic("heavy");
+  const e=document.getElementById("rare-camera-event");
+  const msgs=["...","SIGNAL LOST","DON'T LOOK AWAY","MOVEMENT DETECTED"];
+  e.textContent=msgs[Math.floor(Math.random()*msgs.length)];e.style.display="flex";
+  setTimeout(()=>{e.style.display="none";rareEventCooldown=false;},650+Math.random()*650);
+}
+
+/* Two-stage vent route: Maintenance -> duct 1 -> duct 2 -> behind player. */
+enterVentRoute=function(){
+  clearTimeout(ventTravelTimer);orelhaLocation="vent_travel_1";
+  if(camerasOpen)selectCamera(currentCamera,false);
+  if(ventCloserAudio){ventCloserAudio.currentTime=0;ventCloserAudio.play().catch(()=>{});}
+  const speed=systems.vent?1:.72;
+  ventTravelTimer=setTimeout(()=>{
+    if(!gameActive||orelhaLocation!=="vent_travel_1")return;
+    orelhaLocation="vent_travel_2";
+    ventTravelTimer=setTimeout(()=>{
+      if(!gameActive||orelhaLocation!=="vent_travel_2")return;
+      setOrelhaLocation("vent");if(currentView==="back")updateGameImage();
+    },(3000+Math.random()*1800)*speed);
+  },(3200+Math.random()*1800)*speed);
+};
+
+/* Custom Night modifiers */
+function readCustomMods(){
+  customMods={
+    fastErrors:document.getElementById("mod-fast-errors")?.checked||false,
+    lowPower:document.getElementById("mod-low-power")?.checked||false,
+    weakAudio:document.getElementById("mod-weak-audio")?.checked||false,
+    noMap:document.getElementById("mod-no-map")?.checked||false
+  };
+}
+function setCustomPreset(name){
+  if(name==="earhell"){
+    customAI=20;["mod-fast-errors","mod-low-power","mod-weak-audio","mod-no-map"].forEach(id=>document.getElementById(id).checked=true);
+  }else{
+    customAI=20;["mod-fast-errors","mod-low-power","mod-weak-audio","mod-no-map"].forEach(id=>document.getElementById(id).checked=false);
+  }
+  document.getElementById("custom-ai-value").textContent=customAI;
+}
+const oldStartCustomNight=startCustomNight;
+startCustomNight=function(){readCustomMods();oldStartCustomNight();setTimeout(()=>{document.getElementById("camera-map-wrap").style.visibility=customMods.noMap?"hidden":"visible";},50);};
+
+const oldScheduleFailure=scheduleFailure;
+scheduleFailure=function(){
+  clearTimeout(failureTimer);if(!gameActive)return;
+  let base=(75-Math.min(currentNight,6)*3)*1000;
+  if(customNightMode)base=(72-customAI*1.6)*1000;
+  if(customMods.fastErrors)base*=.48;
+  failureTimer=setTimeout(()=>{
+    if(!gameActive)return;
+    const ventChance=Math.min(.12,.035+(customNightMode?customAI/20*0.07:currentNight*.012));
+    if(Math.random()<ventChance)breakSystem("vent");
+    else if(camerasOpen)breakSystem("camera");
+    scheduleFailure();
+  },base+Math.random()*(customMods.fastErrors?18000:45000));
+};
+const oldUseAudioLure=useAudioLure;
+useAudioLure=function(){
+  if(customNightMode&&customMods.weakAudio&&Math.random()<.45){
+    if(!gameActive||!camerasOpen||audioCooldown||!systems.audio||!orelhaIsActive())return;
+    audioCooldown=true;audioLure.disabled=true;lureAudio.currentTime=0;lureAudio.play().catch(()=>{});audioUses++;
+    if(audioUses>=3)breakSystem("audio");
+    setTimeout(()=>{audioCooldown=false;audioLure.disabled=!systems.audio||!orelhaIsActive();},5000);return;
+  }
+  oldUseAudioLure();
+};
+
+/* Extras */
+document.querySelectorAll(".extras-tab").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll(".extras-tab").forEach(x=>x.classList.remove("active"));
+  document.querySelectorAll(".extras-page").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active");document.getElementById("extra-"+b.dataset.extra).classList.add("active");
+}));
+const gallery=document.getElementById("extras-camera-gallery");
+if(gallery)Object.values(CAMERA_DATA).forEach(c=>{
+  const d=document.createElement("div");d.innerHTML=`<img src="images/${c.key}_semorelha.png" alt="${c.name}"><div>${c.name}</div>`;gallery.appendChild(d);
+});
+function previewSound(id){
+  const a=document.getElementById(id);if(!a)return;
+  menuAudio.pause();a.currentTime=0;a.play().catch(()=>{});
+  const resume=()=>{a.removeEventListener("ended",resume);if(extrasScreen.style.display!=="none")menuAudio.play().catch(()=>{});};
+  a.addEventListener("ended",resume);
+}
+
+/* Variable Game Over messages */
+const oldPlayJumpscare=playJumpscare;
+playJumpscare=function(){
+  if(!extrasJumpscareMode){
+    if(powerOut)deathReason="power";
+    else if(orelhaLocation==="vent")deathReason="vent";
+    else if(orelhaLocation==="door")deathReason="door";
+    else deathReason="caught";
+  }
+  oldPlayJumpscare();
+};
+const oldShowGameOver=showGameOver;
+showGameOver=function(){
+  oldShowGameOver();
+  const messages={
+    vent:["YOU HEARD HIM TOO LATE.","THE DUCT WASN'T EMPTY.","CHECK BEHIND YOU."],
+    door:["THE DOOR WAS OPEN.","HE FOUND THE SECURITY CORRIDOR.","TOO SLOW."],
+    power:["NO POWER. NO DEFENSE.","EAR IS COMING.","YOU USED TOO MUCH."],
+    caught:["KEEP WATCHING.","HE WAS CLOSER THAN YOU THOUGHT.","DON'T LOSE TRACK OF HIM."]
+  };
+  let arr=messages[deathReason]||messages.caught;
+  document.getElementById("gameover-message").textContent=arr[Math.floor(Math.random()*arr.length)];
+};
+
+/* 20/20 is deliberately objective: shortest attack routes dominate decisions.
+   Completing AI 20 still awards the third star through the existing completion code. */
 
 console.log(
     "Five Nights At Orelha's loaded."
