@@ -1200,6 +1200,12 @@ body {
 .turn-zone:hover { color:rgba(255,255,255,.85); }
 #turn-left { left:0; justify-content:flex-start; padding-left:18px; display:none; }
 #turn-right { right:0; justify-content:flex-end; padding-right:18px; }
+#turn-back {
+    left:50%; bottom:0; top:auto; width:190px; height:85px;
+    transform:translateX(-50%);
+    align-items:flex-end; justify-content:center; padding-bottom:12px;
+    font-size:58px;
+}
 .game-hud { position:absolute; inset:0; z-index:12; pointer-events:none; font-family:"Courier New",monospace; text-shadow:2px 2px 3px #000; }
 .hud-top { position:absolute; right:30px; top:24px; text-align:right; font-size:23px; font-weight:bold; line-height:1.45; }
 .hud-bottom { position:absolute; left:28px; bottom:24px; font-size:19px; line-height:1.55; }
@@ -1355,6 +1361,7 @@ body {
     </div>
     <div id="turn-left" class="turn-zone">‹</div>
     <div id="turn-right" class="turn-zone">›</div>
+    <div id="turn-back" class="turn-zone">⌄</div>
 </div>
 
 
@@ -1514,10 +1521,17 @@ const gameScreen = document.getElementById("game-screen");
 const gameView = document.getElementById("game-view");
 const turnLeft = document.getElementById("turn-left");
 const turnRight = document.getElementById("turn-right");
+const turnBack = document.getElementById("turn-back");
 const flashlightOverlay = document.getElementById("flashlight-overlay");
 const powerValue = document.getElementById("power-value");
 const noiseMeter = document.getElementById("noise-meter");
 const gameTime = document.getElementById("game-time");
+
+["tras_escuro_vazio.png","tras_claro_vazio.png","tras_escuro_orelha.png","tras_claro_orelha.png"].forEach(name => {
+    const img = new Image();
+    img.src = "images/" + name;
+});
+
 const gameNight = document.getElementById("game-night");
 
 let currentView = "office";
@@ -1731,8 +1745,13 @@ function beginGameplay(night) {
 function updateGameImage() {
     if (currentView === "office") {
         gameView.src = "images/office.png";
-    } else {
+    } else if (currentView === "door") {
         gameView.src = doorClosed ? "images/door_closed.png" : "images/door_open.png";
+    } else if (currentView === "back") {
+        // Orelha is not programmed yet, so the rear view is empty for now.
+        gameView.src = flashlightOn
+            ? "images/tras_claro_vazio.png"
+            : "images/tras_escuro_vazio.png";
     }
     updateTurnZones();
 }
@@ -1740,16 +1759,22 @@ function updateGameImage() {
 function updateTurnZones() {
     turnLeft.style.display = currentView === "door" ? "flex" : "none";
     turnRight.style.display = currentView === "office" ? "flex" : "none";
+    turnBack.style.display = (currentView === "office" || currentView === "back") ? "flex" : "none";
+    turnBack.textContent = currentView === "back" ? "⌃" : "⌄";
 }
 
 function turnTo(view) {
     if (!gameActive || turning || currentView === view) return;
     turning = true;
-    const goingLeft = view === "office";
+    const goingLeft = view === "office" && currentView === "door";
     gameScreen.classList.add(goingLeft ? "turning-left" : "turning");
 
     setTimeout(() => {
         currentView = view;
+        if (currentView !== "back") {
+            flashlightOn = false;
+            flashlightOverlay.classList.remove("on");
+        }
         updateGameImage();
         gameScreen.classList.remove("turning", "turning-left");
         setTimeout(() => turning = false, 120);
@@ -1758,6 +1783,10 @@ function turnTo(view) {
 
 turnRight.addEventListener("mouseenter", () => turnTo("door"));
 turnLeft.addEventListener("mouseenter", () => turnTo("office"));
+turnBack.addEventListener("mouseenter", () => {
+    if (currentView === "office") turnTo("back");
+    else if (currentView === "back") turnTo("office");
+});
 
 function toggleDoor() {
     if (!gameActive || power <= 0 || currentView !== "door" || turning) return;
@@ -1775,9 +1804,10 @@ function setNoise(level) {
 }
 
 function setFlashlight(on) {
-    if (!gameActive || power <= 0) on = false;
+    if (!gameActive || power <= 0 || currentView !== "back") on = false;
     flashlightOn = on;
-    flashlightOverlay.classList.toggle("on", on);
+    flashlightOverlay.classList.remove("on");
+    if (currentView === "back") updateGameImage();
     if (on) setNoise(2);
 }
 
@@ -1786,7 +1816,7 @@ document.addEventListener("keydown", event => {
     if (event.code === "KeyD" && !event.repeat) toggleDoor();
     if (event.code === "Space") {
         event.preventDefault();
-        // Flashlight is reserved for the future rear view.
+        if (currentView === "back") setFlashlight(true);
     }
     if (event.code === "KeyS" && !event.repeat) {
         // Camera system will be added next.
@@ -1795,7 +1825,7 @@ document.addEventListener("keydown", event => {
 });
 
 document.addEventListener("keyup", event => {
-    // Flashlight will be enabled only while looking behind the office.
+    if (event.code === "Space" && currentView === "back") setFlashlight(false);
 });
 
 
