@@ -3510,6 +3510,79 @@ showGameOver=function(){
 /* 20/20 is deliberately objective: shortest attack routes dominate decisions.
    Completing AI 20 still awards the third star through the existing completion code. */
 
+
+/* ===== DOOR REACTION / ATTACK TIMER ===== */
+let doorAttackTimer = null;
+let doorAttackToken = 0;
+
+function getDoorReactionTime(){
+    if(customNightMode){
+        // AI 1 ~= 8 s, AI 20 = 2 s.
+        return 8 - ((Math.max(1,Math.min(20,customAI))-1)/19)*6;
+    }
+    return ({1:8,2:7,3:6,4:5,5:4,6:3}[currentNight] || 5);
+}
+
+function cancelDoorAttack(){
+    doorAttackToken++;
+    if(doorAttackTimer){
+        clearTimeout(doorAttackTimer);
+        doorAttackTimer=null;
+    }
+}
+
+function startDoorAttackCountdown(){
+    cancelDoorAttack();
+    if(!gameActive || orelhaLocation!=="door" || doorClosed)return;
+
+    const token=++doorAttackToken;
+    const delay=getDoorReactionTime()*1000;
+
+    doorAttackTimer=setTimeout(()=>{
+        doorAttackTimer=null;
+        if(token!==doorAttackToken || !gameActive)return;
+        if(orelhaLocation==="door" && !doorClosed){
+            deathReason="door";
+            playJumpscare();
+        }
+    },delay);
+}
+
+/* Watch Orelha state changes: arriving at the open door starts the reaction window. */
+const _doorTimerSetOrelhaLocation=setOrelhaLocation;
+setOrelhaLocation=function(location){
+    const wasDoor=orelhaLocation==="door";
+    _doorTimerSetOrelhaLocation(location);
+
+    if(location==="door" && !doorClosed){
+        startDoorAttackCountdown();
+    }else if(wasDoor || location!=="door"){
+        cancelDoorAttack();
+    }
+};
+
+/* Closing the door in time cancels the kill timer.
+   Reopening it while Ear Dog is still there starts a fresh reaction window. */
+const _doorTimerToggleDoor=toggleDoor;
+toggleDoor=function(){
+    const before=doorClosed;
+    _doorTimerToggleDoor();
+
+    if(before===doorClosed)return; // toggle was rejected
+    if(doorClosed){
+        cancelDoorAttack();
+    }else if(orelhaLocation==="door"){
+        startDoorAttackCountdown();
+    }
+};
+
+/* Never leave a pending kill timer after a night/game state ends. */
+const _doorTimerCompleteNight=completeNight;
+completeNight=function(){
+    cancelDoorAttack();
+    return _doorTimerCompleteNight.apply(this,arguments);
+};
+
 console.log(
     "Five Nights At Orelha's loaded."
 );
