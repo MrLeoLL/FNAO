@@ -1187,7 +1187,7 @@ body {
 #game-view {
     position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
     transform:scale(1.015); opacity:1;
-    transition: opacity .18s ease, transform .38s cubic-bezier(.2,.7,.2,1);
+    transition: opacity .07s ease, transform .13s cubic-bezier(.2,.7,.2,1);
 }
 #game-screen.turning #game-view { opacity:.38; transform:scale(1.035) translateX(-1.5%); }
 #game-screen.turning-left #game-view { opacity:.38; transform:scale(1.035) translateX(1.5%); }
@@ -1752,15 +1752,15 @@ function turnTo(view) {
         currentView = view;
         updateGameImage();
         gameScreen.classList.remove("turning", "turning-left");
-        setTimeout(() => turning = false, 400);
-    }, 220);
+        setTimeout(() => turning = false, 120);
+    }, 75);
 }
 
 turnRight.addEventListener("mouseenter", () => turnTo("door"));
 turnLeft.addEventListener("mouseenter", () => turnTo("office"));
 
 function toggleDoor() {
-    if (!gameActive || power <= 0) return;
+    if (!gameActive || power <= 0 || currentView !== "door" || turning) return;
     doorClosed = !doorClosed;
     if (currentView === "door") updateGameImage();
     setNoise(doorClosed ? 4 : 3);
@@ -1786,7 +1786,7 @@ document.addEventListener("keydown", event => {
     if (event.code === "KeyD" && !event.repeat) toggleDoor();
     if (event.code === "Space") {
         event.preventDefault();
-        setFlashlight(true);
+        // Flashlight is reserved for the future rear view.
     }
     if (event.code === "KeyS" && !event.repeat) {
         // Camera system will be added next.
@@ -1795,7 +1795,7 @@ document.addEventListener("keydown", event => {
 });
 
 document.addEventListener("keyup", event => {
-    if (event.code === "Space") setFlashlight(false);
+    // Flashlight will be enabled only while looking behind the office.
 });
 
 
