@@ -4007,6 +4007,192 @@ triggerPowerOutage = function(){
     return _ventFixedPowerOutage.apply(this,arguments);
 };
 
+
+
+/* ===== MAINTENANCE -> VENT ENTRY FIX =====
+   The previous patch fixed travel/death after entering the vent, but the old
+   Maintenance timer could still fail to call enterVentRoute(). This replaces
+   that entry condition with one authoritative timer.
+*/
+let maintenanceVentEntryTimer = null;
+
+function cancelMaintenanceVentEntry(){
+    if(maintenanceVentEntryTimer){
+        clearTimeout(maintenanceVentEntryTimer);
+        maintenanceVentEntryTimer=null;
+    }
+}
+
+function maintenanceIsBeingWatched(){
+    return gameActive &&
+           camerasOpen &&
+           systems.camera &&
+           currentCamera===7;
+}
+
+function armMaintenanceVentEntry(){
+    cancelMaintenanceVentEntry();
+    if(!gameActive || powerOut || orelhaLocation!=="maintenance") return;
+
+    // He must remain unmonitored in Maintenance before entering.
+    // Broken ventilation makes the entry slightly faster.
+    const base = systems.vent ? 6500 : 4800;
+
+    maintenanceVentEntryTimer=setTimeout(()=>{
+        maintenanceVentEntryTimer=null;
+
+        if(!gameActive || powerOut || orelhaLocation!=="maintenance") return;
+
+        // Watching CAM 07 prevents entry. Recheck later while he remains there.
+        if(maintenanceIsBeingWatched()){
+            armMaintenanceVentEntry();
+            return;
+        }
+
+        enterVentRoute();
+    }, base);
+}
+
+/* Wrap the final location setter currently in use.
+   Entering Maintenance ALWAYS arms the vent opportunity.
+   Leaving Maintenance cancels it. */
+const _maintenanceVentSetLocation=setOrelhaLocation;
+setOrelhaLocation=function(location){
+    const result=_maintenanceVentSetLocation.apply(this,arguments);
+
+    if(location==="maintenance"){
+        armMaintenanceVentEntry();
+    }else{
+        cancelMaintenanceVentEntry();
+    }
+
+    return result;
+};
+
+/* Camera changes immediately affect the Maintenance check.
+   If CAM 07 is being watched, the timer is reset rather than allowed to fire
+   from an earlier unmonitored period. */
+const _maintenanceVentSelectCamera=selectCamera;
+selectCamera=function(number){
+    const result=_maintenanceVentSelectCamera.apply(this,arguments);
+
+    if(orelhaLocation==="maintenance"){
+        if(maintenanceIsBeingWatched()){
+            cancelMaintenanceVentEntry();
+            // While watched, periodically reconsider only after the player stops watching.
+            maintenanceVentEntryTimer=setTimeout(()=>{
+                maintenanceVentEntryTimer=null;
+                if(orelhaLocation==="maintenance") armMaintenanceVentEntry();
+            },1200);
+        }else if(!maintenanceVentEntryTimer){
+            armMaintenanceVentEntry();
+        }
+    }
+    return result;
+};
+
+/* Closing cameras means Maintenance is no longer monitored, so begin/restart
+   the entry window immediately if Ear Dog is there. */
+const _maintenanceVentCloseCameras=closeCameras;
+closeCameras=function(){
+    const result=_maintenanceVentCloseCameras.apply(this,arguments);
+    if(orelhaLocation==="maintenance") armMaintenanceVentEntry();
+    return result;
+};
+
+/* Opening directly on CAM 07 counts as monitoring him. */
+const _maintenanceVentOpenCameras=openCameras;
+openCameras=function(){
+    const result=_maintenanceVentOpenCameras.apply(this,arguments);
+    if(orelhaLocation==="maintenance"){
+        if(maintenanceIsBeingWatched()) cancelMaintenanceVentEntry();
+        else armMaintenanceVentEntry();
+    }
+    return result;
+};
+
+/* Clean timer between game states. */
+const _maintenanceVentCompleteNight=completeNight;
+completeNight=function(){
+    cancelMaintenanceVentEntry();
+    return _maintenanceVentCompleteNight.apply(this,arguments);
+};
+
+const _maintenanceVentPowerOutage=triggerPowerOutage;
+triggerPowerOutage=function(){
+    cancelMaintenanceVentEntry();
+    return _maintenanceVentPowerOutage.apply(this,arguments);
+};
+
+
+
+/* ===== ZERO POWER INSTANT KILL =====
+   Power reaching 0 now overrides every other mechanic immediately.
+   No countdown, no door/vent state, no chance to keep playing.
+*/
+let zeroPowerKillTriggered=false;
+
+function instantKillOnZeroPower(){
+    if(zeroPowerKillTriggered || !gameActive || jpPlaying)return;
+    zeroPowerKillTriggered=true;
+
+    power=0;
+    if(powerValue)powerValue.textContent="0";
+
+    // Force every powered object/state off before the jumpscare.
+    doorClosed=false;
+    flashlightOn=false;
+    camerasOpen=false;
+    repairOpen=false;
+
+    clearTimeout(powerDeathTimer);
+    clearTimeout(ventTravelTimer);
+    clearTimeout(securityTimer);
+    clearTimeout(maintenanceTimer);
+    clearTimeout(orelhaMoveTimer);
+    if(typeof cancelDoorAttack==="function")cancelDoorAttack();
+    if(typeof cancelVentKill==="function")cancelVentKill();
+    if(typeof cancelMaintenanceVentEntry==="function")cancelMaintenanceVentEntry();
+
+    if(typeof flashlightHum!=="undefined" && flashlightHum){
+        flashlightHum.pause();
+        flashlightHum.currentTime=0;
+    }
+
+    if(typeof cameraUI!=="undefined" && cameraUI)cameraUI.classList.remove("active");
+    if(typeof repairUI!=="undefined" && repairUI)repairUI.classList.remove("active");
+
+    // Ensure the door is visually/open logically before death.
+    if(typeof doorImage!=="undefined" && doorImage)doorImage.style.display="none";
+
+    powerOut=true;
+    orelhaLocation="powerout";
+    deathReason="power";
+
+    // Kill immediately.
+    playJumpscare();
+}
+
+/* Override the old outage sequence: zero power = instant death. */
+triggerPowerOutage=function(){
+    instantKillOnZeroPower();
+};
+
+/* Safety watcher: catches ANY code path that changes power to 0,
+   including Electrical Room drain and future mechanics. */
+setInterval(()=>{
+    if(gameActive && !jpPlaying && power<=0){
+        instantKillOnZeroPower();
+    }
+},50);
+
+/* Allow the instant-kill guard to work again on every new night. */
+const _zeroPowerBeginGameplay=beginGameplay;
+beginGameplay=function(night){
+    zeroPowerKillTriggered=false;
+    return _zeroPowerBeginGameplay.apply(this,arguments);
+};
+
 </script>
 
 </body>
