@@ -1369,6 +1369,41 @@ font:700 17px "Courier New",monospace;letter-spacing:2px;text-align:center;text-
 .custom-mod input{margin-right:9px}
 .custom-preset{font-size:14px!important;margin:5px!important}
 
+
+#extra-jumpscares.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 42px;
+    overflow: hidden;
+}
+#extra-jumpscares #extras-character {
+    margin: 0;
+    flex: 0 1 auto;
+}
+#extra-jumpscares #extras-character img {
+    height: min(52vh, 540px);
+    max-width: 58vw;
+}
+#extra-jumpscares #extras-jumpscare-button {
+    flex: 0 0 auto;
+    margin: 0;
+    align-self: center;
+}
+@media (max-width: 700px) {
+    #extra-jumpscares.active {
+        gap: 16px;
+    }
+    #extra-jumpscares #extras-character img {
+        max-width: 55vw;
+        height: min(45vh, 430px);
+    }
+    #extra-jumpscares #extras-jumpscare-button {
+        padding: 10px 14px;
+        font-size: 14px;
+    }
+}
+
 </style>
 
 </head>
