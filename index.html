@@ -1435,12 +1435,13 @@ body {
       <div class="repair-status"><span>VENTILATION</span><span id="vent-status">ONLINE</span></div><button class="repair-button" id="fix-vent">REBOOT VENTILATION</button>
       <button class="repair-button" id="fix-all">REBOOT ALL</button><div class="repair-hint">A closes this panel. REBOOT ALL takes longer and is recommended when multiple systems are offline.</div>
     </div>
+</div>
 
     <div id="camera-ui">
         <div id="camera-failure">VIDEO ERROR</div>
         <div id="camera-location-name">RECEIVING AREA</div>
         <div id="camera-map-wrap">
-            <img id="camera-map-image" src="camera_map.png" alt="Camera map" draggable="false" onerror="if(!this.dataset.fallback){this.dataset.fallback='1';this.src='images/camera_map.png';}">
+            <img id="camera-map-image" src="images/camera_map.png" alt="Camera map" draggable="false">
             <button class="camera-hotspot" id="cam-01" data-camera="1" aria-label="CAM 01"></button>
             <button class="camera-hotspot" id="cam-02" data-camera="2" aria-label="CAM 02"></button>
             <button class="camera-hotspot" id="cam-03" data-camera="3" aria-label="CAM 03"></button>
