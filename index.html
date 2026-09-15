@@ -1199,6 +1199,8 @@ body {
 }
 .turn-zone:hover { color:rgba(255,255,255,.85); }
 #turn-left { left:0; justify-content:flex-start; padding-left:18px; display:none; }
+#repair-pull { position:absolute; left:0; top:50%; transform:translateY(-50%); z-index:18; width:58px; height:120px; display:flex; align-items:center; justify-content:center; font:64px "Courier New",monospace; color:rgba(255,255,255,.38); text-shadow:0 0 14px #000; cursor:pointer; user-select:none; transition:color .2s, background .2s; background:linear-gradient(90deg,rgba(0,0,0,.42),transparent); }
+#repair-pull:hover { color:#fff; background:linear-gradient(90deg,rgba(0,0,0,.72),transparent); }
 #turn-right { right:0; justify-content:flex-end; padding-right:18px; }
 #turn-back {
     left:50%; bottom:0; top:auto; width:190px; height:85px;
@@ -1261,13 +1263,13 @@ body {
 @media (max-width:700px) {
     #camera-map-wrap { width:min(62vw,480px); right:10px; bottom:10px; }
     #camera-location-name { width:min(62vw,480px); right:10px; bottom:calc(10px + min(62vw,480px) * .87); font-size:13px; }
-    #audio-lure { right:10px; bottom:calc(20px + min(62vw,480px) * .87); }
+    #audio-lure { left:14%; top:72%; right:auto; bottom:auto; }
 }
 
 
 /* CAMERA / SYSTEMS UPDATE */
 #system-alerts{position:absolute;top:22px;left:50%;transform:translateX(-50%);z-index:45;text-align:center;font:700 18px "Courier New",monospace;color:#ff4545;text-shadow:0 0 8px #000;pointer-events:none}
-#audio-lure{position:absolute;left:22px;bottom:22px;z-index:54;display:none;border:1px solid #aaa;background:#080808;color:#fff;padding:12px 18px;font:700 16px "Courier New",monospace;letter-spacing:2px;cursor:pointer}
+#audio-lure{position:absolute;left:14%;top:72%;bottom:auto;right:auto;z-index:54;display:none;border:1px solid #aaa;background:#080808;color:#fff;padding:8px 10px;font:700 clamp(8px,.72vw,12px) "Courier New",monospace;letter-spacing:1px;white-space:nowrap;cursor:pointer;transform:translate(-50%,-50%)}
 #audio-lure.show{display:block} #audio-lure:disabled{opacity:.35}
 #repair-ui{position:absolute;inset:0;z-index:60;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.9);font-family:"Courier New",monospace}
 #repair-ui.active{display:flex}.repair-panel{width:min(620px,88vw);border:1px solid #777;background:#050505;padding:28px}.repair-panel h2{letter-spacing:5px;margin-bottom:22px}.repair-status{display:flex;justify-content:space-between;border-bottom:1px solid #333;padding:13px 0}.repair-button{margin-top:10px;width:100%;padding:12px;background:#111;border:1px solid #777;color:white;font:16px "Courier New",monospace;cursor:pointer}.repair-button:disabled{opacity:.35}.repair-hint{margin-top:18px;color:#888;font-size:13px;line-height:1.5}
@@ -1403,7 +1405,7 @@ body {
         <div class="control-row"><span class="control-key">D</span><span>OPEN / CLOSE DOOR</span></div>
         <div class="control-row"><span class="control-key">SPACE</span><span>FLASHLIGHT</span></div>
         <div class="control-row"><span class="control-key">S</span><span>SECURITY CAMERAS</span></div>
-        <div class="control-row"><span class="control-key">A</span><span>SYSTEM REPAIR MONITOR</span></div>
+        <div class="control-row"><span class="control-key">←</span><span>PULL SYSTEM REPAIR MONITOR FROM LEFT SIDE</span></div>
         <div class="controls-warning">Watch your power.<br>Listen carefully.</div>
         <button class="controls-confirm" onclick="confirmControls()">I UNDERSTAND</button>
     </div>
@@ -1423,17 +1425,17 @@ body {
         </div>
     </div>
     <div id="turn-left" class="turn-zone">‹</div>
+    <div id="repair-pull" title="System Repair Monitor">‹</div>
     <div id="turn-right" class="turn-zone">›</div>
     <div id="turn-back" class="turn-zone">⌄</div>
     <div id="vent-red"></div><div id="vent-blink"></div>
     <div id="system-alerts"></div>
-    <button id="audio-lure">PLAY AUDIO</button>
 
     <div id="repair-ui"><div class="repair-panel"><h2>SYSTEM RESTART</h2>
       <div class="repair-status"><span>AUDIO DEVICES</span><span id="audio-status">ONLINE</span></div><button class="repair-button" id="fix-audio">REBOOT AUDIO</button>
       <div class="repair-status"><span>CAMERA SYSTEM</span><span id="camera-status">ONLINE</span></div><button class="repair-button" id="fix-camera">REBOOT CAMERAS</button>
       <div class="repair-status"><span>VENTILATION</span><span id="vent-status">ONLINE</span></div><button class="repair-button" id="fix-vent">REBOOT VENTILATION</button>
-      <button class="repair-button" id="fix-all">REBOOT ALL</button><div class="repair-hint">A closes this panel. REBOOT ALL takes longer and is recommended when multiple systems are offline.</div>
+      <button class="repair-button" id="fix-all">REBOOT ALL</button><div class="repair-hint">The panel closes automatically after a repair. REBOOT ALL takes longer and is recommended when multiple systems are offline.</div>
     </div>
 </div>
 
@@ -1442,6 +1444,7 @@ body {
         <div id="camera-location-name">RECEIVING AREA</div>
         <div id="camera-map-wrap">
             <img id="camera-map-image" src="images/camera_map.png" alt="Camera map" draggable="false">
+            <button id="audio-lure">PLAY AUDIO</button>
             <button class="camera-hotspot" id="cam-01" data-camera="1" aria-label="CAM 01"></button>
             <button class="camera-hotspot" id="cam-02" data-camera="2" aria-label="CAM 02"></button>
             <button class="camera-hotspot" id="cam-03" data-camera="3" aria-label="CAM 03"></button>
@@ -1540,6 +1543,9 @@ body {
 <audio id="lure-audio" src="audio/lure.mp3" preload="auto"></audio>
 <audio id="vent-error-audio" src="audio/verror.mp3" preload="auto" loop></audio>
 <audio id="fixing-audio" src="audio/fixing.mp3" preload="auto" loop></audio>
+<audio id="lever2-audio" src="audio/lever2.mp3" preload="auto"></audio>
+<audio id="menu-audio" src="audio/menu.mp3" preload="auto" loop></audio>
+<audio id="startday-audio" src="audio/startday.mp3" preload="auto"></audio>
 <div id="the-end"><div class="end-title">THE END</div><div class="end-sub">CLICK TO RETURN TO MENU</div></div>
 <div id="glitch"></div>
 
@@ -1670,6 +1676,16 @@ const AUDIO_CHANCE={1:1,2:.8,3:.6,4:.4,5:.2,6:.12}; const AUDIO_LIMIT={1:Infinit
 const ORELHA_NIGHT_AI={1:2,2:4,3:8,4:10,5:15,6:19}; // escala 1-20; AI 20 fica fora das noites normais
 const lureAudio=document.getElementById("lure-audio"),ventErrorAudio=document.getElementById("vent-error-audio"),fixingAudio=document.getElementById("fixing-audio");
 ventErrorAudio.loop=true; fixingAudio.loop=true;
+const lever2Audio=document.getElementById("lever2-audio");
+const menuAudio=document.getElementById("menu-audio");
+const startdayAudio=document.getElementById("startday-audio");
+menuAudio.loop=true;
+function playMenuMusic(){ if(!menuAudio)return; if(menu.style.display!=="none"){ menuAudio.play().catch(()=>{}); } }
+function stopMenuMusic(){ if(!menuAudio)return; menuAudio.pause(); menuAudio.currentTime=0; }
+// Browsers may block autoplay until the first interaction. Start it as soon as interaction is allowed.
+window.addEventListener("load",playMenuMusic);
+document.addEventListener("pointerdown",()=>{ if(menu.style.display!=="none") playMenuMusic(); },{once:true});
+function playLever2(){ if(!lever2Audio)return; lever2Audio.currentTime=0; lever2Audio.play().catch(()=>{}); }
 const audioLure=document.getElementById("audio-lure"),repairUI=document.getElementById("repair-ui"),systemAlerts=document.getElementById("system-alerts"),cameraFailure=document.getElementById("camera-failure"),ventRed=document.getElementById("vent-red"),ventBlink=document.getElementById("vent-blink");
 function cameraImage(n){const c=CAMERA_DATA[n];return `images/${c.key}_${orelhaLocation===c.key?"comorelha":"semorelha"}.png`;}
 function setOrelhaLocation(loc){orelhaLocation=loc; clearTimeout(maintenanceDangerTimer);clearTimeout(securityAttackTimer); if(camerasOpen) selectCamera(currentCamera,false); if(loc==="maintenance") armMaintenance(); if(loc==="security_corridor") armSecurity();}
@@ -1700,15 +1716,18 @@ function scheduleOrelhaMove(){
     scheduleOrelhaMove();
   },interval);
 }
-function updateSystemUI(){let errs=[];if(!systems.audio)errs.push("AUDIO ERROR");if(!systems.camera)errs.push("VIDEO ERROR");if(!systems.vent)errs.push("VENTILATION ERROR");systemAlerts.textContent=camerasOpen?errs.join("   |   "):"";cameraFailure.classList.toggle("active",camerasOpen&&!systems.camera);ventRed.classList.toggle("active",!systems.vent);ventBlink.classList.toggle("active",!systems.vent);document.getElementById("audio-status").textContent=systems.audio?"ONLINE":"ERROR";document.getElementById("camera-status").textContent=systems.camera?"ONLINE":"ERROR";document.getElementById("vent-status").textContent=systems.vent?"ONLINE":"ERROR";document.getElementById("fix-audio").disabled=systems.audio||repairing;document.getElementById("fix-camera").disabled=systems.camera||repairing;document.getElementById("fix-vent").disabled=systems.vent||repairing;}
+function updateSystemUI(){let errs=[];if(!systems.audio)errs.push("AUDIO ERROR");if(!systems.camera)errs.push("VIDEO ERROR");if(!systems.vent)errs.push("VENTILATION ERROR");systemAlerts.textContent=camerasOpen?errs.join("   |   "):"";cameraFailure.classList.toggle("active",camerasOpen&&!systems.camera);ventRed.classList.toggle("active",!systems.vent);ventBlink.classList.toggle("active",!systems.vent);document.getElementById("audio-status").textContent=systems.audio?"ONLINE":"ERROR";document.getElementById("camera-status").textContent=systems.camera?"ONLINE":"ERROR";document.getElementById("vent-status").textContent=systems.vent?"ONLINE":"ERROR";document.getElementById("fix-audio").disabled=systems.audio||repairing;document.getElementById("fix-camera").disabled=systems.camera||repairing;document.getElementById("fix-vent").disabled=systems.vent||repairing;updateRepairPull();}
 function breakSystem(type){if(!systems[type])return;systems[type]=false;if(type==="vent"){ventErrorAudio.loop=true;ventErrorAudio.currentTime=0;ventErrorAudio.play().catch(()=>{});}updateSystemUI();}
-function scheduleFailure(){clearTimeout(failureTimer);if(!gameActive)return;let min=Math.max(18,55-currentNight*7)*1000;failureTimer=setTimeout(()=>{if(!gameActive)return;let pool=camerasOpen?["camera","vent"]:["vent"];breakSystem(pool[Math.floor(Math.random()*pool.length)]);scheduleFailure();},min+Math.random()*25000);}
-function repair(type){if(repairing)return;let targets=type==="all"?["audio","camera","vent"].filter(x=>!systems[x]):[type];if(!targets.length)return;repairing=true;updateSystemUI();fixingAudio.loop=true;fixingAudio.currentTime=0;fixingAudio.play().catch(()=>{});setTimeout(()=>{targets.forEach(x=>systems[x]=true);if(targets.includes("audio"))audioUses=0;if(targets.includes("vent")){ventErrorAudio.pause();ventErrorAudio.currentTime=0;}repairing=false;fixingAudio.pause();fixingAudio.currentTime=0;updateSystemUI();if(camerasOpen)selectCamera(currentCamera,false);},type==="all"?7000:3500);}
-function toggleRepair(){if(!gameActive||repairing)return;repairOpen=!repairOpen;repairUI.classList.toggle("active",repairOpen);if(repairOpen&&camerasOpen)closeCameras();}
-function useAudioLure(){if(!gameActive||!camerasOpen||audioCooldown||!systems.audio)return;audioCooldown=true;audioLure.disabled=true;lureAudio.currentTime=0;lureAudio.play().catch(()=>{});audioUses++;let c=CAMERA_DATA[currentCamera];if(c.key!=="maintenance"&&c.key!=="security_corridor"&&adjacentCameras(orelhaLocation).includes(c.key)&&Math.random()<(AUDIO_CHANCE[currentNight]??.1))setOrelhaLocation(c.key);if(audioUses>=AUDIO_LIMIT[currentNight])breakSystem("audio");setTimeout(()=>{audioCooldown=false;audioLure.disabled=!systems.audio;},5000);}
+function scheduleFailure(){clearTimeout(failureTimer);if(!gameActive)return;const min=(75-Math.min(currentNight,6)*3)*1000;failureTimer=setTimeout(()=>{if(!gameActive)return;/* Ventilation failures are intentionally rare. Video errors can only happen while cameras are open. */const ventChance=Math.min(.12,.035+currentNight*.012);if(Math.random()<ventChance){breakSystem("vent");}else if(camerasOpen){breakSystem("camera");}scheduleFailure();},min+Math.random()*45000);}
+function repair(type){if(repairing)return;let targets=type==="all"?["audio","camera","vent"].filter(x=>!systems[x]):[type];if(!targets.length)return;repairing=true;updateSystemUI();fixingAudio.loop=true;fixingAudio.currentTime=0;fixingAudio.play().catch(()=>{});setTimeout(()=>{targets.forEach(x=>systems[x]=true);if(targets.includes("audio"))audioUses=0;if(targets.includes("vent")){ventErrorAudio.pause();ventErrorAudio.currentTime=0;}repairing=false;fixingAudio.pause();fixingAudio.currentTime=0;updateSystemUI();if(camerasOpen)selectCamera(currentCamera,false);repairOpen=false;playLever2();repairUI.classList.remove("active");updateRepairPull();},type==="all"?7000:3500);}
+function updateRepairPull(){const el=document.getElementById("repair-pull");if(!el)return;el.style.display=(gameActive&&!camerasOpen&&!repairOpen&&currentView==="office")?"flex":"none";}
+function toggleRepair(){if(!gameActive||repairing)return;repairOpen=!repairOpen;playLever2();repairUI.classList.toggle("active",repairOpen);if(repairOpen&&camerasOpen)closeCameras();updateRepairPull();}
+function orelhaIsActive(){return !(currentNight===1 && gameMinutes<180);}
+function useAudioLure(){if(!gameActive||!camerasOpen||audioCooldown||!systems.audio||!orelhaIsActive())return;audioCooldown=true;audioLure.disabled=true;lureAudio.currentTime=0;lureAudio.play().catch(()=>{});audioUses++;let c=CAMERA_DATA[currentCamera];if(c.key!=="maintenance"&&c.key!=="security_corridor"&&adjacentCameras(orelhaLocation).includes(c.key)&&Math.random()<(AUDIO_CHANCE[currentNight]??.1))setOrelhaLocation(c.key);if(audioUses>=AUDIO_LIMIT[currentNight])breakSystem("audio");setTimeout(()=>{audioCooldown=false;audioLure.disabled=!systems.audio || !orelhaIsActive();},5000);}
 function updateStars(){let n=Number(localStorage.getItem("fnao-stars")||0),el=document.getElementById("stars");el.innerHTML=Array.from({length:n},()=>'<span class="star">★</span>').join("");}
 function completeNight(){gameActive=false;clearInterval(nightTimer);clearInterval(powerTimer);clearTimeout(orelhaMoveTimer);clearTimeout(failureTimer);if(currentNight<5){saveData={night:currentNight+1,completed:false};localStorage.setItem("fnao-save",JSON.stringify(saveData));startNight(currentNight+1);return;}let stars=currentNight>=6?2:1;localStorage.setItem("fnao-stars",String(Math.max(stars,Number(localStorage.getItem("fnao-stars")||0))));if(currentNight===5){saveData={night:6,completed:false};localStorage.setItem("fnao-save",JSON.stringify(saveData));}document.getElementById("the-end").style.display="flex";}
-document.getElementById("the-end").addEventListener("click",()=>{document.getElementById("the-end").style.display="none";menu.style.display="block";updateStars();updateContinueButton();});
+document.getElementById("the-end").addEventListener("click",()=>{document.getElementById("the-end").style.display="none";menu.style.display="block";playMenuMusic();updateStars();updateContinueButton();});
+document.getElementById("repair-pull").onclick=()=>{if(!repairOpen)toggleRepair();};
 document.getElementById("fix-audio").onclick=()=>repair("audio");document.getElementById("fix-camera").onclick=()=>repair("camera");document.getElementById("fix-vent").onclick=()=>repair("vent");document.getElementById("fix-all").onclick=()=>repair("all");audioLure.onclick=useAudioLure;updateStars();
 
 
@@ -1858,6 +1877,7 @@ function confirmControls() {
 function startNight(night) {
     currentNight = night;
     gameActive = false;
+    stopMenuMusic();
     staticFlash();
     setTimeout(() => {
         menu.style.display = "none";
@@ -1868,10 +1888,29 @@ function startNight(night) {
         nightScreen.style.display = "flex";
         nightTitle.textContent = "NIGHT " + night;
 
-        setTimeout(() => {
-            nightScreen.style.display = "none";
-            beginGameplay(night);
-        }, 1700);
+        // NIGHT X stays on screen for exactly the duration of startday.mp3.
+        // Gameplay only begins after the sound finishes.
+        if(startdayAudio){
+            startdayAudio.pause();
+            startdayAudio.currentTime=0;
+            startdayAudio.onended=()=>{
+                startdayAudio.onended=null;
+                nightScreen.style.display = "none";
+                beginGameplay(night);
+            };
+            const promise=startdayAudio.play();
+            if(promise) promise.catch(()=>{
+                setTimeout(()=>{
+                    nightScreen.style.display = "none";
+                    beginGameplay(night);
+                },1700);
+            });
+        } else {
+            setTimeout(()=>{
+                nightScreen.style.display = "none";
+                beginGameplay(night);
+            },1700);
+        }
     }, 180);
 }
 
@@ -1899,6 +1938,7 @@ function beginGameplay(night) {
     nightTimer = setInterval(() => {
         if (!gameActive) return;
         gameMinutes++;
+        if(camerasOpen) audioLure.disabled = !systems.audio || audioCooldown || !orelhaIsActive();
         const hourIndex = Math.floor(gameMinutes / 60);
         const hour = hourIndex === 0 ? 12 : hourIndex;
         gameTime.textContent = hour + " AM";
@@ -1973,13 +2013,14 @@ function selectCamera(number, flash = true) {
     if (flash) staticFlash();
     setNoise(2);
     audioLure.classList.toggle("show", camerasOpen);
-    audioLure.disabled = !systems.audio || audioCooldown;
+    audioLure.disabled = !systems.audio || audioCooldown || !orelhaIsActive();
     if(number===7 && orelhaLocation==="maintenance"){ clearTimeout(maintenanceDangerTimer); maintenanceDangerTimer=setTimeout(()=>{if(gameActive&&orelhaLocation==="maintenance"&&camerasOpen&&currentCamera===7)setOrelhaLocation(randomNormalCamera());},1800); }
 }
 
 function openCameras() {
     if (!gameActive || power <= 0 || turning) return;
     camerasOpen = true;
+    playLever2();
     currentView = "camera";
     flashlightOn = false;
     flashlightOverlay.classList.remove("on");
@@ -1991,6 +2032,7 @@ function openCameras() {
 function closeCameras() {
     if (!camerasOpen) return;
     camerasOpen = false;
+    playLever2();
     cameraUI.classList.remove("active");
     audioLure.classList.remove("show");
     currentView = "office";
@@ -2041,7 +2083,7 @@ document.addEventListener("keydown", event => {
         if (currentView === "back") setFlashlight(true);
     }
     if (event.code === "KeyS" && !event.repeat && !repairOpen) toggleCameras();
-    if (event.code === "KeyA" && !event.repeat) toggleRepair();
+
 });
 
 document.addEventListener("keyup", event => {
