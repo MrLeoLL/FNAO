@@ -2086,6 +2086,21 @@ document.addEventListener("keydown", event => {
 
 });
 
+// Secret debug shortcut: type cd1 during an active night to instantly reach 6 AM.
+let debugCodeBuffer = "";
+document.addEventListener("keydown", event => {
+    if (!gameActive || jpPlaying || event.repeat) return;
+    if (event.key && event.key.length === 1) {
+        debugCodeBuffer = (debugCodeBuffer + event.key.toLowerCase()).slice(-3);
+        if (debugCodeBuffer === "cd1") {
+            debugCodeBuffer = "";
+            gameMinutes = 360;
+            gameTime.textContent = "6 AM";
+            completeNight();
+        }
+    }
+});
+
 document.addEventListener("keyup", event => {
     if (event.code === "Space" && currentView === "back") setFlashlight(false);
 });
