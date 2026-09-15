@@ -2351,6 +2351,8 @@ function selectCamera(number, flash = true) {
 }
 
 function openCameras() {
+    const cameraMapWrapFix=document.getElementById("camera-map-wrap");
+    if(cameraMapWrapFix) cameraMapWrapFix.style.visibility="visible";
     if (!gameActive || power <= 0 || turning) return;
     camerasOpen = true;
     updateUsage();
@@ -3439,7 +3441,7 @@ function setCustomPreset(name){
   document.getElementById("custom-ai-value").textContent=customAI;
 }
 const oldStartCustomNight=startCustomNight;
-startCustomNight=function(){readCustomMods();oldStartCustomNight();setTimeout(()=>{document.getElementById("camera-map-wrap").style.visibility=customMods.noMap?"hidden":"visible";},50);};
+startCustomNight=function(){readCustomMods();oldStartCustomNight();setTimeout(()=>{document.getElementById("camera-map-wrap").style.visibility="visible";},50);};
 
 const oldScheduleFailure=scheduleFailure;
 scheduleFailure=function(){
