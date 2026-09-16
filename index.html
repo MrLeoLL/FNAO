@@ -5748,75 +5748,106 @@ openCustomNight=function(){
 
 
 /* =========================================================
-   BACK CORRIDOR = DOOR ATTACK ROUTE
-   Whenever Ear Dog reaches Back Corridor, his next action is
-   a door attack instead of wandering or choosing the vent.
+   ATTACK ROUTE COMMITMENT
+   Back Corridor: 50% door commitment, 50% retreat.
+   Maintenance: always enters the vent if not being monitored.
 ========================================================= */
 (function(){
-    let backCorridorDoorTimer = null;
-    let forcingBackCorridorDoor = false;
+    let backCorridorDecisionTimer = null;
+    let maintenanceCommitTimer = null;
+    let routeCommitInProgress = false;
 
-    const _backCorridorSetLocation = setOrelhaLocation;
+    const _routeSetLocation = setOrelhaLocation;
 
     setOrelhaLocation = function(location){
-        const result = _backCorridorSetLocation.apply(this, arguments);
+        const result = _routeSetLocation.apply(this, arguments);
 
-        clearTimeout(backCorridorDoorTimer);
-        backCorridorDoorTimer = null;
+        clearTimeout(backCorridorDecisionTimer);
+        clearTimeout(maintenanceCommitTimer);
+        backCorridorDecisionTimer = null;
+        maintenanceCommitTimer = null;
 
-        if(
-            location === "back_corridor" &&
-            gameActive &&
-            !powerOut &&
-            !forcingBackCorridorDoor
-        ){
-            // He has committed to the door route.
-            // Short delay keeps Back Corridor visible on the cameras before attacking.
-            const ai = Math.max(
-                1,
-                Math.min(20, customNightMode ? customAI : (ORELHA_NIGHT_AI[currentNight] ?? 2))
-            );
+        if(!gameActive || powerOut || routeCommitInProgress) return result;
 
-            // Higher AI commits faster, but Back Corridor ALWAYS leads to the door.
+        const ai = Math.max(
+            1,
+            Math.min(20, customNightMode ? customAI : (ORELHA_NIGHT_AI[currentNight] ?? 2))
+        );
+
+        /* BACK CORRIDOR:
+           50% commits to the door.
+           50% gives up and retreats instead of attacking. */
+        if(location === "back_corridor"){
             const delay = customNightMode
                 ? Math.max(700, 2300 - ai * 70)
                 : Math.max(900, 2600 - ai * 65);
 
-            backCorridorDoorTimer = setTimeout(() => {
-                backCorridorDoorTimer = null;
+            backCorridorDecisionTimer = setTimeout(() => {
+                if(!gameActive || powerOut || orelhaLocation !== "back_corridor") return;
 
-                if(
-                    !gameActive ||
-                    powerOut ||
-                    orelhaLocation !== "back_corridor"
-                ) return;
+                if(Math.random() < 0.50){
+                    routeCommitInProgress = true;
 
-                forcingBackCorridorDoor = true;
+                    // Commit to door route.
+                    _routeSetLocation("security_corridor");
 
-                // Back Corridor -> Security Corridor -> Door.
-                // Using the existing states preserves the normal door mechanics.
-                _backCorridorSetLocation("security_corridor");
+                    setTimeout(() => {
+                        if(!gameActive || powerOut || orelhaLocation !== "security_corridor"){
+                            routeCommitInProgress = false;
+                            return;
+                        }
 
-                setTimeout(() => {
-                    if(
-                        !gameActive ||
-                        powerOut ||
-                        orelhaLocation !== "security_corridor"
-                    ){
-                        forcingBackCorridorDoor = false;
-                        return;
+                        _routeSetLocation("door");
+                        routeCommitInProgress = false;
+
+                        // Existing door system handles the reaction window.
+                        if(typeof startDoorAttackCountdown === "function" && !doorClosed){
+                            startDoorAttackCountdown();
+                        }
+                    }, Math.max(350, delay * 0.35));
+                } else {
+                    // Retreat: choose one of the non-attack rooms connected to Back Corridor.
+                    const retreatChoices = ["main_storage", "eletrical_room"];
+                    const retreat = retreatChoices[Math.floor(Math.random() * retreatChoices.length)];
+                    _routeSetLocation(retreat);
+
+                    if(typeof scheduleOrelhaMove === "function"){
+                        scheduleOrelhaMove();
                     }
-
-                    _backCorridorSetLocation("door");
-                    forcingBackCorridorDoor = false;
-
-                    // Do NOT turn the player's camera toward the door.
-                    // Existing door reaction logic handles open/closed door behavior.
-                    if(typeof startDoorAttackCountdown === "function" && !doorClosed){
-                        startDoorAttackCountdown();
-                    }
-                }, Math.max(350, delay * 0.35));
+                }
             }, delay);
+        }
+
+        /* MAINTENANCE:
+           If the player is NOT watching CAM 07 / Maintenance,
+           Ear Dog always commits to the ventilation route.
+           Watching Maintenance prevents the automatic vent entry. */
+        if(location === "maintenance"){
+            const monitored = camerasOpen && currentCamera === 7;
+
+            if(!monitored){
+                const ventDelay = customNightMode
+                    ? Math.max(650, 2100 - ai * 65)
+                    : Math.max(900, 2600 - ai * 60);
+
+                maintenanceCommitTimer = setTimeout(() => {
+                    if(!gameActive || powerOut || orelhaLocation !== "maintenance") return;
+
+                    // Re-check at the exact moment he tries to enter.
+                    const beingWatchedNow = camerasOpen && currentCamera === 7;
+                    if(beingWatchedNow) return;
+
+                    routeCommitInProgress = true;
+
+                    if(typeof enterVentRoute === "function"){
+                        enterVentRoute();
+                    } else {
+                        _routeSetLocation("vent_travel");
+                    }
+
+                    routeCommitInProgress = false;
+                }, ventDelay);
+            }
         }
 
         return result;
