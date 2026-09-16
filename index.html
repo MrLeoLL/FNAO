@@ -2023,45 +2023,97 @@ function updateSystemUI(){let errs=[];if(!systems.audio)errs.push("AUDIO ERROR")
 function breakSystem(type){if(!systems[type])return;systems[type]=false;if(type==="vent"){ventErrorAudio.loop=true;ventErrorAudio.currentTime=0;ventErrorAudio.play().catch(()=>{});}updateSystemUI();}
 function scheduleFailure(){clearTimeout(failureTimer);if(!gameActive)return;const min=(75-Math.min(currentNight,6)*3)*1000;failureTimer=setTimeout(()=>{if(!gameActive)return;/* Ventilation failures are intentionally rare. Video errors can only happen while cameras are open. */const ventChance=Math.min(.12,.035+currentNight*.012);if(Math.random()<ventChance){breakSystem("vent");}else if(camerasOpen){breakSystem("camera");}scheduleFailure();},min+Math.random()*45000);}
 function repair(type){
- if(repairing)return;
- let targets=type==="all"?["audio","camera","vent"].filter(x=>!systems[x]):[type];
- if(!targets.length)return;
+    if(repairing || !gameActive) return;
 
- repairing=true;updateSystemUI();
- const duration=type==="all"?7000:3500;
- const loading=document.getElementById("repair-loading");
- const bar=document.getElementById("repair-loading-bar");
- const txt=document.getElementById("repair-loading-text");
- loading.classList.add("active");bar.style.width="0%";txt.textContent="REPAIRING... 0%";
+    const targets = type==="all"
+        ? ["audio","camera","vent"].filter(x=>!systems[x])
+        : [type];
 
- const started=performance.now();
- let progressRAF;
- const tick=(now)=>{
-   if(!repairing)return;
-   const pct=Math.min(100,((now-started)/duration)*100);
-   bar.style.width=pct+"%";
-   txt.textContent=pct>=100?"COMPLETE — YOU CAN CLOSE":"REPAIRING... "+Math.floor(pct)+"%";
-   if(pct<100)progressRAF=requestAnimationFrame(tick);
- };
- progressRAF=requestAnimationFrame(tick);
+    // Single repair buttons should only run when that system is actually broken.
+    if(type!=="all" && systems[type]) return;
+    if(type==="all" && !targets.length) return;
 
- fixingAudio.loop=true;fixingAudio.currentTime=0;fixingAudio.play().catch(()=>{});
- setTimeout(()=>{
-   targets.forEach(x=>systems[x]=true);
-   if(targets.includes("audio"))audioUses=0;
-   if(targets.includes("vent")){ventErrorAudio.pause();ventErrorAudio.currentTime=0;}
-   repairing=false;
-   cancelAnimationFrame(progressRAF);
-   bar.style.width="100%";
-   txt.textContent="COMPLETE — YOU CAN CLOSE";
-   fixingAudio.pause();fixingAudio.currentTime=0;
-   updateSystemUI();
-   if(camerasOpen)selectCamera(currentCamera,false);
+    repairing=true;
+    updateSystemUI();
+    updateRepairPull();
 
-   // Do NOT auto-close anymore. Player closes it with the arrow after seeing COMPLETE.
-   setTimeout(()=>loading.classList.remove("active"),1200);
-   updateRepairPull();
- },duration);
+    const duration = type==="all" ? 7000 : 3500;
+    const loading=document.getElementById("repair-loading");
+    const bar=document.getElementById("repair-loading-bar");
+    const txt=document.getElementById("repair-loading-text");
+
+    if(loading) loading.classList.add("active");
+    if(bar) bar.style.width="0%";
+    if(txt) txt.textContent="REPAIRING... 0%";
+
+    const started=performance.now();
+    let raf=0;
+
+    const draw=(now)=>{
+        if(!repairing) return;
+        const pct=Math.min(100,((now-started)/duration)*100);
+        if(bar) bar.style.width=pct+"%";
+        if(txt) txt.textContent=pct>=100
+            ? "COMPLETE — YOU CAN CLOSE"
+            : "REPAIRING... "+Math.floor(pct)+"%";
+        if(pct<100) raf=requestAnimationFrame(draw);
+    };
+    raf=requestAnimationFrame(draw);
+
+    fixingAudio.loop=true;
+    fixingAudio.currentTime=0;
+    fixingAudio.play().catch(()=>{});
+
+    setTimeout(()=>{
+        // GUARANTEED system restoration.
+        for(const target of targets){
+            systems[target]=true;
+
+            if(target==="audio"){
+                audioUses=0;
+            }
+
+            if(target==="vent"){
+                // Stop every ventilation-error effect immediately.
+                systems.vent=true;
+                if(ventErrorAudio){
+                    ventErrorAudio.pause();
+                    ventErrorAudio.currentTime=0;
+                }
+                document.body.classList.remove("vent-error");
+                const ventOverlay=document.getElementById("vent-error-overlay");
+                if(ventOverlay) ventOverlay.classList.remove("active");
+            }
+
+            if(target==="camera"){
+                systems.camera=true;
+                const videoError=document.getElementById("video-error");
+                if(videoError) videoError.style.display="none";
+            }
+        }
+
+        repairing=false;
+        if(raf) cancelAnimationFrame(raf);
+
+        fixingAudio.pause();
+        fixingAudio.currentTime=0;
+
+        if(bar) bar.style.width="100%";
+        if(txt) txt.textContent="COMPLETE — YOU CAN CLOSE";
+
+        updateSystemUI();
+        updateSystemAlerts();
+        updateAudioLureState();
+
+        if(camerasOpen) selectCamera(currentCamera,false);
+
+        // Only NOW does the close arrow become usable again.
+        updateRepairPull();
+
+        setTimeout(()=>{
+            if(loading && !repairing) loading.classList.remove("active");
+        },1200);
+    }, duration);
 }
 function updateRepairPull(){const el=document.getElementById("repair-pull");if(!el)return;el.style.display=(gameActive&&!camerasOpen&&!repairOpen&&currentView==="office")?"flex":"none";}
 function toggleRepair(){if(!gameActive||repairing)return;repairOpen=!repairOpen;playLever2();repairUI.classList.toggle("active",repairOpen);if(repairOpen&&camerasOpen)closeCameras();updateRepairPull();}
@@ -4191,6 +4243,127 @@ const _zeroPowerBeginGameplay=beginGameplay;
 beginGameplay=function(night){
     zeroPowerKillTriggered=false;
     return _zeroPowerBeginGameplay.apply(this,arguments);
+};
+
+
+
+/* ===== GUARANTEED MAINTENANCE -> VENT =====
+   Every time Ear Dog enters Maintenance:
+   - CAM 07 watched = he stays there.
+   - CAM 07 not watched for 3 continuous seconds = mandatory vent entry.
+*/
+let guaranteedMaintenanceTimer = null;
+
+function clearGuaranteedMaintenanceTimer(){
+    if(guaranteedMaintenanceTimer){
+        clearTimeout(guaranteedMaintenanceTimer);
+        guaranteedMaintenanceTimer = null;
+    }
+}
+
+function isWatchingMaintenanceNow(){
+    return gameActive &&
+           camerasOpen &&
+           systems.camera &&
+           currentCamera === 7;
+}
+
+function scheduleGuaranteedVentEntry(){
+    clearGuaranteedMaintenanceTimer();
+
+    if(!gameActive || powerOut || orelhaLocation !== "maintenance") return;
+
+    // Monitoring CAM 07 freezes the threat. We only start the 3s countdown
+    // after the player stops monitoring it.
+    if(isWatchingMaintenanceNow()) return;
+
+    guaranteedMaintenanceTimer = setTimeout(()=>{
+        guaranteedMaintenanceTimer = null;
+
+        if(!gameActive || powerOut || orelhaLocation !== "maintenance") return;
+
+        // If CAM 07 became monitored during those 3 seconds, entry is cancelled.
+        if(isWatchingMaintenanceNow()) return;
+
+        // Mandatory transition. Do not let old Maintenance logic veto it.
+        clearTimeout(maintenanceTimer);
+        clearTimeout(maintenanceDangerTimer);
+        if(typeof cancelMaintenanceVentEntry === "function") cancelMaintenanceVentEntry();
+
+        enterVentRoute();
+    }, 3000);
+}
+
+/* Highest-priority location hook. */
+const _guaranteedMaintenanceSetLocation = setOrelhaLocation;
+setOrelhaLocation = function(location){
+    const result = _guaranteedMaintenanceSetLocation.apply(this, arguments);
+
+    if(location === "maintenance"){
+        scheduleGuaranteedVentEntry();
+    } else {
+        clearGuaranteedMaintenanceTimer();
+    }
+    return result;
+};
+
+/* Camera selection determines whether the 3-second countdown is running. */
+const _guaranteedMaintenanceSelectCamera = selectCamera;
+selectCamera = function(number){
+    const result = _guaranteedMaintenanceSelectCamera.apply(this, arguments);
+
+    if(orelhaLocation === "maintenance"){
+        if(isWatchingMaintenanceNow()){
+            clearGuaranteedMaintenanceTimer();
+        }else{
+            scheduleGuaranteedVentEntry();
+        }
+    }
+    return result;
+};
+
+/* Opening CAM 07 cancels the countdown immediately. */
+const _guaranteedMaintenanceOpenCameras = openCameras;
+openCameras = function(){
+    const result = _guaranteedMaintenanceOpenCameras.apply(this, arguments);
+
+    if(orelhaLocation === "maintenance"){
+        if(isWatchingMaintenanceNow()) clearGuaranteedMaintenanceTimer();
+        else scheduleGuaranteedVentEntry();
+    }
+    return result;
+};
+
+/* Closing the monitor while he is in Maintenance ALWAYS starts a fresh 3s timer. */
+const _guaranteedMaintenanceCloseCameras = closeCameras;
+closeCameras = function(){
+    const result = _guaranteedMaintenanceCloseCameras.apply(this, arguments);
+
+    if(orelhaLocation === "maintenance"){
+        scheduleGuaranteedVentEntry();
+    }
+    return result;
+};
+
+/* If the player leaves CAM 07 for another camera, start the 3 seconds immediately. */
+document.addEventListener("visibilitychange", ()=>{
+    if(document.hidden) return;
+    if(orelhaLocation === "maintenance" && !isWatchingMaintenanceNow()){
+        scheduleGuaranteedVentEntry();
+    }
+});
+
+/* Cleanup. */
+const _guaranteedMaintenanceCompleteNight = completeNight;
+completeNight = function(){
+    clearGuaranteedMaintenanceTimer();
+    return _guaranteedMaintenanceCompleteNight.apply(this, arguments);
+};
+
+const _guaranteedMaintenancePowerOutage = triggerPowerOutage;
+triggerPowerOutage = function(){
+    clearGuaranteedMaintenanceTimer();
+    return _guaranteedMaintenancePowerOutage.apply(this, arguments);
 };
 
 </script>
