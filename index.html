@@ -5426,8 +5426,10 @@ openCustomNight=function(){
 
     function forceZeroPowerGameOver(){
         if(alphaZeroDeathCommitted) return;
-        const nightVisible = nightScreen && getComputedStyle(nightScreen).display !== "none";
-        if(!nightVisible || power>0) return;
+        // During actual gameplay, #night-screen is intentionally hidden.
+        // The previous failsafe checked nightScreen, so it always returned before Game Over.
+        const gameplayVisible = gameScreen && getComputedStyle(gameScreen).display !== "none";
+        if(!gameplayVisible || power>0) return;
 
         alphaZeroDeathCommitted=true;
         power=0;
