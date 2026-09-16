@@ -4919,6 +4919,130 @@ openCustomNight=function(){
   return r;
 };
 
+
+
+/* ===== CUSTOM NIGHT VENT + ZERO POWER HARD FIX =====
+   1) Maintenance -> vent works in Custom Night too.
+   2) Zero power can never leave the game frozen.
+*/
+(function(){
+    let cnMaintWatch = null;
+    let zeroPowerGuard = null;
+
+    function customWatchingMaintenance(){
+        return gameActive &&
+               camerasOpen &&
+               systems.camera &&
+               currentCamera === 7;
+    }
+
+    function armCustomMaintenanceVent(){
+        clearTimeout(cnMaintWatch);
+        cnMaintWatch = null;
+
+        if(!gameActive || powerOut || orelhaLocation!=="maintenance") return;
+
+        // Watching CAM 07 holds him there.
+        if(customWatchingMaintenance()) return;
+
+        cnMaintWatch = setTimeout(()=>{
+            cnMaintWatch = null;
+            if(!gameActive || powerOut || orelhaLocation!=="maintenance") return;
+            if(customWatchingMaintenance()) return;
+
+            // Mandatory vent entry in Custom Night as well.
+            clearTimeout(maintenanceTimer);
+            clearTimeout(maintenanceDangerTimer);
+            clearTimeout(maintenanceVentEntryTimer);
+            if(typeof cancelMaintenanceVentEntry==="function"){
+                try{ cancelMaintenanceVentEntry(); }catch(e){}
+            }
+
+            if(typeof enterVentRoute==="function"){
+                enterVentRoute();
+            }
+        },3000);
+    }
+
+    // Independent watcher: catches Maintenance even if an older Custom Night
+    // movement path bypasses one of the location wrappers.
+    setInterval(()=>{
+        if(!gameActive) return;
+
+        if(orelhaLocation==="maintenance"){
+            if(customWatchingMaintenance()){
+                clearTimeout(cnMaintWatch);
+                cnMaintWatch=null;
+            }else if(!cnMaintWatch){
+                armCustomMaintenanceVent();
+            }
+        }else{
+            clearTimeout(cnMaintWatch);
+            cnMaintWatch=null;
+        }
+    },100);
+
+    // Hard zero-power watcher. This intentionally bypasses the normal outage
+    // sequence because the requested rule is instant death at 0%.
+    setInterval(()=>{
+        if(!gameActive || jpPlaying) return;
+
+        if(power <= 0){
+            power = 0;
+            if(powerEl) powerEl.textContent="Power: 0%";
+
+            // Prevent camera/repair/door/vent timers from holding the state.
+            clearTimeout(cnMaintWatch);
+            clearTimeout(maintenanceTimer);
+            clearTimeout(maintenanceDangerTimer);
+            clearTimeout(maintenanceVentEntryTimer);
+            clearTimeout(ventTravelTimer);
+            clearTimeout(ventKillTimer);
+            clearTimeout(securityTimer);
+            clearTimeout(securityAttackTimer);
+
+            repairing=false;
+
+            if(fixingAudio){
+                fixingAudio.pause();
+                fixingAudio.currentTime=0;
+            }
+            if(ventErrorAudio){
+                ventErrorAudio.pause();
+                ventErrorAudio.currentTime=0;
+            }
+
+            // Close overlays before jumpscare so no full-screen UI can cover it.
+            camerasOpen=false;
+            repairOpen=false;
+            if(cameraUI) cameraUI.classList.remove("active");
+            if(repairUI) repairUI.classList.remove("active");
+
+            powerOut=true;
+            deathReason="power";
+
+            if(typeof playJumpscare==="function"){
+                playJumpscare();
+            }
+        }
+    },50);
+
+    // Re-arm after camera changes so CAM07 monitoring still cancels the 3s timer.
+    const oldSelectCamera = selectCamera;
+    selectCamera = function(){
+        const r = oldSelectCamera.apply(this,arguments);
+        if(orelhaLocation==="maintenance"){
+            if(customWatchingMaintenance()){
+                clearTimeout(cnMaintWatch);
+                cnMaintWatch=null;
+            }else{
+                armCustomMaintenanceVent();
+            }
+        }
+        return r;
+    };
+})();
+
 </script>
 
 </body>
