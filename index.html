@@ -1729,7 +1729,7 @@ font:700 17px "Courier New",monospace;letter-spacing:2px;text-align:center;text-
     <div id="stars"></div>
 
     <div class="version">
-        v0.6.5 ALPHA
+        v0.6 ALPHA
     </div>
 
 
@@ -5744,6 +5744,83 @@ openCustomNight=function(){
             finalZeroPowerKill();
         }
     }, 10);
+})();
+
+
+/* =========================================================
+   BACK CORRIDOR = DOOR ATTACK ROUTE
+   Whenever Ear Dog reaches Back Corridor, his next action is
+   a door attack instead of wandering or choosing the vent.
+========================================================= */
+(function(){
+    let backCorridorDoorTimer = null;
+    let forcingBackCorridorDoor = false;
+
+    const _backCorridorSetLocation = setOrelhaLocation;
+
+    setOrelhaLocation = function(location){
+        const result = _backCorridorSetLocation.apply(this, arguments);
+
+        clearTimeout(backCorridorDoorTimer);
+        backCorridorDoorTimer = null;
+
+        if(
+            location === "back_corridor" &&
+            gameActive &&
+            !powerOut &&
+            !forcingBackCorridorDoor
+        ){
+            // He has committed to the door route.
+            // Short delay keeps Back Corridor visible on the cameras before attacking.
+            const ai = Math.max(
+                1,
+                Math.min(20, customNightMode ? customAI : (ORELHA_NIGHT_AI[currentNight] ?? 2))
+            );
+
+            // Higher AI commits faster, but Back Corridor ALWAYS leads to the door.
+            const delay = customNightMode
+                ? Math.max(700, 2300 - ai * 70)
+                : Math.max(900, 2600 - ai * 65);
+
+            backCorridorDoorTimer = setTimeout(() => {
+                backCorridorDoorTimer = null;
+
+                if(
+                    !gameActive ||
+                    powerOut ||
+                    orelhaLocation !== "back_corridor"
+                ) return;
+
+                forcingBackCorridorDoor = true;
+
+                // Back Corridor -> Security Corridor -> Door.
+                // Using the existing states preserves the normal door mechanics.
+                _backCorridorSetLocation("security_corridor");
+
+                setTimeout(() => {
+                    if(
+                        !gameActive ||
+                        powerOut ||
+                        orelhaLocation !== "security_corridor"
+                    ){
+                        forcingBackCorridorDoor = false;
+                        return;
+                    }
+
+                    _backCorridorSetLocation("door");
+                    forcingBackCorridorDoor = false;
+
+                    // Do NOT turn the player's camera toward the door.
+                    // Existing door reaction logic handles open/closed door behavior.
+                    if(typeof startDoorAttackCountdown === "function" && !doorClosed){
+                        startDoorAttackCountdown();
+                    }
+                }, Math.max(350, delay * 0.35));
+            }, delay);
+        }
+
+        return result;
+    };
 })();
 
 </script>
