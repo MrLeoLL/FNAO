@@ -5399,10 +5399,64 @@ openCustomNight=function(){
         return result;
     };
 
-    // Final guard wins over old 25/50ms zero-power watchers: mark powerOut first and
-    // route directly to Game Over before their jumpscare conditions can succeed.
+    // ABSOLUTE ZERO-POWER FAILSAFE — applies to EVERY night, including Custom Night.
+    // This guard does not trust legacy powerOut/gameActive state because older outage
+    // handlers may set those flags before the final Game Over routine gets a chance to run.
+    let alphaZeroDeathCommitted=false;
+
+    const alphaBeginWithZeroReset=beginGameplay;
+    beginGameplay=function(){
+        alphaZeroDeathCommitted=false;
+        return alphaBeginWithZeroReset.apply(this,arguments);
+    };
+
+    function forceZeroPowerGameOver(){
+        if(alphaZeroDeathCommitted) return;
+        const nightVisible = nightScreen && getComputedStyle(nightScreen).display !== "none";
+        if(!nightVisible || power>0) return;
+
+        alphaZeroDeathCommitted=true;
+        power=0;
+        if(powerValue) powerValue.textContent="0";
+        powerOut=true;
+        deathReason="power";
+        orelhaLocation="powerout";
+        gameActive=false;
+        jpPlaying=false;
+
+        doorClosed=false;
+        flashlightOn=false;
+        camerasOpen=false;
+        repairOpen=false;
+        repairing=false;
+
+        clearInterval(nightTimer);
+        clearInterval(powerTimer);
+        clearInterval(alphaExtraDrainTimer);
+        alphaExtraDrainTimer=null;
+        clearTimeout(powerDeathTimer);
+        clearInterval(powerDeathInterval);
+        clearCombatTimers();
+        stopGameplayAudioHard();
+
+        if(cameraUI) cameraUI.classList.remove("active");
+        if(repairUI) repairUI.classList.remove("active");
+        const outage=document.getElementById("power-outage");
+        if(outage) outage.classList.remove("active");
+        if(typeof doorImage!=="undefined" && doorImage) doorImage.style.display="none";
+        if(typeof stopVentFlashCounter==="function") stopVentFlashCounter();
+
+        // Direct Game Over: no outage countdown and no jumpscare.
+        showGameOver();
+    }
+
+    // Replace every public zero-power entry point with the same terminal routine.
+    triggerPowerOutage=forceZeroPowerGameOver;
+    instantKillOnZeroPower=forceZeroPowerGameOver;
+
+    // Runs independently of the legacy flags so 0% can never leave a night alive/frozen.
     setInterval(()=>{
-        if(gameActive && !powerOut && power<=0) alphaZeroPowerGameOver();
+        if(power<=0) forceZeroPowerGameOver();
     },10);
 })();
 
