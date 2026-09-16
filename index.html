@@ -5554,7 +5554,24 @@ openCustomNight=function(){
     const originalBeginGameplayZeroPower = beginGameplay;
     beginGameplay = function(){
         zeroPowerCommitted = false;
-        return originalBeginGameplayZeroPower.apply(this, arguments);
+
+        // Full power-outage reset for Try Again / every new night.
+        powerOut = false;
+        powerDeathTimer = null;
+        powerDeathInterval = null;
+
+        // Do not carry the zero-power attack state into the restarted night.
+        orelhaLocation = "stage";
+
+        const result = originalBeginGameplayZeroPower.apply(this, arguments);
+
+        // Guarantee the normal power-drain loop is alive after restarting.
+        try {
+            clearInterval(powerTimer);
+            powerTimer = setInterval(updatePower, 1000);
+        } catch(e) {}
+
+        return result;
     };
 
     // Independent zero-power watchdog for every night, including Custom Night.
@@ -5563,6 +5580,85 @@ openCustomNight=function(){
             zeroPowerEarDogKill();
         }
     }, 16);
+})();
+
+
+/* =========================================================
+   ABSOLUTE ZERO-POWER DEATH FAILSAFE
+   Guarantees that reaching 0 can never leave the player alive.
+========================================================= */
+(function(){
+    let absoluteZeroKillLock = false;
+
+    function absoluteZeroPowerKill(){
+        if (absoluteZeroKillLock) return;
+        if (!gameActive) return;
+
+        absoluteZeroKillLock = true;
+        power = 0;
+        if (powerValue) powerValue.textContent = "0";
+
+        // Stop flashlight and its sound immediately.
+        flashlightOn = false;
+        if (flashlightOverlay) flashlightOverlay.classList.remove("on");
+
+        const fa = document.getElementById("flashlight-audio");
+        if (fa) {
+            try {
+                fa.pause();
+                fa.currentTime = 0;
+                fa.loop = false;
+            } catch(e) {}
+        }
+
+        try {
+            if (typeof flashlightHum !== "undefined" && flashlightHum) {
+                flashlightHum.pause();
+                flashlightHum.currentTime = 0;
+                flashlightHum.loop = false;
+            }
+        } catch(e) {}
+
+        // Close anything that could visually block the jumpscare.
+        camerasOpen = false;
+        repairOpen = false;
+        repairing = false;
+        if (cameraUI) cameraUI.classList.remove("active");
+        if (repairUI) repairUI.classList.remove("active");
+
+        // Force Ear Dog's lethal state.
+        try { aiLevel = 50000; } catch(e) {}
+        try { currentAI = 50000; } catch(e) {}
+        try { orelhaAI = 50000; } catch(e) {}
+        orelhaLocation = "office";
+        powerOut = true;
+
+        // Use the game's real death routine.
+        extrasJumpscareMode = false;
+        playJumpscare();
+    }
+
+    // Reset the hard lock every time a night begins / Try Again is used.
+    const beginGameplayAbsoluteZeroOriginal = beginGameplay;
+    beginGameplay = function(){
+        absoluteZeroKillLock = false;
+        return beginGameplayAbsoluteZeroOriginal.apply(this, arguments);
+    };
+
+    // Check independently of all old outage timers and state flags.
+    setInterval(function(){
+        if (!gameActive || absoluteZeroKillLock) return;
+
+        let displayedZero = false;
+        try {
+            displayedZero = powerValue &&
+                parseFloat(powerValue.textContent.replace(",", ".")) <= 0;
+        } catch(e) {}
+
+        if (Number(power) <= 0 || displayedZero) {
+            absoluteZeroPowerKill();
+        }
+    }, 10);
 })();
 
 </script>
