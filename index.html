@@ -2773,6 +2773,9 @@ function beginGameplay(night) {
 
 function triggerPowerOutage(){
     if(powerOut||!gameActive)return;
+    const outageFlashAudio=document.getElementById("flashlight-audio");
+    if(outageFlashAudio){try{outageFlashAudio.pause();outageFlashAudio.currentTime=0;}catch(e){}}
+    if(flashlightOverlay) flashlightOverlay.classList.remove("on");
     powerOut=true; power=0; powerValue.textContent="0";
 
     // Blackout overrides all normal Orelha attack states.
@@ -4549,6 +4552,17 @@ let zeroPowerKillTriggered=false;
 function instantKillOnZeroPower(){
     if(zeroPowerKillTriggered || !gameActive || jpPlaying)return;
     zeroPowerKillTriggered=true;
+
+    // Stop the actual looping flashlight <audio> BEFORE changing flashlightOn.
+    // This is intentionally direct so it cannot depend on wasOn/state flags.
+    const zeroFlashAudio=document.getElementById("flashlight-audio");
+    if(zeroFlashAudio){
+        try{ zeroFlashAudio.pause(); zeroFlashAudio.currentTime=0; }catch(e){}
+    }
+    if(typeof flashlightHum!=="undefined" && flashlightHum){
+        try{ flashlightHum.pause(); flashlightHum.currentTime=0; }catch(e){}
+    }
+    if(flashlightOverlay) flashlightOverlay.classList.remove("on");
 
     power=0;
     if(powerValue)powerValue.textContent="0";
