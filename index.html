@@ -5478,21 +5478,24 @@ openCustomNight=function(){
 
 
 /* =========================================================
-   ZERO POWER = EAR DOG INSTANT ATTACK
+   ZERO POWER = EAR DOG REAL JUMPSCARE
 ========================================================= */
 (function(){
     let zeroPowerCommitted = false;
 
     function stopFlashlightAtZero(){
         flashlightOn = false;
-        if (flashlightOverlay) flashlightOverlay.classList.remove("on");
 
-        const a = document.getElementById("flashlight-audio");
-        if (a) {
+        if (flashlightOverlay) {
+            flashlightOverlay.classList.remove("on");
+        }
+
+        const flashlightAudio = document.getElementById("flashlight-audio");
+        if (flashlightAudio) {
             try {
-                a.pause();
-                a.currentTime = 0;
-                a.loop = false;
+                flashlightAudio.pause();
+                flashlightAudio.currentTime = 0;
+                flashlightAudio.loop = false;
             } catch(e) {}
         }
 
@@ -5505,7 +5508,9 @@ openCustomNight=function(){
         } catch(e) {}
 
         try {
-            if (typeof stopFlashlightHum === "function") stopFlashlightHum();
+            if (typeof stopFlashlightHum === "function") {
+                stopFlashlightHum();
+            }
         } catch(e) {}
     }
 
@@ -5515,17 +5520,18 @@ openCustomNight=function(){
 
         power = 0;
         if (powerValue) powerValue.textContent = "0";
+
         stopFlashlightAtZero();
 
-        // At zero power Ear Dog effectively becomes AI 50000.
+        // Ear Dog becomes effectively unstoppable at zero power.
         try { aiLevel = 50000; } catch(e) {}
         try { currentAI = 50000; } catch(e) {}
         try { orelhaAI = 50000; } catch(e) {}
 
-        // Do not return to menu and do not wait for normal movement logic.
-        // Force Ear Dog into the office/attack state immediately.
         powerOut = true;
         orelhaLocation = "office";
+
+        // Close interfaces before the normal jumpscare starts.
         camerasOpen = false;
         repairOpen = false;
         repairing = false;
@@ -5533,52 +5539,25 @@ openCustomNight=function(){
         if (cameraUI) cameraUI.classList.remove("active");
         if (repairUI) repairUI.classList.remove("active");
 
-        // Kill immediately using the game's existing jumpscare path.
-        // Try the known attack functions in order, with a direct fallback.
-        try {
-            if (typeof triggerJumpscare === "function") {
-                triggerJumpscare();
-                return;
-            }
-        } catch(e) {}
-
-        try {
-            if (typeof jumpscare === "function") {
-                jumpscare();
-                return;
-            }
-        } catch(e) {}
-
-        try {
-            if (typeof killPlayer === "function") {
-                killPlayer();
-                return;
-            }
-        } catch(e) {}
-
-        // Fallback for builds where the attack function has another name:
-        // expose the jumpscare screen directly and end gameplay.
-        gameActive = false;
-        const js = document.getElementById("jumpscare");
-        if (js) {
-            js.style.display = "block";
-            js.classList.add("active");
-        } else if (gameoverScreen) {
-            gameoverScreen.style.display = "block";
-        }
+        // IMPORTANT:
+        // Use the exact same jumpscare routine used by normal Ear Dog deaths.
+        // This routine loads images/ojp1.png ... ojpN.png and handles audio,
+        // animation, red screen and Game Over by itself.
+        extrasJumpscareMode = false;
+        playJumpscare();
     }
 
-    // Override legacy outage handlers.
+    // Any legacy zero-power path now ends in the real Ear Dog jumpscare.
     triggerPowerOutage = zeroPowerEarDogKill;
     instantKillOnZeroPower = zeroPowerEarDogKill;
 
-    const oldBeginGameplayZeroAI = beginGameplay;
+    const originalBeginGameplayZeroPower = beginGameplay;
     beginGameplay = function(){
         zeroPowerCommitted = false;
-        return oldBeginGameplayZeroAI.apply(this, arguments);
+        return originalBeginGameplayZeroPower.apply(this, arguments);
     };
 
-    // Independent check so this works on every normal night and Custom Night.
+    // Independent zero-power watchdog for every night, including Custom Night.
     setInterval(function(){
         if (gameActive && power <= 0) {
             zeroPowerEarDogKill();
