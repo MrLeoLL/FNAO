@@ -1729,7 +1729,7 @@ font:700 17px "Courier New",monospace;letter-spacing:2px;text-align:center;text-
     <div id="stars"></div>
 
     <div class="version">
-        v0.6 ALPHA
+        v0.6.5 ALPHA
     </div>
 
 
@@ -3933,25 +3933,17 @@ function showGameOver() {
 
 function tryAgain() {
 
-    gameoverScreen.style.display =
-        "none";
-
-
+    gameoverScreen.style.display = "none";
     staticFlash();
 
-
-    const currentNight =
-
-        saveData?.night ||
-        1;
-
+    // Retry the night that was actually being played.
+    // saveData.night stores campaign progress, so on Night 6 it can still be 5.
+    const retryNight = currentNight || 1;
+    const retryWasCustom = customNightMode;
 
     setTimeout(() => {
-
-        startNight(
-            currentNight
-        );
-
+        customNightMode = retryWasCustom;
+        startNight(retryNight);
     }, 150);
 
 }
@@ -5655,6 +5647,101 @@ openCustomNight=function(){
 
         if (Number(power) <= 0 || displayedZero) {
             absoluteZeroPowerKill();
+        }
+    }, 10);
+})();
+
+
+/* =========================================================
+   FINAL ZERO POWER KILL CONTROLLER
+   0% ALWAYS = REAL EAR DOG JUMPSCARE
+========================================================= */
+(function(){
+    let finalZeroKillCommitted = false;
+
+    function finalZeroPowerKill(){
+        if(finalZeroKillCommitted) return;
+
+        const gameplayVisible =
+            typeof gameScreen !== "undefined" &&
+            gameScreen &&
+            getComputedStyle(gameScreen).display !== "none";
+
+        if(!gameplayVisible) return;
+
+        finalZeroKillCommitted = true;
+
+        // Lock power at zero. Do NOT call any legacy outage handler.
+        power = 0;
+        if(powerValue) powerValue.textContent = "0";
+
+        // Stop gameplay actions/sounds that could survive into the jumpscare.
+        flashlightOn = false;
+        doorClosed = false;
+        camerasOpen = false;
+        repairOpen = false;
+        repairing = false;
+
+        if(flashlightOverlay) flashlightOverlay.classList.remove("on");
+        if(cameraUI) cameraUI.classList.remove("active");
+        if(repairUI) repairUI.classList.remove("active");
+
+        try { stopFlashlightHum(); } catch(e) {}
+
+        const flashAudio = document.getElementById("flashlight-audio");
+        if(flashAudio){
+            try{
+                flashAudio.pause();
+                flashAudio.currentTime = 0;
+                flashAudio.loop = false;
+            }catch(e){}
+        }
+
+        // Cancel old blackout countdowns so they cannot fight this death.
+        try { clearTimeout(powerDeathTimer); } catch(e) {}
+        try { clearInterval(powerDeathInterval); } catch(e) {}
+
+        const outage = document.getElementById("power-outage");
+        if(outage) outage.classList.remove("active");
+
+        // Ear Dog is now in the lethal office state.
+        try { aiLevel = 50000; } catch(e) {}
+        try { currentAI = 50000; } catch(e) {}
+        try { orelhaAI = 50000; } catch(e) {}
+        orelhaLocation = "office";
+
+        // Mark outage only AFTER we have committed the kill.
+        powerOut = true;
+
+        // Use the game's normal working Ear Dog jumpscare.
+        extrasJumpscareMode = false;
+        playJumpscare();
+    }
+
+    // Reset only when a fresh attempt actually begins.
+    const _finalZeroBeginGameplay = beginGameplay;
+    beginGameplay = function(){
+        finalZeroKillCommitted = false;
+        powerOut = false;
+        return _finalZeroBeginGameplay.apply(this, arguments);
+    };
+
+    // Override all public zero-power entry points with the same terminal kill.
+    triggerPowerOutage = finalZeroPowerKill;
+    instantKillOnZeroPower = finalZeroPowerKill;
+
+    // Independent watchdog. Crucially, it does NOT check powerOut.
+    // Therefore an older handler cannot block the death by setting powerOut first.
+    setInterval(function(){
+        if(finalZeroKillCommitted) return;
+
+        const gameplayVisible =
+            typeof gameScreen !== "undefined" &&
+            gameScreen &&
+            getComputedStyle(gameScreen).display !== "none";
+
+        if(gameplayVisible && Number(power) <= 0){
+            finalZeroPowerKill();
         }
     }, 10);
 })();
