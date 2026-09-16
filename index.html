@@ -5565,12 +5565,10 @@ openCustomNight=function(){
 
         const result = originalBeginGameplayZeroPower.apply(this, arguments);
 
-        // Guarantee the normal power-drain loop is alive after restarting.
-        try {
-            clearInterval(powerTimer);
-            powerTimer = setInterval(updatePower, 1000);
-        } catch(e) {}
-
+        // Do NOT replace the game's real powerTimer here.
+        // beginGameplay already starts the correctly balanced drain loop,
+        // and the alpha extra-drain wrapper adds the harder Custom Night drain.
+        // Replacing it with updatePower() was what made battery drain too slowly.
         return result;
     };
 
