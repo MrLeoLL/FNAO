@@ -1536,7 +1536,7 @@ font:700 17px "Courier New",monospace;letter-spacing:2px;text-align:center;text-
     <div id="stars"></div>
 
     <div class="version">
-        v0.1 ALPHA
+        v0.5 ALPHA
     </div>
 
 
@@ -3614,13 +3614,13 @@ function backToMenu() {
 
 /* ===== NIGHT AMBIENCE ===== */
 const ambienceAudio=document.getElementById("ambience-audio");
-if(ambienceAudio) ambienceAudio.volume=0.38;
+if(ambienceAudio) ambienceAudio.volume=0.55;
 
 function startNightAmbience(){
     if(!ambienceAudio)return;
     ambienceAudio.loop=true;
     ambienceAudio.muted=false;
-    ambienceAudio.volume=0.38;
+    ambienceAudio.volume=0.55;
     ambienceAudio.currentTime=0;
     ambienceAudio.play().catch(()=>{});
 }
@@ -4376,6 +4376,167 @@ function playVentMovementSound(){
     ventCloserAudio.currentTime = 0;
     ventCloserAudio.play().catch(()=>{});
 }
+
+
+
+/* ===== AMBIENCE RELIABILITY FIX ===== */
+let ambienceKeepAliveTimer = null;
+
+function ensureNightAmbience(){
+    if(!gameActive || jpPlaying || !ambienceAudio) return;
+
+    ambienceAudio.loop = true;
+    ambienceAudio.muted = false;
+    ambienceAudio.volume = 0.55;
+
+    if(ambienceAudio.paused){
+        ambienceAudio.play().catch(()=>{});
+    }
+}
+
+const _reliableStartNightAmbience = startNightAmbience;
+startNightAmbience = function(){
+    if(!ambienceAudio) return;
+
+    ambienceAudio.loop = true;
+    ambienceAudio.muted = false;
+    ambienceAudio.volume = 0.55;
+    ambienceAudio.currentTime = 0;
+    ambienceAudio.play().catch(()=>{});
+
+    clearInterval(ambienceKeepAliveTimer);
+    ambienceKeepAliveTimer = setInterval(()=>{
+        if(!gameActive){
+            clearInterval(ambienceKeepAliveTimer);
+            ambienceKeepAliveTimer = null;
+            return;
+        }
+        ensureNightAmbience();
+    },1000);
+};
+
+const _reliableStopNightAmbience = stopNightAmbience;
+stopNightAmbience = function(){
+    clearInterval(ambienceKeepAliveTimer);
+    ambienceKeepAliveTimer = null;
+    if(!ambienceAudio) return;
+    ambienceAudio.pause();
+    ambienceAudio.currentTime = 0;
+};
+
+/* Browsers can occasionally reject the first play() if the audio context is
+   transitioning. Any player interaction during gameplay retries ambience. */
+document.addEventListener("pointerdown", ()=>{
+    if(gameActive) ensureNightAmbience();
+});
+document.addEventListener("keydown", ()=>{
+    if(gameActive) ensureNightAmbience();
+});
+
+
+
+/* ===== FLASHLIGHT VS VENT ATTACK FIX =====
+   The flashlight now has priority over the vent kill timer.
+   5 continuous seconds aimed at Ear Dog guarantees the defense succeeds.
+*/
+let guaranteedFlashStart = 0;
+let guaranteedFlashTimer = null;
+
+function stopGuaranteedFlashDefense(){
+    guaranteedFlashStart = 0;
+    if(guaranteedFlashTimer){
+        clearInterval(guaranteedFlashTimer);
+        guaranteedFlashTimer = null;
+    }
+}
+
+function startGuaranteedFlashDefense(){
+    if(guaranteedFlashTimer) return;
+    if(!gameActive || powerOut || orelhaLocation!=="vent" ||
+       currentView!=="back" || !flashlightOn) return;
+
+    guaranteedFlashStart = performance.now();
+
+    guaranteedFlashTimer=setInterval(()=>{
+        if(!gameActive || powerOut || orelhaLocation!=="vent" ||
+           currentView!=="back" || !flashlightOn){
+            stopGuaranteedFlashDefense();
+            return;
+        }
+
+        const held = performance.now()-guaranteedFlashStart;
+
+        if(held>=5000){
+            stopGuaranteedFlashDefense();
+
+            // Cancel every possible pending vent death before moving him.
+            if(typeof cancelVentKill==="function") cancelVentKill();
+            clearTimeout(ventKillTimer);
+            clearTimeout(ventTravelTimer);
+
+            setOrelhaLocation(ORELHA_START_CAMERA);
+            if(currentView==="back") updateGameImage();
+            if(camerasOpen) selectCamera(currentCamera,false);
+        }
+    },25);
+}
+
+/* Rebuild vent kill so it can NEVER fire while a valid flashlight defense
+   has already been held for five seconds. */
+armVentKill=function(){
+    if(typeof cancelVentKill==="function") cancelVentKill();
+    if(!gameActive || powerOut || orelhaLocation!=="vent") return;
+
+    const killDelay = customNightMode
+        ? Math.max(6.5, 9.5-((Math.max(1,Math.min(20,customAI))-1)/19)*3)
+        : ({1:10.5,2:9.5,3:9,4:8.5,5:8,6:7.5}[currentNight]||8.5);
+
+    ventKillTimer=setTimeout(()=>{
+        ventKillTimer=null;
+
+        if(!gameActive || powerOut || orelhaLocation!=="vent") return;
+
+        // Final safety check: if the player is currently defending correctly
+        // and has completed the required 5 seconds, he survives.
+        if(currentView==="back" && flashlightOn &&
+           guaranteedFlashStart &&
+           performance.now()-guaranteedFlashStart>=5000){
+            if(typeof cancelVentKill==="function") cancelVentKill();
+            setOrelhaLocation(ORELHA_START_CAMERA);
+            updateGameImage();
+            return;
+        }
+
+        deathReason="vent";
+        playJumpscare();
+    },killDelay*1000);
+};
+
+/* Hook the actual flashlight state every frame-ish, rather than relying on
+   only the original keydown event. */
+setInterval(()=>{
+    if(gameActive && !powerOut && orelhaLocation==="vent" &&
+       currentView==="back" && flashlightOn){
+        startGuaranteedFlashDefense();
+    }else{
+        stopGuaranteedFlashDefense();
+    }
+},25);
+
+/* Clean up between attacks/nights. */
+const _flashDefenseSetLocation=setOrelhaLocation;
+setOrelhaLocation=function(location){
+    const leaving = orelhaLocation==="vent" && location!=="vent";
+    const result=_flashDefenseSetLocation.apply(this,arguments);
+    if(leaving) stopGuaranteedFlashDefense();
+    return result;
+};
+
+const _flashDefenseCompleteNight=completeNight;
+completeNight=function(){
+    stopGuaranteedFlashDefense();
+    return _flashDefenseCompleteNight.apply(this,arguments);
+};
 
 </script>
 
