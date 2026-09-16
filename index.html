@@ -5206,6 +5206,206 @@ openCustomNight=function(){
     },25);
 })();
 
+
+/* =========================================================
+   ALPHA GAMEPLAY PATCH — aggression / power / audio cleanup
+   ========================================================= */
+(function(){
+    let alphaExtraDrainTimer=null;
+
+    function stopGameplayAudioHard(){
+        // Stop every gameplay loop/sound that can survive a death/state change.
+        const keep = new Set([menuAudio]);
+        document.querySelectorAll('audio').forEach(a=>{
+            if(keep.has(a)) return;
+            try{ a.pause(); a.currentTime=0; }catch(e){}
+        });
+        if(typeof ventErrorAudio!=="undefined" && ventErrorAudio){
+            ventErrorAudio.pause(); ventErrorAudio.currentTime=0;
+        }
+        if(typeof fixingAudio!=="undefined" && fixingAudio){
+            fixingAudio.pause(); fixingAudio.currentTime=0;
+        }
+        if(typeof stopFlashlightHum==="function") stopFlashlightHum();
+    }
+
+    function clearCombatTimers(){
+        clearTimeout(orelhaMoveTimer);
+        clearTimeout(ventTravelTimer);
+        clearTimeout(maintenanceDangerTimer);
+        clearTimeout(maintenanceTimer);
+        clearTimeout(securityAttackTimer);
+        clearTimeout(securityTimer);
+        clearTimeout(powerDeathTimer);
+        clearInterval(powerDeathInterval);
+        if(typeof cancelDoorAttack==="function") cancelDoorAttack();
+        if(typeof cancelVentKill==="function") cancelVentKill();
+        if(typeof cancelMaintenanceVentEntry==="function") cancelMaintenanceVentEntry();
+    }
+
+    // 1 + 4: no ventilation/flashlight/battery audio is allowed to survive death.
+    const alphaOldJumpscare=playJumpscare;
+    playJumpscare=function(){
+        stopGameplayAudioHard();
+        return alphaOldJumpscare.apply(this,arguments);
+    };
+
+    const alphaOldShowGameOver=showGameOver;
+    showGameOver=function(){
+        stopGameplayAudioHard();
+        clearInterval(alphaExtraDrainTimer);
+        alphaExtraDrainTimer=null;
+        return alphaOldShowGameOver.apply(this,arguments);
+    };
+
+    // 2: reaching the door never steals the player's camera/view.
+    // A closed door blocks the attack, plays the impact and sends Ear Dog back.
+    armSecurity=function(){
+        clearTimeout(securityAttackTimer);
+        securityAttackTimer=setTimeout(()=>{
+            if(!gameActive || powerOut || orelhaLocation!=="security_corridor") return;
+
+            setOrelhaLocation("door");
+            // IMPORTANT: no currentView="door" here.
+            if(currentView==="door") updateGameImage();
+
+            if(doorClosed){
+                try{ playDoorSound(); }catch(e){}
+                setTimeout(()=>{
+                    if(!gameActive || powerOut || orelhaLocation!=="door") return;
+                    setOrelhaLocation(Math.random()<0.68 ? "security_corridor" : ORELHA_START_CAMERA);
+                    if(currentView==="door") updateGameImage();
+                    scheduleOrelhaMove();
+                },650);
+            }else if(typeof startDoorAttackCountdown==="function"){
+                startDoorAttackCountdown();
+            }
+        }, customNightMode ? Math.max(650,2200-customAI*70) : 2600);
+    };
+
+    // 3 + 5: objective AI. Higher levels move faster and heavily favor attack routes,
+    // especially Maintenance -> ventilation instead of wandering around the map.
+    scheduleOrelhaMove=function(){
+        clearTimeout(orelhaMoveTimer);
+        if(!gameActive || powerOut) return;
+
+        if(currentNight===1 && !customNightMode && gameMinutes<180){
+            orelhaMoveTimer=setTimeout(scheduleOrelhaMove,900);
+            return;
+        }
+
+        const ai=Math.max(1,Math.min(20,customNightMode?customAI:(ORELHA_NIGHT_AI[currentNight]??2)));
+        const t=ai/20;
+        const minDelay=customNightMode ? (3900-2450*t) : (4700-1800*t);
+        const jitter=customNightMode ? (1500-700*t) : 1700;
+        const moveChance=Math.min(.99,.30+ai*.035+(systems.vent?0:.08));
+        const objectiveBias=Math.min(.98,.50+ai*.024);
+        const ventBias=Math.min(.96,.38+ai*.029);
+
+        orelhaMoveTimer=setTimeout(()=>{
+            if(!gameActive || powerOut) return;
+
+            if(CAMERA_KEYS.includes(orelhaLocation) && Math.random()<moveChance){
+                let choices=adjacentCameras(orelhaLocation);
+                if(choices.length){
+                    let target=null;
+
+                    // Maintenance is the preferred offensive route at high AI.
+                    if(choices.includes("maintenance") && Math.random()<ventBias){
+                        target="maintenance";
+                    }else if(choices.includes("security_corridor") && Math.random()<objectiveBias){
+                        target="security_corridor";
+                    }else{
+                        const towardVent=choices.filter(k=>
+                            k==="maintenance" || adjacentCameras(k).includes("maintenance")
+                        );
+                        const towardDoor=choices.filter(k=>
+                            k==="security_corridor" || adjacentCameras(k).includes("security_corridor")
+                        );
+                        if(towardVent.length && Math.random()<ventBias){
+                            target=towardVent[Math.floor(Math.random()*towardVent.length)];
+                        }else if(towardDoor.length && Math.random()<objectiveBias){
+                            target=towardDoor[Math.floor(Math.random()*towardDoor.length)];
+                        }else{
+                            target=choices[Math.floor(Math.random()*choices.length)];
+                        }
+                    }
+                    setOrelhaLocation(target);
+                }
+            }
+            scheduleOrelhaMove();
+        },Math.max(900,minDelay+Math.random()*jitter));
+    };
+
+    // 6: zero power is a clean, immediate GAME OVER. No blackout countdown and NO jumpscare.
+    function alphaZeroPowerGameOver(){
+        if(!gameActive || powerOut) return;
+
+        power=0;
+        if(powerValue) powerValue.textContent="0";
+        powerOut=true;
+        deathReason="power";
+        orelhaLocation="powerout";
+        gameActive=false;
+
+        doorClosed=false;
+        flashlightOn=false;
+        camerasOpen=false;
+        repairOpen=false;
+        repairing=false;
+
+        clearInterval(nightTimer);
+        clearInterval(powerTimer);
+        clearInterval(alphaExtraDrainTimer);
+        alphaExtraDrainTimer=null;
+        clearCombatTimers();
+        stopGameplayAudioHard();
+
+        if(cameraUI) cameraUI.classList.remove("active");
+        if(repairUI) repairUI.classList.remove("active");
+        const outage=document.getElementById("power-outage");
+        if(outage) outage.classList.remove("active");
+        if(typeof doorImage!=="undefined" && doorImage) doorImage.style.display="none";
+        if(typeof stopVentFlashCounter==="function") stopVentFlashCounter();
+
+        // Bypass every legacy zero-power jumpscare wrapper.
+        showGameOver();
+    }
+
+    triggerPowerOutage=alphaZeroPowerGameOver;
+    instantKillOnZeroPower=alphaZeroPowerGameOver;
+
+    // Faster battery drain, with Custom Night scaling much harder at high AI.
+    // This is additive to the existing usage drain so equipment management matters.
+    const alphaOldBeginGameplay=beginGameplay;
+    beginGameplay=function(night){
+        const result=alphaOldBeginGameplay.apply(this,arguments);
+        clearInterval(alphaExtraDrainTimer);
+        alphaExtraDrainTimer=setInterval(()=>{
+            if(!gameActive || powerOut) return;
+
+            const ai=Math.max(1,Math.min(20,customNightMode?customAI:(ORELHA_NIGHT_AI[currentNight]??2)));
+            const t=ai/20;
+            let extra=customNightMode ? (0.055 + 0.115*t) : (0.025 + 0.045*t);
+            if(camerasOpen) extra += customNightMode ? 0.035 : 0.018;
+            if(flashlightOn) extra += customNightMode ? 0.055 : 0.028;
+            if(doorClosed) extra += customNightMode ? 0.10 : 0.045;
+            if(repairOpen || repairing) extra += 0.018;
+
+            power=Math.max(0,power-extra);
+            if(powerValue) powerValue.textContent=Math.ceil(power);
+            if(power<=0) alphaZeroPowerGameOver();
+        },1000);
+        return result;
+    };
+
+    // Final guard wins over old 25/50ms zero-power watchers: mark powerOut first and
+    // route directly to Game Over before their jumpscare conditions can succeed.
+    setInterval(()=>{
+        if(gameActive && !powerOut && power<=0) alphaZeroPowerGameOver();
+    },10);
+})();
+
 </script>
 
 </body>
