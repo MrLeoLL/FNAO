@@ -1593,6 +1593,54 @@ font:700 17px "Courier New",monospace;letter-spacing:2px;text-align:center;text-
 }
 </style>
 
+
+<style>
+/* ===== FNAF-STYLE MAIN MENU CHARACTER COMPOSITION ===== */
+#main-menu{
+    /* Keep menu-bg.jpg, but stop filling the entire screen with Ear Dog. */
+    background-image:url("images/menu-bg.jpg") !important;
+    background-size:auto 88% !important;
+    background-position:92% 52% !important;
+    background-repeat:no-repeat !important;
+    background-color:#050505 !important;
+}
+
+/* Dark left field keeps the title/menu readable and makes the character feel
+   like a separate figure standing at the side, closer to classic FNAF menus. */
+#main-menu::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    z-index:2;
+    pointer-events:none;
+    background:
+      linear-gradient(90deg,
+        rgba(0,0,0,.96) 0%,
+        rgba(0,0,0,.82) 25%,
+        rgba(0,0,0,.42) 48%,
+        rgba(0,0,0,.08) 68%,
+        rgba(0,0,0,.18) 100%);
+}
+
+/* Existing menu layers/content stay above the new composition overlay. */
+#main-menu .menu-content,
+#main-menu #stars,
+#main-menu .version,
+#main-menu .erase-data-hint,
+#main-menu .menu-status,
+#main-menu .noise,
+#main-menu .menu-vignette,
+#main-menu .menu-glitch-flash{
+    z-index:4;
+}
+
+/* Slightly tighter title/menu placement to leave more breathing room. */
+#main-menu .menu-content{
+    left:6vw !important;
+    max-width:48vw;
+}
+</style>
+
 </head>
 
 
@@ -1863,7 +1911,6 @@ font:700 17px "Courier New",monospace;letter-spacing:2px;text-align:center;text-
       <button class="extras-tab active" data-extra="characters">CHARACTERS</button>
       <button class="extras-tab" data-extra="jumpscares">JUMPSCARES</button>
       <button class="extras-tab" data-extra="cameras">CAMERAS</button>
-      <button class="extras-tab" data-extra="sounds">SOUNDS</button>
       <button class="extras-tab" data-extra="making">MAKING OF</button>
     </div>
     <div class="extras-page active" id="extra-characters">
@@ -1874,13 +1921,6 @@ font:700 17px "Courier New",monospace;letter-spacing:2px;text-align:center;text-
       <button id="extras-jumpscare-button" onclick="playExtrasJumpscare()">JUMPSCARE</button>
     </div>
     <div class="extras-page" id="extra-cameras"><div class="extras-gallery" id="extras-camera-gallery"></div></div>
-    <div class="extras-page" id="extra-sounds">
-      <button class="extras-jumpscare-button extras-sound" onclick="previewSound('lure-audio')">AUDIO LURE</button>
-      <button class="extras-jumpscare-button extras-sound" onclick="previewSound('camera-switch-audio')">CAMERA SWITCH</button>
-      <button class="extras-jumpscare-button extras-sound" onclick="previewSound('door-audio')">DOOR</button>
-      <button class="extras-jumpscare-button extras-sound" onclick="previewSound('vent-closer-audio')">VENT</button>
-      <button class="extras-jumpscare-button extras-sound" onclick="previewSound('lever2-audio')">MONITOR</button>
-    </div>
     <div class="extras-page" id="extra-making">
       <div style="font:18px 'Courier New',monospace;line-height:1.8;padding:35px">
         <b>FIVE NIGHTS AT ORELHA'S</b><br><br>
@@ -4989,7 +5029,7 @@ openCustomNight=function(){
 
         if(power <= 0){
             power = 0;
-            if(powerEl) powerEl.textContent="Power: 0%";
+            if(powerValue) powerValue.textContent="0";
 
             // Prevent camera/repair/door/vent timers from holding the state.
             clearTimeout(cnMaintWatch);
@@ -5041,6 +5081,129 @@ openCustomNight=function(){
         }
         return r;
     };
+})();
+
+
+
+/* ===== CUSTOM NIGHT 20 AUTHORITATIVE FIX ===== */
+(function(){
+    let customMaintEnteredAt = 0;
+    let customMaintLastState = false;
+    let customVentToken = 0;
+
+    function watchingCam7(){
+        return !!(gameActive && camerasOpen && systems.camera && currentCamera===7);
+    }
+
+    function forceCustomVentRoute(){
+        if(!gameActive || powerOut || orelhaLocation!=="maintenance") return;
+
+        const token=++customVentToken;
+
+        clearTimeout(maintenanceDangerTimer);
+        clearTimeout(maintenanceTimer);
+        clearTimeout(maintenanceVentEntryTimer);
+        clearTimeout(ventTravelTimer);
+
+        // Do not use setOrelhaLocation here: legacy wrappers can cancel vent timers.
+        orelhaLocation="vent_travel_1";
+        if(camerasOpen) selectCamera(currentCamera,false);
+        if(typeof playVentMovementSound==="function") playVentMovementSound();
+
+        const speed=systems.vent ? 1 : .72;
+
+        ventTravelTimer=setTimeout(()=>{
+            if(token!==customVentToken || !gameActive || powerOut || orelhaLocation!=="vent_travel_1")return;
+            orelhaLocation="vent_travel_2";
+            if(typeof playVentMovementSound==="function") playVentMovementSound();
+
+            ventTravelTimer=setTimeout(()=>{
+                if(token!==customVentToken || !gameActive || powerOut || orelhaLocation!=="vent_travel_2")return;
+                orelhaLocation="vent";
+                if(typeof playVentMovementSound==="function") playVentMovementSound();
+                if(camerasOpen)selectCamera(currentCamera,false);
+                if(currentView==="back")updateGameImage();
+                if(typeof armVentKill==="function")armVentKill();
+            },3000*speed);
+        },3000*speed);
+    }
+
+    // Independent Custom Night Maintenance rule:
+    // not watching CAM 07 for 3 continuous seconds = guaranteed vent entry.
+    setInterval(()=>{
+        if(!gameActive || !customNightMode || powerOut){
+            customMaintEnteredAt=0;
+            customMaintLastState=false;
+            return;
+        }
+
+        const inMaint=orelhaLocation==="maintenance";
+
+        if(!inMaint){
+            customMaintEnteredAt=0;
+            customMaintLastState=false;
+            return;
+        }
+
+        if(!customMaintLastState){
+            customMaintLastState=true;
+            customMaintEnteredAt=performance.now();
+        }
+
+        if(watchingCam7()){
+            // Monitoring freezes/reset the danger timer.
+            customMaintEnteredAt=performance.now();
+            return;
+        }
+
+        if(performance.now()-customMaintEnteredAt>=3000){
+            customMaintEnteredAt=0;
+            customMaintLastState=false;
+            forceCustomVentRoute();
+        }
+    },50);
+
+    // Absolute zero-power rule for Custom Night.
+    // This watcher uses only identifiers that actually exist in the game.
+    setInterval(()=>{
+        if(!gameActive || !customNightMode || jpPlaying || power>0)return;
+
+        power=0;
+        if(powerValue)powerValue.textContent="0";
+
+        clearTimeout(ventTravelTimer);
+        clearTimeout(maintenanceDangerTimer);
+        clearTimeout(maintenanceTimer);
+        clearTimeout(maintenanceVentEntryTimer);
+        clearTimeout(securityAttackTimer);
+        clearTimeout(securityTimer);
+        clearTimeout(orelhaMoveTimer);
+        clearTimeout(powerDeathTimer);
+        clearInterval(powerDeathInterval);
+
+        if(typeof cancelDoorAttack==="function")cancelDoorAttack();
+        if(typeof cancelVentKill==="function")cancelVentKill();
+
+        doorClosed=false;
+        flashlightOn=false;
+        camerasOpen=false;
+        repairOpen=false;
+        repairing=false;
+        powerOut=true;
+        deathReason="power";
+        orelhaLocation="powerout";
+
+        if(cameraUI)cameraUI.classList.remove("active");
+        if(repairUI)repairUI.classList.remove("active");
+        const outage=document.getElementById("power-outage");
+        if(outage)outage.classList.remove("active");
+
+        if(typeof stopFlashlightHum==="function")stopFlashlightHum();
+        if(typeof stopVentFlashCounter==="function")stopVentFlashCounter();
+
+        // Directly enter the normal jumpscare pipeline.
+        playJumpscare();
+    },25);
 })();
 
 </script>
