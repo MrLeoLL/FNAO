@@ -3614,11 +3614,13 @@ function backToMenu() {
 
 /* ===== NIGHT AMBIENCE ===== */
 const ambienceAudio=document.getElementById("ambience-audio");
-if(ambienceAudio) ambienceAudio.volume=0.18;
+if(ambienceAudio) ambienceAudio.volume=0.38;
 
 function startNightAmbience(){
     if(!ambienceAudio)return;
-    ambienceAudio.volume=0.18;
+    ambienceAudio.loop=true;
+    ambienceAudio.muted=false;
+    ambienceAudio.volume=0.38;
     ambienceAudio.currentTime=0;
     ambienceAudio.play().catch(()=>{});
 }
@@ -3982,10 +3984,7 @@ enterVentRoute = function(){
     orelhaLocation = "vent_travel_1";
     if(camerasOpen) selectCamera(currentCamera,false);
 
-    if(ventCloserAudio){
-        ventCloserAudio.currentTime=0;
-        ventCloserAudio.play().catch(()=>{});
-    }
+    playVentMovementSound();
 
     // Broken ventilation makes him travel faster.
     const speed = systems.vent ? 1 : 0.72;
@@ -3994,12 +3993,14 @@ enterVentRoute = function(){
         if(!gameActive || powerOut || orelhaLocation!=="vent_travel_1") return;
 
         orelhaLocation="vent_travel_2";
+        playVentMovementSound();
 
         ventTravelTimer=setTimeout(()=>{
             if(!gameActive || powerOut || orelhaLocation!=="vent_travel_2") return;
 
             // Direct assignment avoids legacy location wrappers cancelling the route.
             orelhaLocation="vent";
+            playVentMovementSound();
             clearTimeout(maintenanceDangerTimer);
             clearTimeout(securityAttackTimer);
 
@@ -4365,6 +4366,16 @@ triggerPowerOutage = function(){
     clearGuaranteedMaintenanceTimer();
     return _guaranteedMaintenancePowerOutage.apply(this, arguments);
 };
+
+
+
+/* ===== VENT MOVEMENT SOUND FIX ===== */
+function playVentMovementSound(){
+    if(!ventCloserAudio) return;
+    ventCloserAudio.pause();
+    ventCloserAudio.currentTime = 0;
+    ventCloserAudio.play().catch(()=>{});
+}
 
 </script>
 
