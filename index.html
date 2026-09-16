@@ -1451,6 +1451,148 @@ font:700 17px "Courier New",monospace;letter-spacing:2px;text-align:center;text-
 
 </style>
 
+
+<style>
+/* ===== EXTRAS REDESIGN ===== */
+#extras-screen{
+  background:
+    linear-gradient(rgba(0,0,0,.72),rgba(0,0,0,.86)),
+    radial-gradient(circle at 50% 42%,#292929 0,#0a0a0a 55%,#000 100%);
+  overflow:hidden;
+  padding:0!important;
+}
+#extras-screen::before,#custom-night-screen::before{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:1;
+  background:repeating-linear-gradient(0deg,rgba(255,255,255,.022) 0 1px,transparent 1px 4px);
+}
+#extras-screen::after,#custom-night-screen::after{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:1;
+  box-shadow:inset 0 0 150px #000;
+}
+#extras-screen>h2{
+  position:absolute;left:5vw;top:5vh;margin:0;z-index:3;
+  font:700 clamp(38px,5vw,76px) "Courier New",monospace;
+  letter-spacing:10px;text-shadow:3px 0 #3a0000;
+}
+.extras-tabs{
+  position:absolute!important;left:5vw!important;top:18vh!important;
+  width:220px!important;display:flex!important;flex-direction:column!important;
+  gap:4px!important;z-index:4!important;
+}
+.extras-tab{
+  border:0!important;border-left:2px solid #333!important;
+  background:transparent!important;color:#777!important;text-align:left!important;
+  padding:10px 14px!important;font:700 15px "Courier New",monospace!important;
+  letter-spacing:2px!important;
+}
+.extras-tab:hover,.extras-tab.active{
+  color:#fff!important;border-left-color:#fff!important;background:linear-gradient(90deg,#222,transparent)!important;
+  transform:translateX(5px);
+}
+.extras-page{
+  position:absolute!important;left:31vw!important;right:5vw!important;top:14vh!important;bottom:12vh!important;
+  z-index:3!important;border:1px solid #292929!important;
+  background:rgba(0,0,0,.32)!important;box-shadow:0 0 45px #000 inset!important;
+  overflow:auto!important;
+}
+#extra-characters.active,#extra-jumpscares.active{
+  display:flex!important;align-items:center!important;justify-content:center!important;gap:38px!important;
+}
+#extras-character{
+  width:min(43vh,380px)!important;text-align:center!important;
+}
+#extras-character img{
+  width:100%!important;height:min(55vh,500px)!important;object-fit:contain!important;
+  filter:contrast(1.08) brightness(.82);drop-shadow:0 0 20px #000;
+}
+#extras-character-name{
+  margin-top:8px!important;font:700 24px "Courier New",monospace!important;letter-spacing:5px!important;
+}
+#extras-jumpscare-button,.extras-jumpscare-button{
+  position:relative!important;right:auto!important;top:auto!important;
+  border:1px solid #666!important;background:#0a0a0a!important;color:#fff!important;
+  padding:14px 24px!important;font:700 16px "Courier New",monospace!important;letter-spacing:2px!important;
+}
+#extras-jumpscare-button:hover,.extras-jumpscare-button:hover{background:#fff!important;color:#000!important}
+#extra-sounds.active{display:flex!important;align-content:flex-start!important;gap:10px!important;padding:35px!important}
+.extras-gallery{padding:24px!important}
+.back-button{
+  position:absolute!important;left:5vw!important;bottom:6vh!important;z-index:5!important;
+  background:transparent!important;border:0!important;color:#aaa!important;
+  font:700 18px "Courier New",monospace!important;letter-spacing:2px!important;
+}
+.back-button:hover{color:#fff!important}
+
+/* ===== CUSTOM NIGHT REDESIGN ===== */
+#custom-night-screen{
+  display:none;position:fixed;inset:0;z-index:2500000;color:#fff;
+  align-items:center;justify-content:center;font-family:"Courier New",monospace;
+  background:
+    linear-gradient(rgba(0,0,0,.82),rgba(0,0,0,.9)),
+    url("images/menu.png") center/cover no-repeat;
+}
+.cn-shell{
+  position:relative;z-index:2;width:min(1050px,91vw);height:min(720px,88vh);
+  border:1px solid #333;background:rgba(3,3,3,.91);
+  box-shadow:0 0 70px #000, inset 0 0 70px rgba(255,255,255,.025);
+  padding:30px;box-sizing:border-box;display:flex;flex-direction:column;
+}
+.cn-header{display:flex;justify-content:space-between;border-bottom:1px solid #333;padding-bottom:17px}
+.cn-kicker{font-size:11px;letter-spacing:3px;color:#777}
+.cn-header h2{font-size:46px;letter-spacing:8px;margin:6px 0 0}
+.cn-header-code{text-align:right;font-size:12px;line-height:1.7;letter-spacing:2px;color:#666}
+.cn-main{flex:1;display:flex;gap:42px;align-items:center;justify-content:center}
+.cn-character-card{width:285px;text-align:center}
+.cn-photo-wrap{
+  position:relative;width:245px;height:245px;margin:auto;border:2px solid #777;
+  overflow:hidden;background:#000;box-shadow:0 0 25px #000;
+}
+.cn-photo{
+  width:100%;height:100%;object-fit:cover;object-position:68% center;
+  filter:grayscale(.15) contrast(1.22) brightness(.72);
+}
+.cn-photo-noise{
+  position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(255,255,255,.045) 3px 4px);
+}
+.cn-ai-number{
+  position:absolute;left:10px;bottom:4px;font-size:48px;font-weight:bold;
+  text-shadow:3px 3px #000;
+}
+.cn-name{font-size:24px;letter-spacing:4px;margin:12px 0 8px}
+.cn-arrows{display:flex;justify-content:space-between;gap:10px}
+.cn-arrows button,.cn-presets button{
+  flex:1;background:#171717;color:#fff;border:1px solid #555;padding:10px;
+  font:700 26px "Courier New",monospace;cursor:pointer;
+}
+.cn-arrows button:hover,.cn-presets button:hover{background:#fff;color:#000}
+.cn-range{margin-top:12px;font-size:12px;letter-spacing:2px;color:#888}
+.cn-settings{width:min(470px,45vw)}
+.cn-panel-title{font-size:13px;letter-spacing:4px;color:#888;border-bottom:1px solid #333;padding-bottom:8px;margin-bottom:13px}
+.custom-mods{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;margin:0!important}
+.custom-mod{
+  display:flex!important;align-items:center!important;gap:9px!important;
+  padding:12px!important;background:#101010!important;border:1px solid #333!important;
+  font-size:13px!important;letter-spacing:1px!important;
+}
+.custom-mod input{accent-color:#fff}
+.cn-presets-title{margin-top:26px}
+.cn-presets{display:flex;gap:8px}
+.cn-presets button{font-size:16px}
+.cn-presets .earhell{border-color:#5b1515;color:#d96b6b}
+.cn-scale{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:24px;color:#666;font-size:10px;text-align:center}
+.cn-bottom{display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;border-top:1px solid #333;padding-top:18px}
+.cn-bottom button{background:transparent;color:#fff;border:0;font:700 20px "Courier New",monospace;letter-spacing:3px;cursor:pointer}
+.cn-back{text-align:left}.cn-ready{text-align:right;font-size:27px!important}.cn-ready:hover{text-shadow:0 0 12px #fff}
+.cn-tip{text-align:center;color:#555;font-size:10px;letter-spacing:3px}
+
+@media(max-width:760px){
+ .cn-shell{height:94vh;padding:18px}.cn-main{gap:15px}.cn-character-card{width:210px}
+ .cn-photo-wrap{width:180px;height:180px}.cn-settings{width:48vw}
+ .extras-page{left:35vw!important}.extras-tabs{width:180px!important}
+}
+</style>
+
 </head>
 
 
@@ -1751,27 +1893,60 @@ font:700 17px "Courier New",monospace;letter-spacing:2px;text-align:center;text-
 </div>
 
 
-<div id="custom-night-screen" style="display:none;position:fixed;inset:0;z-index:2500000;background:#000;color:#fff;align-items:center;justify-content:center;font-family:'Courier New',monospace;">
-  <div style="text-align:center;min-width:360px;">
-    <h2 style="font-size:42px;letter-spacing:6px;margin-bottom:32px;">CUSTOM NIGHT</h2>
-    <div style="font-size:20px;letter-spacing:3px;margin-bottom:18px;">ORELHA AI</div>
-    <div style="display:flex;align-items:center;justify-content:center;gap:22px;margin-bottom:34px;">
-      <button class="menu-button" onclick="changeCustomAI(-1)" style="font-size:28px;">&lt;</button>
-      <span id="custom-ai-value" style="font-size:44px;min-width:70px;">1</span>
-      <button class="menu-button" onclick="changeCustomAI(1)" style="font-size:28px;">&gt;</button>
+<div id="custom-night-screen">
+  <div class="cn-shell">
+    <div class="cn-header">
+      <div>
+        <div class="cn-kicker">STEPLERS SECURITY // NIGHT CONFIGURATION</div>
+        <h2>CUSTOM NIGHT</h2>
+      </div>
+      <div class="cn-header-code">SUBJECT: EAR DOG<br>AI CONTROL</div>
     </div>
-    <div class="custom-mods">
-<label class="custom-mod"><input type="checkbox" id="mod-fast-errors">FAST ERRORS</label>
-<label class="custom-mod"><input type="checkbox" id="mod-low-power">LOW POWER</label>
-<label class="custom-mod"><input type="checkbox" id="mod-weak-audio">WEAK AUDIO</label>
-<label class="custom-mod"><input type="checkbox" id="mod-no-map">NO CAMERA MAP</label>
-</div>
-<div style="margin-bottom:15px">
-<button class="menu-button custom-preset" onclick="setCustomPreset('earhell')">EAR HELL</button>
-<button class="menu-button custom-preset" onclick="setCustomPreset('classic20')">20/20</button>
-</div>
-<button class="menu-button" onclick="startCustomNight()">START</button>
-    <button class="menu-button" onclick="closeCustomNight()">BACK</button>
+
+    <div class="cn-main">
+      <div class="cn-character-card">
+        <div class="cn-photo-wrap">
+          <img class="cn-photo" src="images/menu.png" alt="Ear Dog">
+          <div class="cn-photo-noise"></div>
+          <div class="cn-ai-number" id="custom-ai-value">1</div>
+        </div>
+        <div class="cn-name">EAR DOG</div>
+        <div class="cn-arrows">
+          <button onclick="changeCustomAI(-1)" aria-label="Decrease AI">&lt;</button>
+          <button onclick="changeCustomAI(1)" aria-label="Increase AI">&gt;</button>
+        </div>
+        <div class="cn-range">AI LEVEL <span id="custom-ai-label">EASY</span></div>
+      </div>
+
+      <div class="cn-settings">
+        <div class="cn-panel-title">NIGHT MODIFIERS</div>
+        <div class="custom-mods">
+          <label class="custom-mod"><input type="checkbox" id="mod-fast-errors"><span>FAST ERRORS</span></label>
+          <label class="custom-mod"><input type="checkbox" id="mod-low-power"><span>LOW POWER</span></label>
+          <label class="custom-mod"><input type="checkbox" id="mod-weak-audio"><span>WEAK AUDIO</span></label>
+          <label class="custom-mod"><input type="checkbox" id="mod-no-map"><span>NO CAMERA MAP</span></label>
+        </div>
+
+        <div class="cn-panel-title cn-presets-title">PRESETS</div>
+        <div class="cn-presets">
+          <button onclick="setCustomPreset('classic20')">20 / 20</button>
+          <button class="earhell" onclick="setCustomPreset('earhell')">EAR HELL</button>
+        </div>
+
+        <div class="cn-scale">
+          <span>[1–2] EASY</span>
+          <span>[3–6] MED</span>
+          <span>[7–12] HARD</span>
+          <span>[13–20] EXTREME</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="cn-bottom">
+      <button class="cn-back" onclick="closeCustomNight()">&lt; BACK</button>
+      <div class="cn-tip">SURVIVE UNTIL 6 AM</div>
+      <button class="cn-ready" onclick="startCustomNight()">READY</button>
+    </div>
   </div>
 </div>
 
@@ -4720,6 +4895,29 @@ completeNight=function(){
         });
     });
 })();
+
+
+
+/* ===== CUSTOM NIGHT VISUAL LABEL ===== */
+function updateCustomAILabel(){
+  const el=document.getElementById("custom-ai-label");
+  const value=document.getElementById("custom-ai-value");
+  if(!el||!value)return;
+  const n=parseInt(value.textContent)||1;
+  el.textContent=n<=2?"EASY":n<=6?"MEDIUM":n<=12?"HARD":"EXTREME";
+}
+const _visualChangeCustomAI=changeCustomAI;
+changeCustomAI=function(delta){
+  const r=_visualChangeCustomAI.apply(this,arguments);
+  updateCustomAILabel();
+  return r;
+};
+const _visualOpenCustomNight=openCustomNight;
+openCustomNight=function(){
+  const r=_visualOpenCustomNight.apply(this,arguments);
+  updateCustomAILabel();
+  return r;
+};
 
 </script>
 
